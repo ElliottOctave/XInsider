@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Football Matches</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Football Matches</h1>
+  <table id="matches-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Home Team</th>
+        <th>Away Team</th>
+        <th>Score</th>
+        <th>Stadium</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    Promise.all([
+      d3.csv("/static/data/games.csv"),
+      d3.csv("/static/data/clubs.csv")
+    ]).then(([games, clubs]) => {
+      const clubMap = {};
+      clubs.forEach(club => {
+        clubMap[club.club_id] = club.name;
+      });
+
+      const tableBody = d3.select("#matches-table tbody");
+      games.forEach(game => {
+        const homeTeam = clubMap[game.home_club_id] || "Unknown";
+        const awayTeam = clubMap[game.away_club_id] || "Unknown";
+        const score = `${game.home_club_goals} - ${game.away_club_goals}`;
+        const stadium = game.stadium || "Unknown";
+        const date = game.date;
+
+        const row = tableBody.append("tr");
+        row.append("td").text(date);
+        row.append("td").text(homeTeam);
+        row.append("td").text(awayTeam);
+        row.append("td").text(score);
+        row.append("td").text(stadium);
+      });
+    }).catch(error => {
+      console.error("Error loading data:", error);
+    });
+  </script>
+
+</body>
+</html>

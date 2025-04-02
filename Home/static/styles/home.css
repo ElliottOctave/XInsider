@@ -1,0 +1,184 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f7f9fc;
+    color: #333;
+    line-height: 1.6;
+  }
+
+  html, body {
+    height: 100%;
+  }
+
+  .nav-links {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+  }
+
+  .nav-links li {
+    display: inline;
+  }
+
+  .nav-links a {
+    color: white;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: color 0.3s;
+  }
+
+  .nav-links a:hover {
+    color: #f0a500;
+  }
+  
+  /* Navbar */
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #003366;
+    color: #fff;
+    padding: 15px 30px;
+  }
+  
+  .navbar .logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+  
+  #search-bar {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    width: 250px;
+  }
+  
+  /* Main dashboard layout */
+  .dashboard {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding: 30px;
+    gap: 20px;
+  }
+  
+  /* Left Panel – Compare */
+  .left-panel {
+    flex: 1 1 40%;
+    background-color: #fff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  
+  .left-panel h2 {
+    margin-bottom: 15px;
+    color: #003366;
+  }
+  
+  #compare-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  #compare-form input,
+  #compare-form button {
+    padding: 10px;
+    font-size: 1rem;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  
+  #compare-form button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  #compare-form button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Right Panel – Top 15 */
+  .right-panel {
+    flex: 1 1 55%;
+    background-color: #fff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  
+  .right-panel h2 {
+    margin-bottom: 15px;
+    color: #003366;
+  }
+  
+  #top15-table {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  
+  #top15-table table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  
+  #top15-table th,
+  #top15-table td {
+    text-align: left;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  /* Chart Section */
+  .chart-section {
+    margin: 40px auto;
+    width: 90%;
+    background-color: #fff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  
+  .chart-section h2 {
+    margin-bottom: 20px;
+    color: #003366;
+  }
+  
+  #player-chart {
+    width: 100%;
+    height: 500px;
+  }
+
+
+  
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Let main content grow to fill space */
+  main, .dashboard, .chart-section {
+    flex-grow: 1;
+  }
+  
+  /* Footer */
+  footer {
+    margin-top: 50px;
+    background-color: #003366;
+    color: white;
+    text-align: center;
+    padding: 20px 10px;
+    font-size: 0.95rem;
+  }
+  

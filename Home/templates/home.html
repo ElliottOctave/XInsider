@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Football Dashboard</title>
+  <link rel="stylesheet" href="/Home/static/styles/home.css" />
+  <link rel="stylesheet" href="/Home/static/styles/chart.css" />
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="/Home/templates/home.html" class="logo">
+      <img src="/ressources/logo XInsider2.png" alt="Football Dashboard Logo" style="height: 125px;" />
+    </a>
+    <ul class="nav-links">
+      <li><a href="/Home/templates/players.html">Players</a></li>
+      <li><a href="#clubs">Clubs</a></li>
+      <li><a href="games.html">Games</a></li>
+    </ul>
+    <input type="text" id="search-bar" placeholder="Search players, teams..." />
+  </nav>
+
+  <!-- Main content -->
+  <main class="dashboard">
+    <div class="left-panel">
+      <h2>Compare</h2>
+      <form id="compare-form">
+        <input type="text" id="compare1" placeholder="Player or Team 1" required />
+        <input type="text" id="compare2" placeholder="Player or Team 2" required />
+        <button type="submit">Compare</button>
+      </form>
+    </div>
+
+    <div class="right-panel">
+      <h2>Top 15 Overview</h2>
+      <div id="top15-table">
+        <p>Loading Top 15...</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Chart Section -->
+  <section class="chart-section">
+    <h2>Top 10 Players by Market Value</h2>
+    <div id="player-chart"></div>
+    <div id="tooltip"></div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2025 Football Dashboard | All rights reserved.</p>
+    <p>Built by your awesome group for the InfoVis course 🚀</p>
+  </footer>
+
+  <!-- Load D3 from your node_modules -->
+  <script src="/node_modules/d3/dist/d3.min.js"></script>
+  <!-- Your visualization script -->
+  <script src="/Home/static/scripts/playerChart.js"></script>
+</body>
+</html>

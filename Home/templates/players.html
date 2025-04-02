@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Players - Football Dashboard</title>
+  <link rel="stylesheet" href="/Home/static/styles/home.css" />
+  <link rel="stylesheet" href="/Home/static/styles/chart.css" />
+  <link rel="stylesheet" href="/Home/static/styles/player_list.css" />
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <h1 class="logo">Football Dashboard</h1>
+    <ul class="nav-links">
+      <li><a href="/Home/templates/players.html">Players</a></li>
+      <li><a href="/clubs.html">Clubs</a></li>
+      <li><a href="/games.html">Games</a></li>
+    </ul>
+    <input type="text" id="search-bar" placeholder="Search players, teams..." />
+  </nav>
+
+  <main class="dashboard">
+    <div id="players-list"></div> <!-- Container for the player list -->
+    <div id="pagination" class="pagination"></div>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Football Dashboard | All rights reserved.</p>
+    <p>Built by your awesome group for the InfoVis course 🚀</p>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/papaparse/5.3.0/papaparse.min.js"></script> <!-- PapaParse library -->
+  <script src="/Home/static/scripts/playerList.js"></script>
+</body>
+</html>
