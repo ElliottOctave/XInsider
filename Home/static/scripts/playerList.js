@@ -24,38 +24,64 @@ fetch(playersCsvUrl)
     // ⚡ Limit to the first 1000 players
     players = players.slice(0, 1000);
 
-    // Get the container where the player list will be displayed
+    // Get elements
     const playersListContainer = document.getElementById('players-list');
+    const searchBar = document.getElementById('player-search-bar'); // ✅ Only use this search bar
 
-    // Loop through the limited players and create a list item for each player
-    players.forEach(player => {
-      // Create a div for each player
-      const playerItem = document.createElement('div');
-      playerItem.classList.add('player-item');
+    // Function to render players
+    function renderPlayers(playerList) {
+      // Clear previous players
+      playersListContainer.innerHTML = '';
 
-      // Create player image element
-      const playerImage = document.createElement('img');
-      playerImage.src = player.image_url;
-      playerImage.alt = `${player.first_name} ${player.last_name}`;
-      playerImage.classList.add('player-image');
+      playerList.forEach(player => {
+        // Create a div for each player
+        const playerItem = document.createElement('div');
+        playerItem.classList.add('player-item');
 
-      // Create a link for each player to go to their profile
-      const playerLink = document.createElement('a');
-      playerLink.href = `/player-info.html?playerId=${player.player_id}`; // Link to player info page
-      playerLink.textContent = `${player.first_name} ${player.last_name}`; // Full name of the player
+        // Create player image element
+        const playerImage = document.createElement('img');
+        playerImage.src = player.image_url;
+        playerImage.alt = `${player.first_name} ${player.last_name}`;
+        playerImage.classList.add('player-image');
 
-      // Add additional details (e.g., current club, market value)
-      const playerDetails = document.createElement('p');
-      playerDetails.textContent = `Current Club: ${player.current_club_name} | Market Value: €${player.market_value_in_eur}`;
+        // Create a link for each player to go to their profile
+        const playerLink = document.createElement('a');
+        playerLink.href = `/player-info.html?playerId=${player.player_id}`;
+        playerLink.textContent = `${player.first_name} ${player.last_name}`;
 
-      // Append elements to the player item
-      playerItem.appendChild(playerImage);
-      playerItem.appendChild(playerLink);
-      playerItem.appendChild(playerDetails);
+        // Add additional details (e.g., current club, market value)
+        const playerDetails = document.createElement('p');
+        playerDetails.textContent = `Current Club: ${player.current_club_name} | Market Value: €${player.market_value_in_eur}`;
 
-      // Append the player item to the container
-      playersListContainer.appendChild(playerItem);
-    });
+        // Append elements to the player item
+        playerItem.appendChild(playerImage);
+        playerItem.appendChild(playerLink);
+        playerItem.appendChild(playerDetails);
+
+        // Append the player item to the container
+        playersListContainer.appendChild(playerItem);
+      });
+    }
+
+    // Initial render
+    renderPlayers(players);
+
+    // 🔍 Function to filter players based on search input
+    function filterPlayers() {
+      const query = searchBar.value.toLowerCase();
+
+      const filteredPlayers = players.filter(player => 
+        player.first_name.toLowerCase().includes(query) || 
+        player.last_name.toLowerCase().includes(query) || 
+        player.name.toLowerCase().includes(query) || 
+        player.current_club_name.toLowerCase().includes(query)
+      );
+
+      renderPlayers(filteredPlayers);
+    }
+
+    // 🔄 Listen for input changes on `player-search-bar`
+    searchBar.addEventListener('input', filterPlayers);
   })
   .catch(error => {
     console.error("Error fetching or parsing CSV:", error);

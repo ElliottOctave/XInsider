@@ -89,3 +89,30 @@
 .pagination button.active {
     background-color: #2c3e50;
 }
+
+/* Style for the player search bar */
+.search-container {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+  }
+  
+.search-bar {
+    width: 100%;
+    max-width: 800px;
+    padding: 12px;
+    font-size: 16px;
+    border: 2px solid #2980b9; /* Blue border */
+    border-radius: 25px;
+    outline: none;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+    background-color: #f9f9f9;
+  }
+  
+.search-bar:focus {
+    border-color: #0056b3; /* Darker blue on focus */
+    box-shadow: 0px 4px 8px rgba(0, 91, 187, 0.4);
+    background-color: white;
+  }
+  
