@@ -1,73 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Football Matches</title>
-  <script src="https://d3js.org/d3.v7.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: left;
-    }
-    th {
-      background-color: #f4f4f4;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Games - Football Dashboard</title>
+  <link rel="stylesheet" href="/Home/static/styles/home.css" />
+  <link rel="stylesheet" href="/Home/static/styles/chart.css" />
+  <link rel="stylesheet" href="/Home/static/styles/games.css" />
 </head>
 <body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="/Home/templates/home.html" class="logo">
+      <img src="/ressources/XInsider2.png" alt="Football Dashboard Logo" style="height: 60px;" />
+    </a>
+    <ul class="nav-links">
+      <li><a href="/Home/templates/players.html">Players</a></li>
+      <li><a href="#clubs">Clubs</a></li>
+      <li><a href="games.html">Games</a></li>
+    </ul>
+    <input type="text" id="search-bar" placeholder="Search players, teams..." />
+  </nav>
 
-  <h1>Football Matches</h1>
-  <table id="matches-table">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Home Team</th>
-        <th>Away Team</th>
-        <th>Score</th>
-        <th>Stadium</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <main class="dashboard">
+    <h2>All Matches</h2>
 
-  <script>
-    Promise.all([
-      d3.csv("/static/data/games.csv"),
-      d3.csv("/static/data/clubs.csv")
-    ]).then(([games, clubs]) => {
-      const clubMap = {};
-      clubs.forEach(club => {
-        clubMap[club.club_id] = club.name;
-      });
+    <!-- Filters -->
+    <div class="filters">
+      <label for="yearFilter">Year:</label>
+      <select id="yearFilter">
+        <option value="all">All</option>
+      </select>
 
-      const tableBody = d3.select("#matches-table tbody");
-      games.forEach(game => {
-        const homeTeam = clubMap[game.home_club_id] || "Unknown";
-        const awayTeam = clubMap[game.away_club_id] || "Unknown";
-        const score = `${game.home_club_goals} - ${game.away_club_goals}`;
-        const stadium = game.stadium || "Unknown";
-        const date = game.date;
+      <label for="teamFilter">Team:</label>
+      <input type="text" id="teamFilter" placeholder="Type to filter teams...">
+    </div>
 
-        const row = tableBody.append("tr");
-        row.append("td").text(date);
-        row.append("td").text(homeTeam);
-        row.append("td").text(awayTeam);
-        row.append("td").text(score);
-        row.append("td").text(stadium);
-      });
-    }).catch(error => {
-      console.error("Error loading data:", error);
-    });
-  </script>
+    <!-- Match Cards -->
+    <div class="match-container" id="matches-list"></div>
 
+    <!-- Pagination -->
+    <div class="pagination">
+      <button id="prevPage">&laquo; Prev</button>
+      <span id="pageInfo"></span>
+      <button id="nextPage">Next &raquo;</button>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2025 Football Dashboard | All rights reserved.</p>
+    <p>Built by your awesome group for the InfoVis course 🚀</p>
+  </footer>
+
+  <script src="/Home/static/scripts/games.js"></script>
 </body>
 </html>
