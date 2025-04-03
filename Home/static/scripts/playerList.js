@@ -21,7 +21,7 @@ fetch(playersCsvUrl)
       return player;
     });
 
-    // ⚡ Limit to the first 1000 players
+    // Limit to the first 1000 players
     players = players.slice(0, 1000);
 
     // Get elements
