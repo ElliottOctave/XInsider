@@ -28,12 +28,13 @@
     color: #555;
   }
   
-  /* Market Value Chart Block */
-  .chart-section {
+/* Market Value Chart Block */
+.chart-section {
     width: 100%;
     max-width: 900px;
     background-color: #fff;
     padding: 20px;
+    margin-bottom: 40px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
@@ -42,3 +43,4 @@
     font-size: 24px;
     margin-bottom: 15px;
   }
+  
