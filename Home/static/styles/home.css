@@ -70,6 +70,8 @@
   
   /* Left Panel – Compare */
   .left-panel {
+    width: 40%;
+    max-width: 400px;
     flex: 1 1 40%;
     background-color: #fff;
     padding: 25px;
@@ -109,12 +111,35 @@
   }
   
   /* Right Panel – Top 15 */
+ 
   .right-panel {
-    flex: 1 1 55%;
-    background-color: #fff;
-    padding: 25px;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    display: flex;
+    width: 600px;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-top: 1rem;
+  }
+  
+  #top15-table {
+    max-width: 600px;
+    margin: 0 50px;
+    overflow-x: auto;
+    transition: opacity 0.4s ease-in-out;
+  }
+  
+  .nav-btn {
+    background-color: transparent;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    color: #333;
+    transition: transform 0.2s;
+    z-index: 10;
+  }
+  
+  .nav-btn:hover {
+    transform: scale(1.2);
   }
   
   .right-panel h2 {
@@ -160,18 +185,6 @@
     height: 500px;
   }
 
-
-  
-  body {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  /* Let main content grow to fill space */
-  main, .dashboard, .chart-section {
-    flex-grow: 1;
-  }
-  
   /* Footer */
   footer {
     margin-top: 50px;
@@ -181,4 +194,4 @@
     padding: 20px 10px;
     font-size: 0.95rem;
   }
-  
+    
