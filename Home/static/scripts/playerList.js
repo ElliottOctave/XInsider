@@ -46,7 +46,7 @@ fetch(playersCsvUrl)
 
         // Create a link for each player to go to their profile
         const playerLink = document.createElement('a');
-        playerLink.href = `/player-info.html?playerId=${player.player_id}`;
+        playerLink.href = `/Home/templates/player_info.html?playerId=${player.player_id}`;
         playerLink.textContent = `${player.first_name} ${player.last_name}`;
 
         // Add additional details (e.g., current club, market value)
