@@ -46,8 +46,10 @@ Promise.all([
       game.away_logo = logoMap[game.away_club_id] || "";
     });
 
-    filteredGames = games;
+    // ✅ Sort most recent matches first
+    games.sort((a, b) => new Date(b.date) - new Date(a.date));
 
+    filteredGames = games;
     populateYearDropdown(games);
     renderCards();
     setupEventListeners(games);
@@ -57,36 +59,47 @@ function renderCards() {
   const container = document.getElementById("matches-list");
   container.innerHTML = "";
 
+  const validGames = filteredGames.filter(game =>
+    game.home_team && game.away_team &&
+    game.home_logo && game.away_logo &&
+    game.home_club_goals !== undefined && game.away_club_goals !== undefined &&
+    game.stadium && game.date
+  );
+
   const start = (currentPage - 1) * rowsPerPage;
   const end = start + rowsPerPage;
-  const paginatedGames = filteredGames.slice(start, end);
+  const paginatedGames = validGames.slice(start, end);
 
   paginatedGames.forEach(game => {
-    const score = `${game.home_club_goals || "?"} - ${game.away_club_goals || "?"}`;
+    const score = `${game.home_club_goals} - ${game.away_club_goals}`;
     const card = document.createElement("div");
     card.className = "match-card";
     card.innerHTML = `
       <div class="teams">
         <div class="team">
-          <img class="team-logo" src="${game.home_logo}" alt="${game.home_team}" />
-          <div>${game.home_team}</div>
+          <div class="team-logo-wrapper">
+            <img class="team-logo" src="${game.home_logo}" alt="${game.home_team}" />
+          </div>
+          <div class="team-name">${game.home_team}</div>
         </div>
         <div class="score">${score}</div>
         <div class="team">
-          <img class="team-logo" src="${game.away_logo}" alt="${game.away_team}" />
-          <div>${game.away_team}</div>
+          <div class="team-logo-wrapper">
+            <img class="team-logo" src="${game.away_logo}" alt="${game.away_team}" />
+          </div>
+          <div class="team-name">${game.away_team}</div>
         </div>
       </div>
       <div class="meta">
-        <p>${game.stadium || "Unknown"}</p>
-        <p>${game.date || ""}</p>
+        <p>${game.stadium}</p>
+        <p>${game.date}</p>
       </div>
     `;
     container.appendChild(card);
   });
 
-  document.getElementById("pageInfo").textContent = 
-    `Page ${currentPage} of ${Math.ceil(filteredGames.length / rowsPerPage)}`;
+  document.getElementById("pageInfo").textContent =
+    `Page ${currentPage} of ${Math.ceil(validGames.length / rowsPerPage)}`;
 }
 
 function setupEventListeners(allGames) {
@@ -101,7 +114,7 @@ function setupEventListeners(allGames) {
   };
 
   document.getElementById("nextPage").onclick = () => {
-    if (currentPage < Math.ceil(filteredGames.length / rowsPerPage)) {
+    if (currentPage < Math.ceil(getValidGames().length / rowsPerPage)) {
       currentPage++;
       renderCards();
     }
@@ -135,9 +148,18 @@ function applyFilters(allGames) {
   renderCards();
 }
 
+function getValidGames() {
+  return filteredGames.filter(game =>
+    game.home_team && game.away_team &&
+    game.home_logo && game.away_logo &&
+    game.home_club_goals !== undefined && game.away_club_goals !== undefined &&
+    game.stadium && game.date
+  );
+}
+
 function populateYearDropdown(games) {
   const yearSelect = document.getElementById("yearFilter");
-  const years = [...new Set(games.map(g => g.date?.slice(0, 4)).filter(Boolean))].sort();
+  const years = [...new Set(games.map(g => g.date?.slice(0, 4)).filter(Boolean))].sort((a, b) => b - a);
 
   years.forEach(year => {
     const option = document.createElement("option");

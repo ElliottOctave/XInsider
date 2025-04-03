@@ -1,6 +1,6 @@
 .match-container {
   display: grid;
-  grid-template-columns: repeat(4, 1fr); /* 4 per row */
+  grid-template-columns: repeat(4, 1fr);
   gap: 2rem;
   padding: 2rem 3rem;
   max-width: 1600px;
@@ -25,7 +25,6 @@
   }
 }
 
-/* Match Card Styling */
 .match-card {
   background-color: #ffffff;
   border-radius: 12px;
@@ -41,24 +40,47 @@
   transform: translateY(-4px);
 }
 
-/* Team Logos and Score Line */
 .match-card .teams {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
+  gap: 1rem;
 }
 
 .match-card .team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   width: 32%;
   text-align: center;
 }
 
-.team-logo {
-  width: 55px;
-  height: 55px;
-  object-fit: contain;
+.team-logo-wrapper {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 6px;
+}
+
+.team-logo {
+  max-width: 60px;
+  max-height: 60px;
+  object-fit: contain;
+  display: block;
+}
+
+.team-name {
+  font-weight: bold;
+  font-size: 0.95rem;
+  line-height: 1.2;
+  min-height: 2.6em; /* reserve space for 2 lines */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .match-card .score {
@@ -69,7 +91,6 @@
   color: #111;
 }
 
-/* Stadium and Date Info */
 .match-card .meta {
   margin-top: 1rem;
   font-size: 0.95rem;
@@ -77,7 +98,6 @@
   text-align: center;
 }
 
-/* Filters Styling */
 .filters {
   display: flex;
   align-items: center;
