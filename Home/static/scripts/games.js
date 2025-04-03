@@ -72,9 +72,10 @@ function renderCards() {
 
   paginatedGames.forEach(game => {
     const score = `${game.home_club_goals} - ${game.away_club_goals}`;
-    const card = document.createElement("div");
-    card.className = "match-card";
-    card.innerHTML = `
+    const link = document.createElement("a");
+    link.href = `/Home/templates/game_details.html?gameId=${game.game_id}`;
+    link.className = "match-card";
+    link.innerHTML = `
       <div class="teams">
         <div class="team">
           <div class="team-logo-wrapper">
@@ -95,7 +96,8 @@ function renderCards() {
         <p>${game.date}</p>
       </div>
     `;
-    container.appendChild(card);
+    
+    container.appendChild(link);    
   });
 
   document.getElementById("pageInfo").textContent =

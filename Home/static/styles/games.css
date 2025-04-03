@@ -40,6 +40,12 @@
   transform: translateY(-4px);
 }
 
+a.match-card {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
 .match-card .teams {
   display: flex;
   justify-content: space-between;
