@@ -1,60 +1,128 @@
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
+.match-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 per row */
+  gap: 2rem;
+  padding: 2rem 3rem;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+@media (max-width: 1300px) {
+  .match-container {
+    grid-template-columns: repeat(3, 1fr);
   }
-  
-  th, td {
-    border: 1px solid #ccc;
-    padding: 8px;
-    text-align: left;
+}
+
+@media (max-width: 960px) {
+  .match-container {
+    grid-template-columns: repeat(2, 1fr);
   }
-  
-  th {
-    background-color: #f4f4f4;
+}
+
+@media (max-width: 600px) {
+  .match-container {
+    grid-template-columns: 1fr;
   }
-  
-  .filters {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-  }
-  
-  .filters label {
-    font-weight: bold;
-  }
-  
-  .filters select,
-  .filters input {
-    padding: 6px 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-  
-  .pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 1rem;
-    margin-top: 1rem;
-  }
-  
-  .pagination button {
-    padding: 6px 12px;
-    border: none;
-    background-color: #007BFF;
-    color: white;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
-  .pagination button:hover {
-    background-color: #0056b3;
-  }
-  
-  .pagination span {
-    font-weight: bold;
-  }
-  
+}
+
+/* Match Card Styling */
+.match-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.2s ease;
+}
+
+.match-card:hover {
+  transform: translateY(-4px);
+}
+
+/* Team Logos and Score Line */
+.match-card .teams {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.match-card .team {
+  width: 32%;
+  text-align: center;
+}
+
+.team-logo {
+  width: 55px;
+  height: 55px;
+  object-fit: contain;
+  margin-bottom: 6px;
+}
+
+.match-card .score {
+  width: 36%;
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #111;
+}
+
+/* Stadium and Date Info */
+.match-card .meta {
+  margin-top: 1rem;
+  font-size: 0.95rem;
+  color: #444;
+  text-align: center;
+}
+
+/* Filters Styling */
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 1rem 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.filters label {
+  font-weight: bold;
+}
+
+.filters select,
+.filters input {
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin: 2rem auto 0;
+  text-align: center;
+}
+
+.pagination button {
+  padding: 6px 14px;
+  border: none;
+  background-color: #007BFF;
+  color: white;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.pagination button:hover {
+  background-color: #0056b3;
+}
+
+.pagination span {
+  font-weight: bold;
+  font-size: 1rem;
+}

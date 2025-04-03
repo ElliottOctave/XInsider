@@ -1,15 +1,19 @@
 const gamesCsvUrl = "../../data/games.csv";
 const clubsCsvUrl = "../../data/clubs.csv";
+const logosCsvUrl = "../../data/club_logos.csv";
 
 let currentPage = 1;
-const rowsPerPage = 10;
+const rowsPerPage = 12;
 let filteredGames = [];
+const clubMap = {};
+const logoMap = {};
 
 Promise.all([
   fetch(gamesCsvUrl).then(res => res.text()),
-  fetch(clubsCsvUrl).then(res => res.text())
+  fetch(clubsCsvUrl).then(res => res.text()),
+  fetch(logosCsvUrl).then(res => res.text())
 ])
-  .then(([gamesCsv, clubsCsv]) => {
+  .then(([gamesCsv, clubsCsv, logosCsv]) => {
     const parseCsv = (csvText) => {
       const rows = csvText.trim().split('\n');
       const headers = rows[0].split(',');
@@ -25,43 +29,60 @@ Promise.all([
 
     const games = parseCsv(gamesCsv);
     const clubs = parseCsv(clubsCsv);
+    const logos = parseCsv(logosCsv);
 
-    const clubMap = {};
     clubs.forEach(club => {
       clubMap[club.club_id] = club.name;
+    });
+
+    logos.forEach(logo => {
+      logoMap[logo.club_id] = logo.logo_url;
     });
 
     games.forEach(game => {
       game.home_team = clubMap[game.home_club_id] || game.home_club_name || "Unknown";
       game.away_team = clubMap[game.away_club_id] || game.away_club_name || "Unknown";
+      game.home_logo = logoMap[game.home_club_id] || "";
+      game.away_logo = logoMap[game.away_club_id] || "";
     });
 
     filteredGames = games;
 
     populateYearDropdown(games);
-    renderTable();
+    renderCards();
     setupEventListeners(games);
   });
 
-function renderTable() {
-  const tableBody = document.querySelector("#matches-table tbody");
-  tableBody.innerHTML = "";
+function renderCards() {
+  const container = document.getElementById("matches-list");
+  container.innerHTML = "";
 
   const start = (currentPage - 1) * rowsPerPage;
   const end = start + rowsPerPage;
   const paginatedGames = filteredGames.slice(start, end);
 
   paginatedGames.forEach(game => {
-    const row = document.createElement("tr");
     const score = `${game.home_club_goals || "?"} - ${game.away_club_goals || "?"}`;
-    row.innerHTML = `
-      <td>${game.date}</td>
-      <td>${game.home_team}</td>
-      <td>${game.away_team}</td>
-      <td>${score}</td>
-      <td>${game.stadium || "Unknown"}</td>
+    const card = document.createElement("div");
+    card.className = "match-card";
+    card.innerHTML = `
+      <div class="teams">
+        <div class="team">
+          <img class="team-logo" src="${game.home_logo}" alt="${game.home_team}" />
+          <div>${game.home_team}</div>
+        </div>
+        <div class="score">${score}</div>
+        <div class="team">
+          <img class="team-logo" src="${game.away_logo}" alt="${game.away_team}" />
+          <div>${game.away_team}</div>
+        </div>
+      </div>
+      <div class="meta">
+        <p>${game.stadium || "Unknown"}</p>
+        <p>${game.date || ""}</p>
+      </div>
     `;
-    tableBody.appendChild(row);
+    container.appendChild(card);
   });
 
   document.getElementById("pageInfo").textContent = 
@@ -75,14 +96,14 @@ function setupEventListeners(allGames) {
   document.getElementById("prevPage").onclick = () => {
     if (currentPage > 1) {
       currentPage--;
-      renderTable();
+      renderCards();
     }
   };
 
   document.getElementById("nextPage").onclick = () => {
     if (currentPage < Math.ceil(filteredGames.length / rowsPerPage)) {
       currentPage++;
-      renderTable();
+      renderCards();
     }
   };
 
@@ -111,7 +132,7 @@ function applyFilters(allGames) {
     return matchesYear && matchesTeam;
   });
 
-  renderTable();
+  renderCards();
 }
 
 function populateYearDropdown(games) {
