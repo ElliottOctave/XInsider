@@ -24,8 +24,23 @@
   <!-- Player Profile Section -->
   <main class="player-profile">
     <div id="player-details" class="player-details">
+      <div id="player-info" class="player-info"></div>
       <!-- Player info will be dynamically inserted here -->
+      <div id="player-map" style="width: 400px; height: 300px;"></div>
     </div>
+
+    <div id="performance" class="chart-section">
+      <h2>Performance Overview</h2>
+      <svg id="goalsChart" width="800" height="400"></svg>
+      <svg id="goalsChart" width="800" height="400"></svg>
+    </div>
+
+    <!-- Player Transfer History Sankey Diagram -->
+    <div id="timeline" class="chart-section">
+      <h2>Transfer History</h2>
+      <svg id="timeChart" width="800" height="400"></svg>
+    </div>
+
     
     <!-- Market Value Evolution Chart -->
     <div id="market-value-chart-container" class="chart-section">
@@ -41,6 +56,8 @@
 
   <!-- Include D3.js -->
   <script src="/node_modules/d3/dist/d3.min.js"></script>
+  <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+  
 
   <!-- Your custom JS logic -->
   <script src="/Home/static/scripts/playerInfo.js"></script> 
