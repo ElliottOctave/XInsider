@@ -1,85 +1,101 @@
-const fileUrls = {
-    appearances: "../../../data/appearances.csv",
-    gameEvents: "../../../data/game_events.csv",
-    gameLineups: "../../../data/game_lineups.csv",
-    players: "../../../data/players.csv",
-    clubs: "../../../data/clubs.csv"
-  };
-  
-  const categories = [];
-  
-  Promise.all([
-    d3.csv(fileUrls.appearances),
-    d3.csv(fileUrls.gameEvents),
-    d3.csv(fileUrls.gameLineups),
-    d3.csv(fileUrls.players),
-    d3.csv(fileUrls.clubs)
-  ]).then(([appearances, events, lineups, players, clubs]) => {
-    const goals = events.filter(e => e.type === "Goal" && e.player_id)
-      .reduce((map, e) => {
-        const name = e.player_id;
-        map[name] = (map[name] || 0) + 1;
-        return map;
-      }, {});
-    const topScorers = Object.entries(goals).map(([Player, Goals]) => ({ Player, Goals }))
-      .sort((a, b) => b.Goals - a.Goals).slice(0, 15);
-    categories.push({ title: "Top 15 Scorers", data: topScorers });
-  
-    const keepers = lineups.filter(l => l.position === "Goalkeeper")
-      .reduce((map, l) => {
-        const name = l.player_name || l.player_id;
-        map[name] = (map[name] || 0) + 1;
-        return map;
-      }, {});
-    const topKeepers = Object.entries(keepers).map(([Goalkeeper, Appearances]) => ({ Goalkeeper, Appearances }))
-      .sort((a, b) => b.Appearances - a.Appearances).slice(0, 15);
-    categories.push({ title: "Top 15 Goalkeepers by Appearances", data: topKeepers });
-  
-    const reds = appearances.reduce((map, a) => {
-      const name = a.player_name || a.player_id;
-      const red = parseInt(a.red_cards || 0);
-      map[name] = (map[name] || 0) + red;
-      return map;
-    }, {});
-    const topReds = Object.entries(reds).map(([Player, RedCards]) => ({ Player, RedCards }))
-      .filter(r => r.RedCards > 0).sort((a, b) => b.RedCards - a.RedCards).slice(0, 15);
-    categories.push({ title: "Top 15 Players with Red Cards", data: topReds });
-  
-    const topValuable = players.filter(p => p.market_value_in_eur)
-      .map(p => ({ Player: p.name, Value: +p.market_value_in_eur }))
-      .sort((a, b) => b.Value - a.Value).slice(0, 15);
-    categories.push({ title: "Top 15 Most Valuable Players", data: topValuable });
-  
-    const topHighest = players.filter(p => p.highest_market_value_in_eur)
-      .map(p => ({ Player: p.name, PeakValue: +p.highest_market_value_in_eur }))
-      .sort((a, b) => b.PeakValue - a.PeakValue).slice(0, 15);
-    categories.push({ title: "Top 15 Players by Career Market Value", data: topHighest });
-  
-    const topClubs = clubs.filter(c => c.total_market_value)
-      .map(c => ({ Club: c.name, Value: +c.total_market_value }))
-      .sort((a, b) => b.Value - a.Value).slice(0, 15);
-    categories.push({ title: "Top 15 Clubs by Market Value", data: topClubs });
-  
-    rotateTable();
+const summaryUrl = "../../../data/player_summary.csv"; // Adjust path if needed
+const categories = [];
+
+d3.csv(summaryUrl).then(data => {
+  // Ensure all numbers are parsed
+  data.forEach(d => {
+    d.goals = +d.goals;
+    d.assists = +d.assists;
+    d.yellow_cards = +d.yellow_cards;
+    d.red_cards = +d.red_cards;
+    d.minutes = +d.minutes;
   });
-  
-  let categoryIndex = 0;
-  
-  function rotateTable() {
-    const container = document.getElementById("top15-table");
-    const current = categories[categoryIndex];
+
+  // Top 15 Scorers
+  const topGoals = [...data]
+    .sort((a, b) => b.goals - a.goals)
+    .slice(0, 15)
+    .map(p => ({ Player: p.name, Goals: p.goals }));
+  categories.push({ title: "Top 15 Goal Scorers", data: topGoals });
+
+  // Top 15 Assists
+  const topAssists = [...data]
+    .sort((a, b) => b.assists - a.assists)
+    .slice(0, 15)
+    .map(p => ({ Player: p.name, Assists: p.assists }));
+  categories.push({ title: "Top 15 Assists", data: topAssists });
+
+  // Most Yellow Cards
+  const topYellow = [...data]
+    .sort((a, b) => b.yellow_cards - a.yellow_cards)
+    .slice(0, 15)
+    .map(p => ({ Player: p.name, "Yellow Cards": p.yellow_cards }));
+  categories.push({ title: "Top 15 Players with Yellow Cards", data: topYellow });
+
+  // Most Red Cards
+  const topRed = [...data]
+    .sort((a, b) => b.red_cards - a.red_cards)
+    .slice(0, 15)
+    .map(p => ({ Player: p.name, "Red Cards": p.red_cards }));
+  categories.push({ title: "Top 15 Players with Red Cards", data: topRed });
+
+  // Most Minutes Played
+  const topMinutes = [...data]
+    .sort((a, b) => b.minutes - a.minutes)
+    .slice(0, 15)
+    .map(p => ({ Player: p.name, "Minutes Played": p.minutes }));
+  categories.push({ title: "Top 15 Players by Minutes Played", data: topMinutes });
+
+  rotateTable();
+});
+
+let categoryIndex = 0;
+let autoRotateInterval;
+
+function updateTable() {
+  const container = document.getElementById("top15-table");
+  const current = categories[categoryIndex];
+  container.style.opacity = 0;
+
+  setTimeout(() => {
     container.innerHTML = `<h3>${current.title}</h3>` + buildTableHTML(current.data);
-    categoryIndex = (categoryIndex + 1) % categories.length;
-    setTimeout(rotateTable, 1000);
-  }
-  
-  function buildTableHTML(data) {
-    if (!data.length) return "<p>No data available</p>";
-    const keys = Object.keys(data[0]);
-    const header = `<tr>${keys.map(k => `<th>${k}</th>`).join("")}</tr>`;
-    const rows = data.map(row =>
-      `<tr>${keys.map(k => `<td>${row[k]}</td>`).join("")}</tr>`
-    ).join("");
-    return `<table>${header}${rows}</table>`;
-  }
-  
+    container.style.opacity = 1;
+  }, 200);
+}
+
+function buildTableHTML(data) {
+  if (!data.length) return "<p>No data available</p>";
+  const keys = Object.keys(data[0]);
+  const header = `<tr>${keys.map(k => `<th>${k}</th>`).join("")}</tr>`;
+  const rows = data.map(row =>
+    `<tr>${keys.map(k => `<td>${row[k]}</td>`).join("")}</tr>`
+  ).join("");
+  return `<table>${header}${rows}</table>`;
+}
+
+function rotateTable() {
+  updateTable();
+  categoryIndex = (categoryIndex + 1) % categories.length;
+  autoRotateInterval = setTimeout(rotateTable, 10000); // rotate every 10s
+}
+
+// Manual navigation
+function nextCategory() {
+  clearTimeout(autoRotateInterval);
+  categoryIndex = (categoryIndex + 1) % categories.length;
+  updateTable();
+  autoRotateInterval = setTimeout(rotateTable, 10000);
+}
+
+function prevCategory() {
+  clearTimeout(autoRotateInterval);
+  categoryIndex = (categoryIndex - 1 + categories.length) % categories.length;
+  updateTable();
+  autoRotateInterval = setTimeout(rotateTable, 10000);
+}
+
+// Add event listeners after DOM loads
+window.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("next-btn").addEventListener("click", nextCategory);
+  document.getElementById("prev-btn").addEventListener("click", prevCategory);
+});
