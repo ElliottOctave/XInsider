@@ -300,108 +300,97 @@ function renderTimeline(playerId) {
         return;
       }
 
-      // Convert transfer_date strings to Date objects
+      // Sort by date to maintain correct order
       const parseDate = d3.timeParse("%Y-%m-%d");
       playerTransfers.forEach(t => {
         t.transfer_date = parseDate(t.transfer_date);
       });
+      playerTransfers.sort((a, b) => a.transfer_date - b.transfer_date);
 
-      // Set up SVG canvas dimensions
-      const width = 850, height = 400; // Adjusted width and height
-      const margin = { top: 40, right: 20, bottom: 40, left: 80 };
+      // Build a club tenure dataset: start = transfer to club, end = next transfer date
+      let tenures = [];
+      for (let i = 0; i < playerTransfers.length; i++) {
+        const current = playerTransfers[i];
+        const next = playerTransfers[i + 1];
+        if (current.to_club_name) {
+          tenures.push({
+            club: current.to_club_name,
+            start: current.transfer_date,
+            end: next ? next.transfer_date : new Date() // assume still at last club if no next
+          });
+        }
+      }
+
+      // Set dimensions
+      const width = 850, height = 400;
+      const margin = { top: 40, right: 20, bottom: 40, left: 120 };
 
       const svg = d3.select("#timeChart")
         .attr("width", width)
-        .attr("height", height);
+        .attr("height", height)
+        .html(""); // Clear previous content if any
 
-      // Get unique teams for the Y-axis (Team names)
-      const teams = Array.from(new Set(playerTransfers.map(t => t.from_club_name).concat(playerTransfers.map(t => t.to_club_name))));
-
-      // Set up scales
+      // Set scales
       const xScale = d3.scaleTime()
-        .domain(d3.extent(playerTransfers, d => d.transfer_date)) // domain from the min to max transfer date
+        .domain([
+          d3.min(tenures, d => d.start),
+          d3.max(tenures, d => d.end)
+        ])
         .range([margin.left, width - margin.right]);
 
       const yScale = d3.scaleBand()
-        .domain(teams) // Y scale for teams
+        .domain(tenures.map(d => d.club))
         .range([margin.top, height - margin.bottom])
-        .padding(0.2);
+        .padding(0.3);
 
-      // Add timeline axis (X-axis - Time)
+      // Draw axes
       svg.append("g")
         .attr("transform", `translate(0, ${height - margin.bottom})`)
-        .call(d3.axisBottom(xScale));
+        .call(d3.axisBottom(xScale).tickFormat(d3.timeFormat("%Y")));
 
-      // Add team axis (Y-axis - Teams)
       svg.append("g")
         .attr("transform", `translate(${margin.left}, 0)`)
         .call(d3.axisLeft(yScale));
 
-      // Create a tooltip div (hidden by default)
+      // Add bars (Gantt chart style)
+      svg.selectAll(".bar")
+        .data(tenures)
+        .enter()
+        .append("rect")
+        .attr("class", "bar")
+        .attr("x", d => xScale(d.start))
+        .attr("y", d => yScale(d.club))
+        .attr("width", d => xScale(d.end) - xScale(d.start))
+        .attr("height", yScale.bandwidth())
+        .attr("fill", "#007bff");
+
+      // Add tooltips
       const tooltip = d3.select("body").append("div")
         .attr("class", "tooltip")
         .style("position", "absolute")
-        .style("visibility", "hidden")
+        .style("opacity", 0)
         .style("background-color", "rgba(0, 0, 0, 0.7)")
         .style("color", "#fff")
-        .style("padding", "5px")
-        .style("border-radius", "5px");
+        .style("padding", "6px 10px")
+        .style("border-radius", "4px")
+        .style("font-size", "12px");
 
-      // Function to calculate transfer duration in weeks
-      function calculateDuration(startDate, endDate) {
-        const durationInMillis = endDate - startDate;
-        const durationInWeeks = Math.floor(durationInMillis / (7 * 24 * 60 * 60 * 1000)); // Convert millis to weeks
-        return durationInWeeks;
-      }
-
-      // Create the Gantt bars representing transfers
-      playerTransfers.forEach((transfer, i) => {
-        const nextTransfer = playerTransfers[i + 1];
-        const endDate = nextTransfer ? nextTransfer.transfer_date : new Date(); // Current date if no next transfer
-        const startDate = transfer.transfer_date;
-        const teamName = transfer.to_club_name; // Team the player is transferring to
-        const transferFee = transfer.transfer_fee ? `$${transfer.transfer_fee}` : "N/A"; // Default to "N/A" if no fee is available
-        const duration = calculateDuration(startDate, endDate); // Calculate the duration in weeks
-
-        // Plot the transfer as a Gantt bar
-        const transferBar = svg.append("rect")
-          .attr("x", xScale(startDate))
-          .attr("y", yScale(teamName))
-          .attr("width", xScale(endDate) - xScale(startDate)) // Duration of the transfer
-          .attr("height", yScale.bandwidth())
-          .attr("fill", "#3498db")
-          .attr("stroke", "black")
-          .attr("stroke-width", 1)
-          // Add tooltip events
-          .on("mouseover", function(event, d) {
-            tooltip.style("visibility", "visible")
-              .html(`Transfer Duration: ${duration} weeks<br/>Transfer Fee: ${transferFee}`);
-          })
-          .on("mousemove", function(event) {
-            tooltip.style("top", (event.pageY + 10) + "px")
-              .style("left", (event.pageX + 10) + "px");
-          })
-          .on("mouseout", function() {
-            tooltip.style("visibility", "hidden");
-          });
-      });
-
-      // Optional: Add text labels for each transfer
-      playerTransfers.forEach((transfer, i) => {
-        const nextTransfer = playerTransfers[i + 1];
-        const endDate = nextTransfer ? nextTransfer.transfer_date : new Date();
-        const startDate = transfer.transfer_date;
-        const teamName = transfer.to_club_name;
-
-        svg.append("text")
-          .attr("x", xScale(startDate) + 5) // Position slightly to the right of the bar
-          .attr("y", yScale(teamName) + yScale.bandwidth() / 2)
-          .attr("dy", ".35em") // Vertically center the text
-          .text(`${teamName}`)
-          .style("font-size", "12px")
-          .style("fill", "white");
-      });
-
+      svg.selectAll(".bar")
+        .on("mouseover", (event, d) => {
+          tooltip.transition().duration(200).style("opacity", 1);
+          tooltip.html(`
+            <strong>${d.club}</strong><br>
+            From: ${d3.timeFormat("%Y-%m-%d")(d.start)}<br>
+            To: ${d3.timeFormat("%Y-%m-%d")(d.end)}
+          `)
+          .style("left", (event.pageX + 10) + "px")
+          .style("top", (event.pageY - 28) + "px");
+        })
+        .on("mouseout", () => {
+          tooltip.transition().duration(200).style("opacity", 0);
+        });
     })
-    .catch(error => console.error("Error fetching or parsing transfers.csv:", error));
+    .catch(error => {
+      console.error("Error fetching or parsing transfers_preprocessed.csv:", error);
+    });
 }
