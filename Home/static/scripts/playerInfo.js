@@ -1,13 +1,16 @@
+import * as d3Soccer from 'd3-soccer';
+
 // Get playerId from the URL (e.g., ?playerId=123)
 const urlParams = new URLSearchParams(window.location.search);
 const playerId = urlParams.get('playerId');
 
 // Fetch player data
-fetch('../../data/players.csv')
+fetch('../../processed_data/player_summary.csv')
   .then(response => response.text())
   .then(csvText => {
     const rows = csvText.split('\n');
-    const headers = rows[0].split(',');
+    var headers = rows[0].split(',');
+    headers = headers.map(header => header.trim().replace(/\r$/, ''));
 
     // Map through the rows and create an array of player objects
     let players = rows.slice(1).map(row => {
@@ -25,7 +28,7 @@ fetch('../../data/players.csv')
     if (player) {
       // Populate the player's profile details
       document.getElementById('player-info').innerHTML = `
-        <h1>${player.first_name} ${player.last_name}</h1>
+        <h1>${player.name}</h1>
         <p><strong>Current Club:</strong> ${player.current_club_name}</p>
         <p><strong>Position:</strong> ${player.position}</p>
         <p><strong>Market Value:</strong> €${player.market_value_in_eur}</p>
@@ -35,6 +38,9 @@ fetch('../../data/players.csv')
       `;
       
       renderMap(player);
+      drawGoalsAndAssistsChart(player);
+      drawCardsChart(player);
+      renderFieldPositions(playerId);
 
       renderTimeline(playerId);
 
@@ -167,12 +173,239 @@ fetch('../../data/players.csv')
     });
 }
 
+function drawCardsChart(player) {
+  const svg = d3.select("#cardsChart");
+
+  // Data for the pie chart (yellow and red cards)
+  const data = [
+    { category: "Yellow Cards", value: +player.yellow_cards },
+    { category: "Red Cards", value: +player.red_cards }
+  ];
+
+  // Set the dimensions and margins of the graph
+  const width = +svg.attr("width");
+  const height = +svg.attr("height");
+  const margin = 40;
+
+  // The radius of the pie plot is half the width or half the height (smallest one). I subtract a bit of margin.
+  const radius = Math.min(width, height) / 2 - margin;
+
+  // Append the svg object to the div called 'cardsChart' and set the group element for pie chart positioning
+  svg.selectAll("*").remove(); // Clear previous content
+
+  const g = svg.append("g")
+    .attr("transform", `translate(${width / 2}, ${height / 2})`);
+
+  // Set up the color scale for the pie slices
+  const color = d3.scaleOrdinal()
+    .domain(data.map(d => d.category))
+    .range(["#f1c40f", "#e74c3c"]);
+
+  // Compute the position of each group on the pie (pie chart setup)
+  const pie = d3.pie().value(d => d.value);
+  const data_ready = pie(data);
+
+  // Build the pie chart (draw slices)
+  const slices = g.selectAll('path')
+    .data(data_ready)
+    .enter()
+    .append('path')
+    .attr('d', d3.arc()
+      .innerRadius(100)         // This is the size of the donut hole
+      .outerRadius(radius)      // Outer radius of the pie
+    )
+    .attr('fill', d => color(d.data.category)) // Fill color based on category
+    .attr("stroke", "white")
+    .style("stroke-width", "2px")
+    .style("opacity", 0.7);
+
+  // Create a tooltip div and make it invisible by default
+  const tooltip = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("position", "absolute")
+    .style("visibility", "hidden")
+    .style("background-color", "rgba(0, 0, 0, 0.7)")
+    .style("color", "#fff")
+    .style("padding", "6px 10px")
+    .style("border-radius", "4px")
+    .style("font-size", "12px");
+
+  // Add interaction: Show tooltip on hover
+  slices.on("mouseover", function(event, d) {
+    tooltip.style("visibility", "visible")
+      .html(`${d.data.category}: ${d.data.value} cards`);
+  })
+  .on("mousemove", function(event) {
+    tooltip.style("top", (event.pageY + 5) + "px")
+      .style("left", (event.pageX + 5) + "px");
+  })
+  .on("mouseout", function() {
+    tooltip.style("visibility", "hidden");
+  });
+
+  // Calculate the total number of cards for the center label
+  const totalCards = +player.yellow_cards + +player.red_cards;
+
+  // Add a label in the center to show the total number of cards with more detailed information
+  g.append("text")
+    .attr("text-anchor", "middle")
+    .attr("dominant-baseline", "central")
+    .attr("font-size", "14px")  // Smaller font for "Total Number of Cards"
+    .attr("fill", "#000")    // Color for the smaller text (you can change this)
+    .attr("dy", "-30px")
+    .text("Total Number of Cards");
+
+  // Add the larger number for total cards
+  g.append("text")
+    .attr("text-anchor", "middle")
+    .attr("dominant-baseline", "central")
+    .attr("font-size", "24px")  // Larger font for the total number
+    .attr("fill", "#000")    // Color for the larger text (you can change this)
+    .text(totalCards);
+}
+
+
+
+function drawGoalsAndAssistsChart(player) {
+  const svg = d3.select("#goalsChart");
+  const data = [
+    { category: "Goals", value: +player.goals },
+    { category: "Assists", value: +player.assists }
+  ];
+
+  const width = +svg.attr("width");
+  const height = +svg.attr("height");
+  const margin = { top: 20, right: 30, bottom: 40, left: 60 };
+
+  const x = d3.scaleBand()
+    .domain(data.map(d => d.category))
+    .range([margin.left, width - margin.right])
+    .padding(0.4);
+
+  const y = d3.scaleLinear()
+    .domain([0, d3.max(data, d => d.value) || 1])
+    .nice()
+    .range([height - margin.bottom, margin.top]);
+
+  const color = d3.scaleOrdinal()
+    .domain(data.map(d => d.category))
+    .range(["#4CAF50", "#2196F3", "#FFC107"]);
+
+  svg.selectAll("*").remove();
+
+  svg.append("g")
+    .selectAll("rect")
+    .data(data)
+    .join("rect")
+    .attr("x", d => x(d.category))
+    .attr("y", d => y(d.value))
+    .attr("height", d => y(0) - y(d.value))
+    .attr("width", x.bandwidth())
+    .attr("fill", d => color(d.category));
+
+  svg.append("g")
+    .attr("transform", `translate(0,${height - margin.bottom})`)
+    .call(d3.axisBottom(x));
+
+  svg.append("g")
+    .attr("transform", `translate(${margin.left},0)`)
+    .call(d3.axisLeft(y));
+}
+
   
-  
+function renderFieldPositions(playerId) {
+  d3.csv('../../processed_data/position_count.csv').then(function(data) {
+
+    // 2. Set up the pitch configuration using d3_soccer.pitch
+    const pitch = d3Soccer.pitch()
+      .height(300)                // Set the height of the SVG element (in pixels)
+      .showDirOfPlay(false)       // Do not show the direction of play
+      .shadeMiddleThird(false)    // Do not shade the middle third of the field
+      .showDirOfPlay(true)
+      .pitchStrokeWidth(.5)       // Set the width of the pitch lines
+      .goals("line")              // Use a line style for the goals
+
+    // 3. Create the SVG element for the pitch
+    const svg = d3.select("#halfField")
+      .attr("width", 500)   // Set the width of the field to 400px
+      .attr("height", 300)  // Set the height of the field to 300px
+      .call(pitch);         // Draw the pitch on the SVG
+
+    // 4. Filter data for the playerId
+    var playerData = data.filter(player => player.player_id == playerId);
+
+    // If no data is found for the playerId, return early
+    if (playerData.length === 0) {
+      console.log('No data found for player with id ' + playerId);
+      return;
+    }
+
+    // 5. Define position coordinates relative to the pitch size
+    const positionCoords = {
+      "Goalkeeper": [40, 150],                            // [62.5, 50]
+      "Right-Back": [90, 260],                          // [150, 100]
+      "Centre-Back": [100, 150],                         // [250, 120]
+      "Left-Back": [90, 40],                            // [100, 130]
+      "Defensive Midfield": [180, 150],                  // [225, 150]
+      "Central Midfield": [240, 150],                    // [250, 200]
+      "Attacking Midfield": [280, 150],                  // [312.5, 180]
+      "Right Midfield": [240, 260],                      // [350, 100]
+      "Left Midfield": [240, 40],                       // [150, 200]
+      "Right Winger": [120, 260],                        // [400, 120]
+      "Left Winger": [120, 40],                         // [100, 200]
+      "Centre-Forward": [390, 150],                      // [375, 200]
+      "Second Striker": [350, 150]                       // [312.5, 240]
+    };
+    
+    
+
+
+    // 6. Process the dataset for the selected player
+    playerData.forEach(function(player) {
+      // Loop through each position in the player's row
+      for (let position in player) {
+        if (position !== "player_id" && position !== "player_name" && player[position] > 0) {
+          const matches = +player[position]; // Get number of matches played
+          const [x, y] = positionCoords[position];
+
+          // Scale the x coordinate to fit the half field (left side)
+          const scaledX = x;
+
+          // Calculate circle radius based on matches played
+          const radius = Math.sqrt(matches) * 2;
+
+          // Draw the circle for the position
+          svg.append("circle")
+            .attr("cx", scaledX)
+            .attr("cy", y)
+            .attr("r", radius)
+            .attr("class", "circle")
+            .style("fill", "blue")
+            .style("opacity", 0.6);
+
+          // Add label (position name and match count)
+          svg.append("text")
+            .attr("x", scaledX)
+            .attr("y", y - radius - 5)
+            .text(`${position} (${matches})`)
+            .attr("text-anchor", "middle")
+            .style("font-size", "10px")
+            .style("fill", "black");
+        }
+      }
+    });
+
+  }).catch(function(error) {
+    console.error('Error loading the CSV data: ', error);
+  });
+}
+
+
+
   
   
 
-  function renderMarketValueChart(playerValuations) {
+function renderMarketValueChart(playerValuations) {
     // Map the player valuations to get the date and market value (in million EUR)
     const marketValues = playerValuations.map(valuation => ({
         date: new Date(valuation.date),  // Ensure the date is in JavaScript Date object format
@@ -259,8 +492,8 @@ fetch('../../data/players.csv')
         .style("opacity", 0)
         .style("background-color", "rgba(0, 0, 0, 0.7)")
         .style("color", "#fff")
-        .style("padding", "5px")
-        .style("border-radius", "5px")
+        .style("padding", "6px 10px")
+        .style("border-radius", "4px")
         .style("font-size", "12px");
 
     svg.selectAll(".dot")
@@ -380,8 +613,8 @@ function renderTimeline(playerId) {
           tooltip.transition().duration(200).style("opacity", 1);
           tooltip.html(`
             <strong>${d.club}</strong><br>
-            From: ${d3.timeFormat("%Y-%m-%d")(d.start)}<br>
-            To: ${d3.timeFormat("%Y-%m-%d")(d.end)}
+            From: ${d3.timeFormat("%d-%m-%Y")(d.start)}<br>
+            To: ${d3.timeFormat("%d-%m-%Y")(d.end)}
           `)
           .style("left", (event.pageX + 10) + "px")
           .style("top", (event.pageY - 28) + "px");

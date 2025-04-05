@@ -23,7 +23,7 @@
 
   <!-- Player Profile Section -->
   <main class="player-profile">
-    <div id="player-details" class="player-details">
+    <div id="player-details" class="player-details chart-section">
       <div id="player-info" class="player-info"></div>
       <!-- Player info will be dynamically inserted here -->
       <div id="player-map" style="width: 400px; height: 300px;"></div>
@@ -31,8 +31,12 @@
 
     <div id="performance" class="chart-section">
       <h2>Performance Overview</h2>
-      <svg id="goalsChart" width="800" height="400"></svg>
-      <svg id="goalsChart" width="800" height="400"></svg>
+      <div class="performance-charts">
+        <svg id="goalsChart" width="400" height="400"></svg>
+        <svg id="cardsChart" width="400" height="400"></svg>
+      </div>
+      <svg id="halfField" width="400" height="400">
+      </svg>
     </div>
 
     <!-- Player Transfer History Sankey Diagram -->
@@ -60,6 +64,6 @@
   
 
   <!-- Your custom JS logic -->
-  <script src="/Home/static/scripts/playerInfo.js"></script> 
+  <script src="/Home/static/scripts/playerInfo.js" type="module"></script> 
 </body>
 </html>
