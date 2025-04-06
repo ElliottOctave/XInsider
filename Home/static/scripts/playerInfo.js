@@ -630,28 +630,28 @@ function renderTimeline(playerId) {
 
 function renderPlayerStatsCarousel(playerId) {
   d3.csv("../../data/player_stats.csv").then(data => {
-    const playerStats = data
-      .filter(d => d.player_id === playerId)
-      .map(d => ({
-        ...d,
-        year: +d.year,
-        nr_of_goals: +d.nr_of_goals,
-        assists: +d.assists,
-        yellow_cards: +d.yellow_cards,
-        red_cards: +d.red_cards
-      }))
-      .sort((a, b) => a.year - b.year); // sort years ascending
+    const playerStats = data.filter(d => d.player_id === playerId);
 
     if (playerStats.length === 0) {
       console.warn("No stats found for this player.");
       return;
     }
 
+    playerStats.forEach(d => {
+      d.year = +d.year;
+      d.nr_of_goals = +d.nr_of_goals;
+      d.assists = +d.assists;
+      d.yellow_cards = +d.yellow_cards;
+      d.red_cards = +d.red_cards;
+    });
+
+    playerStats.sort((a, b) => a.year - b.year); // sort years ascending
+
     const playerName = playerStats[0].player_name;
     const container = d3.select("#carouselChart");
-    const width = 600;
-    const height = 350;
-    const margin = { top: 40, right: 30, bottom: 50, left: 60 };
+    const width = 650;
+    const height = 380;
+    const margin = { top: 60, right: 150, bottom: 50, left: 60 };
 
     container.selectAll("*").remove();
 
@@ -681,98 +681,114 @@ function renderPlayerStatsCarousel(playerId) {
       .style("border-radius", "4px")
       .style("font-size", "12px");
 
-    svg.append("g")
-      .attr("transform", `translate(0, ${height - margin.bottom})`)
-      .attr("class", "x-axis");
+    svg.append("g").attr("class", "x-axis")
+      .attr("transform", `translate(0, ${height - margin.bottom})`);
 
-    svg.append("g")
-      .attr("transform", `translate(${margin.left}, 0)`)
-      .attr("class", "y-axis");
+    svg.append("g").attr("class", "y-axis")
+      .attr("transform", `translate(${margin.left}, 0)`);
+
+    // Legend
+    const legend = svg.append("g")
+      .attr("class", "legend")
+      .attr("transform", `translate(${width - margin.right + 10}, ${margin.top})`);
 
     function drawStackedChart(mode) {
-      const keys = mode === "goals_assists" ? ["nr_of_goals", "assists"] : ["yellow_cards", "red_cards"];
-      const title = mode === "goals_assists"
-        ? `${playerName} – Goals & Assists per Year`
-        : `${playerName} – Yellow & Red Cards per Year`;
+      svg.selectAll(".bar-group").remove();
+      svg.selectAll(".chart-title").remove();
+      legend.selectAll("*").remove();
+
+      let keys, title;
+      if (mode === "goals_assists") {
+        keys = ["nr_of_goals", "assists"];
+        title = `${playerName} – Goals & Assists per Year`;
+      } else {
+        keys = ["yellow_cards", "red_cards"];
+        title = `${playerName} – Yellow & Red Cards per Year`;
+      }
 
       const stack = d3.stack().keys(keys);
       const stackedData = stack(playerStats);
 
-      y.domain([0, d3.max(playerStats, d => keys.reduce((sum, key) => sum + d[key], 0))]).nice();
+      const maxY = d3.max(playerStats, d => keys.reduce((sum, key) => sum + d[key], 0));
+      y.domain([0, maxY]).nice();
 
       svg.select(".x-axis")
-        .transition()
-        .duration(500)
+        .transition().duration(500)
         .call(d3.axisBottom(x).tickFormat(d3.format("d")));
 
       svg.select(".y-axis")
-        .transition()
-        .duration(500)
-        .call(d3.axisLeft(y));
+        .transition().duration(500)
+        .call(d3.axisLeft(y).ticks(5).tickFormat(d3.format("d")));
 
-      // DATA JOIN
-      const groups = svg.selectAll(".bar-group")
-        .data(stackedData, d => d.key);
-
-      // EXIT old groups
-      groups.exit().remove();
-
-      // UPDATE + ENTER
-      const groupsEnter = groups.enter()
-        .append("g")
+      const barGroups = svg.selectAll(".bar-group")
+        .data(stackedData, d => d.key)
+        .join("g")
         .attr("class", "bar-group")
         .attr("fill", d => color(d.key));
 
-      const allGroups = groupsEnter.merge(groups);
-
-      const bars = allGroups.selectAll("rect")
+      const bars = barGroups.selectAll("rect")
         .data(d => d, d => d.data.year);
 
-      bars.enter()
-        .append("rect")
-        .attr("x", d => x(d.data.year))
-        .attr("width", x.bandwidth())
-        .attr("y", y(0))
-        .attr("height", 0)
-        .on("mouseover", function(event, d) {
-          const metric = this.parentNode.__data__.key;
-          tooltip.transition().duration(200).style("opacity", 1);
-          tooltip.html(`${metric.replace(/_/g, ' ')}: ${d.data[metric]}`)
-            .style("left", (event.pageX + 10) + "px")
-            .style("top", (event.pageY - 20) + "px");
-        })
-        .on("mousemove", event => {
-          tooltip.style("left", (event.pageX + 10) + "px")
-            .style("top", (event.pageY - 20) + "px");
-        })
-        .on("mouseout", () => {
-          tooltip.transition().duration(200).style("opacity", 0);
-        })
-        .merge(bars)
-        .transition()
-        .duration(800)
-        .attr("x", d => x(d.data.year))
-        .attr("width", x.bandwidth())
-        .attr("y", d => y(d[1]))
-        .attr("height", d => y(d[0]) - y(d[1]));
+      bars.join(
+        enter => enter.append("rect")
+          .attr("x", d => x(d.data.year))
+          .attr("width", x.bandwidth())
+          .attr("y", y(0))
+          .attr("height", 0)
+          .on("mouseover", function(event, d) {
+            const metric = this.parentNode.__data__.key;
+            tooltip.transition().duration(200).style("opacity", 1);
+            tooltip.html(`${metric.replace(/_/g, ' ')}: ${d.data[metric]}`)
+              .style("left", (event.pageX + 10) + "px")
+              .style("top", (event.pageY - 20) + "px");
+          })
+          .on("mousemove", event => {
+            tooltip.style("left", (event.pageX + 10) + "px")
+                   .style("top", (event.pageY - 20) + "px");
+          })
+          .on("mouseout", () => tooltip.transition().duration(200).style("opacity", 0))
+          .call(enter => enter.transition().duration(800)
+            .attr("y", d => y(d[1]))
+            .attr("height", d => y(d[0]) - y(d[1]))
+          ),
+        update => update.transition().duration(800)
+          .attr("x", d => x(d.data.year))
+          .attr("width", x.bandwidth())
+          .attr("y", d => y(d[1]))
+          .attr("height", d => y(d[0]) - y(d[1])),
+        exit => exit.remove()
+      );
 
-      bars.exit().transition().duration(300).attr("height", 0).remove();
-
-      // Update title
-      svg.selectAll(".chart-title").remove();
       svg.append("text")
         .attr("class", "chart-title")
         .attr("x", width / 2)
-        .attr("y", margin.top - 10)
+        .attr("y", margin.top - 25)
         .attr("text-anchor", "middle")
         .attr("font-size", "18px")
         .text(title);
+
+      // Legend
+      keys.forEach((key, i) => {
+        legend.append("rect")
+          .attr("x", 0)
+          .attr("y", i * 20)
+          .attr("width", 12)
+          .attr("height", 12)
+          .attr("fill", color(key));
+
+        legend.append("text")
+          .attr("x", 18)
+          .attr("y", i * 20 + 10)
+          .text(key.replace(/_/g, ' '))
+          .style("font-size", "12px")
+          .attr("alignment-baseline", "middle");
+      });
     }
 
     let currentChart = 0;
     const chartModes = ["goals_assists", "cards"];
-    drawStackedChart(chartModes[currentChart]);
 
+    drawStackedChart(chartModes[currentChart]);
     setInterval(() => {
       currentChart = (currentChart + 1) % chartModes.length;
       drawStackedChart(chartModes[currentChart]);

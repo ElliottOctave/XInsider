@@ -39,3 +39,12 @@
     margin-bottom: 5px;
     color: #333;
   }
+
+  #top-decisive-chart {
+    max-width: 700px;       /* Matches your red line area */
+    margin: 0 auto;         /* Center it */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
