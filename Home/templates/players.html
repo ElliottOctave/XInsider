@@ -25,7 +25,12 @@
   <main class="dashboard">
     <input type="text" id="player-search-bar" placeholder="Search for a player..." class="search-bar" />
     <div id="players-list"></div> <!-- Container for the player list -->
-    <div id="pagination" class="pagination"></div>
+        <!-- Pagination -->
+    <div class="pagination">
+      <button id="prevPage">&laquo; Prev</button>
+      <span id="pageInfo"></span>
+      <button id="nextPage">Next &raquo;</button>
+    </div>
   </main>
 
   <footer>
