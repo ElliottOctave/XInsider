@@ -41,7 +41,7 @@ fetch('../../processed_data/player_summary.csv')
       drawGoalsAndAssistsChart(player);
       drawCardsChart(player);
       renderFieldPositions(playerId);
-
+      renderPlayerStatsCarousel(playerId);
       renderTimeline(playerId);
 
       // Fetch market value history
@@ -626,4 +626,156 @@ function renderTimeline(playerId) {
     .catch(error => {
       console.error("Error fetching or parsing transfers_preprocessed.csv:", error);
     });
+}
+
+function renderPlayerStatsCarousel(playerId) {
+  d3.csv("../../data/player_stats.csv").then(data => {
+    const playerStats = data
+      .filter(d => d.player_id === playerId)
+      .map(d => ({
+        ...d,
+        year: +d.year,
+        nr_of_goals: +d.nr_of_goals,
+        assists: +d.assists,
+        yellow_cards: +d.yellow_cards,
+        red_cards: +d.red_cards
+      }))
+      .sort((a, b) => a.year - b.year); // sort years ascending
+
+    if (playerStats.length === 0) {
+      console.warn("No stats found for this player.");
+      return;
+    }
+
+    const playerName = playerStats[0].player_name;
+    const container = d3.select("#carouselChart");
+    const width = 600;
+    const height = 350;
+    const margin = { top: 40, right: 30, bottom: 50, left: 60 };
+
+    container.selectAll("*").remove();
+
+    const svg = container.append("svg")
+      .attr("width", width)
+      .attr("height", height);
+
+    const x = d3.scaleBand()
+      .domain(playerStats.map(d => d.year))
+      .range([margin.left, width - margin.right])
+      .padding(0.2);
+
+    const y = d3.scaleLinear()
+      .range([height - margin.bottom, margin.top]);
+
+    const color = d3.scaleOrdinal()
+      .domain(["nr_of_goals", "assists", "yellow_cards", "red_cards"])
+      .range(["#1f77b4", "#2ca02c", "#f1c40f", "#e74c3c"]);
+
+    const tooltip = d3.select("body").append("div")
+      .attr("class", "tooltip")
+      .style("position", "absolute")
+      .style("opacity", 0)
+      .style("background", "#333")
+      .style("color", "#fff")
+      .style("padding", "6px 10px")
+      .style("border-radius", "4px")
+      .style("font-size", "12px");
+
+    svg.append("g")
+      .attr("transform", `translate(0, ${height - margin.bottom})`)
+      .attr("class", "x-axis");
+
+    svg.append("g")
+      .attr("transform", `translate(${margin.left}, 0)`)
+      .attr("class", "y-axis");
+
+    function drawStackedChart(mode) {
+      const keys = mode === "goals_assists" ? ["nr_of_goals", "assists"] : ["yellow_cards", "red_cards"];
+      const title = mode === "goals_assists"
+        ? `${playerName} – Goals & Assists per Year`
+        : `${playerName} – Yellow & Red Cards per Year`;
+
+      const stack = d3.stack().keys(keys);
+      const stackedData = stack(playerStats);
+
+      y.domain([0, d3.max(playerStats, d => keys.reduce((sum, key) => sum + d[key], 0))]).nice();
+
+      svg.select(".x-axis")
+        .transition()
+        .duration(500)
+        .call(d3.axisBottom(x).tickFormat(d3.format("d")));
+
+      svg.select(".y-axis")
+        .transition()
+        .duration(500)
+        .call(d3.axisLeft(y));
+
+      // DATA JOIN
+      const groups = svg.selectAll(".bar-group")
+        .data(stackedData, d => d.key);
+
+      // EXIT old groups
+      groups.exit().remove();
+
+      // UPDATE + ENTER
+      const groupsEnter = groups.enter()
+        .append("g")
+        .attr("class", "bar-group")
+        .attr("fill", d => color(d.key));
+
+      const allGroups = groupsEnter.merge(groups);
+
+      const bars = allGroups.selectAll("rect")
+        .data(d => d, d => d.data.year);
+
+      bars.enter()
+        .append("rect")
+        .attr("x", d => x(d.data.year))
+        .attr("width", x.bandwidth())
+        .attr("y", y(0))
+        .attr("height", 0)
+        .on("mouseover", function(event, d) {
+          const metric = this.parentNode.__data__.key;
+          tooltip.transition().duration(200).style("opacity", 1);
+          tooltip.html(`${metric.replace(/_/g, ' ')}: ${d.data[metric]}`)
+            .style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY - 20) + "px");
+        })
+        .on("mousemove", event => {
+          tooltip.style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY - 20) + "px");
+        })
+        .on("mouseout", () => {
+          tooltip.transition().duration(200).style("opacity", 0);
+        })
+        .merge(bars)
+        .transition()
+        .duration(800)
+        .attr("x", d => x(d.data.year))
+        .attr("width", x.bandwidth())
+        .attr("y", d => y(d[1]))
+        .attr("height", d => y(d[0]) - y(d[1]));
+
+      bars.exit().transition().duration(300).attr("height", 0).remove();
+
+      // Update title
+      svg.selectAll(".chart-title").remove();
+      svg.append("text")
+        .attr("class", "chart-title")
+        .attr("x", width / 2)
+        .attr("y", margin.top - 10)
+        .attr("text-anchor", "middle")
+        .attr("font-size", "18px")
+        .text(title);
+    }
+
+    let currentChart = 0;
+    const chartModes = ["goals_assists", "cards"];
+    drawStackedChart(chartModes[currentChart]);
+
+    setInterval(() => {
+      currentChart = (currentChart + 1) % chartModes.length;
+      drawStackedChart(chartModes[currentChart]);
+    }, 4000);
+  });
 }
