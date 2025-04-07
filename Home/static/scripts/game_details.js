@@ -4,6 +4,8 @@ const gameId = urlParams.get("gameId");
 const lineupsCsvPath = "../../data/game_lineups.csv";
 const playersCsvPath = "../../data/players.csv";
 const clubsCsvPath = "../../data/clubs.csv";
+const gamesCsvPath = "../../data/games.csv";
+const logosCsvPath = "../../data/club_logos.csv";
 
 const svgWidth = 800;
 const svgHeight = 480;
@@ -58,39 +60,60 @@ svg.append("rect")
 svg.append("line")
   .attr("x1", svgWidth / 2).attr("y1", 0)
   .attr("x2", svgWidth / 2).attr("y2", svgHeight)
-  .attr("stroke", "#fff").attr("stroke-width", 2);
+  .attr("stroke", "#fff")
+  .attr("stroke-width", 2);
 
 svg.append("circle")
-  .attr("cx", svgWidth / 2).attr("cy", svgHeight / 2)
+  .attr("cx", svgWidth / 2)
+  .attr("cy", svgHeight / 2)
   .attr("r", 60)
-  .attr("stroke", "#fff").attr("stroke-width", 2).attr("fill", "none");
+  .attr("stroke", "#fff")
+  .attr("stroke-width", 2)
+  .attr("fill", "none");
 
 svg.append("rect")
-  .attr("x", 0).attr("y", svgHeight * 0.25)
-  .attr("width", 80).attr("height", svgHeight * 0.5)
-  .attr("stroke", "#fff").attr("stroke-width", 2).attr("fill", "none");
+  .attr("x", 0)
+  .attr("y", svgHeight * 0.25)
+  .attr("width", 80)
+  .attr("height", svgHeight * 0.5)
+  .attr("stroke", "#fff")
+  .attr("stroke-width", 2)
+  .attr("fill", "none");
 
 svg.append("rect")
-  .attr("x", svgWidth - 80).attr("y", svgHeight * 0.25)
-  .attr("width", 80).attr("height", svgHeight * 0.5)
-  .attr("stroke", "#fff").attr("stroke-width", 2).attr("fill", "none");
+  .attr("x", svgWidth - 80)
+  .attr("y", svgHeight * 0.25)
+  .attr("width", 80)
+  .attr("height", svgHeight * 0.5)
+  .attr("stroke", "#fff")
+  .attr("stroke-width", 2)
+  .attr("fill", "none");
 
 const leftLineupList = document.getElementById("left-lineup-list");
 const rightLineupList = document.getElementById("right-lineup-list");
-const leftTeamNameEl = document.getElementById("left-team-name");
-const rightTeamNameEl = document.getElementById("right-team-name");
+
+const leftLogoEl = document.getElementById("left-team-logo");
+const rightLogoEl = document.getElementById("right-team-logo");
+const leftTeamNameSpan = document.querySelector("#left-team-name span");
+const rightTeamNameSpan = document.querySelector("#right-team-name span");
+const leftFormationEl = document.getElementById("left-team-formation");
+const rightFormationEl = document.getElementById("right-team-formation");
+const leftManagerEl = document.getElementById("left-team-manager");
+const rightManagerEl = document.getElementById("right-team-manager");
 
 Promise.all([
   fetch(lineupsCsvPath).then(res => res.text()),
   fetch(playersCsvPath).then(res => res.text()),
-  fetch(clubsCsvPath).then(res => res.text())
+  fetch(clubsCsvPath).then(res => res.text()),
+  fetch(gamesCsvPath).then(res => res.text()),
+  fetch(logosCsvPath).then(res => res.text())
 ])
-.then(([lineupsCsv, playersCsv, clubsCsv]) => {
+.then(([lineupsCsv, playersCsv, clubsCsv, gamesCsv, logosCsv]) => {
   const parseCsv = (csvText) => {
-    const rows = csvText.trim().split('\n');
-    const headers = rows[0].split(',');
+    const rows = csvText.trim().split("\n");
+    const headers = rows[0].split(",");
     return rows.slice(1).map(row => {
-      const values = row.split(',');
+      const values = row.split(",");
       const obj = {};
       headers.forEach((header, i) => {
         obj[header.trim()] = values[i]?.trim();
@@ -102,31 +125,50 @@ Promise.all([
   const allLineups = parseCsv(lineupsCsv);
   const allPlayers = parseCsv(playersCsv);
   const allClubs = parseCsv(clubsCsv);
+  const allGames = parseCsv(gamesCsv);
+  const allLogos = parseCsv(logosCsv);
 
-  const gameLineup = allLineups.filter(
-    p => p.game_id === gameId && p.type === "starting_lineup"
-  );
+  const thisGame = allGames.find(g => g.game_id === gameId);
+  const homeClub = thisGame?.home_club_id;
+  const awayClub = thisGame?.away_club_id;
+  const homeManager = thisGame?.home_club_manager_name;
+  const awayManager = thisGame?.away_club_manager_name;
 
-  if (gameLineup.length === 0) {
-    console.warn("No starting lineup found for gameId:", gameId);
-    return;
-  }
-
-  const leftClub = gameLineup[0].club_id;
-  const rightClub = gameLineup.find(p => p.club_id !== leftClub)?.club_id;
+  const leftClub = homeClub;
+  const rightClub = awayClub;
 
   const clubMap = new Map();
   allClubs.forEach(c => clubMap.set(c.club_id, c.name));
 
-  leftTeamNameEl.textContent = clubMap.get(leftClub) || "Left Team";
-  rightTeamNameEl.textContent = clubMap.get(rightClub) || "Right Team";
+  const logoMap = new Map();
+  allLogos.forEach(l => logoMap.set(l.club_id, l.logo_url));
 
-  const positionOrder = {
-    "Goalkeeper": 1,
-    "Centre-Back": 2, "Left-Back": 2, "Right-Back": 2,
-    "Defensive Midfield": 3, "Central Midfield": 3, "Attacking Midfield": 3,
-    "Left Winger": 4, "Right Winger": 4, "Centre-Forward": 4
-  };
+  const leftClubName = clubMap.get(leftClub) || "Home Team";
+  const rightClubName = clubMap.get(rightClub) || "Away Team";
+
+  leftTeamNameSpan.textContent = leftClubName;
+  rightTeamNameSpan.textContent = rightClubName;
+
+  leftLogoEl.src = logoMap.get(leftClub);
+  rightLogoEl.src = logoMap.get(rightClub);
+  leftLogoEl.alt = leftClubName;
+  rightLogoEl.alt = rightClubName;
+
+  leftManagerEl.textContent = homeManager;
+  rightManagerEl.textContent = awayManager;
+
+  leftFormationEl.textContent = "4-3-3";
+  rightFormationEl.textContent = "4-3-3";
+
+  const orderedPositions = [
+    "Goalkeeper", "Right-Back", "Centre-Back", "Left-Back",
+    "Defensive Midfield", "Central Midfield", "Attacking Midfield",
+    "Right Winger", "Left Winger", "Centre-Forward"
+  ];
+
+  const gameLineup = allLineups.filter(
+    p => p.game_id === gameId && p.type === "starting_lineup"
+  );
 
   const leftTeam = [];
   const rightTeam = [];
@@ -162,29 +204,47 @@ Promise.all([
       .attr("alt", fullPlayer.name)
       .attr("title", fullPlayer.name)
       .attr("class", "player-img")
+      .attr("data-player-id", player.player_id)
       .style("left", `${absX}px`)
       .style("top", `${absY}px`);
 
     const playerInfo = {
+      id: player.player_id,
       name: fullPlayer.name,
-      position: player.position,
-      order: positionOrder[player.position] || 5
+      position: player.position
     };
 
-    if (isLeft) {
-      leftTeam.push(playerInfo);
-    } else {
-      rightTeam.push(playerInfo);
-    }
+    (isLeft ? leftTeam : rightTeam).push(playerInfo);
   });
 
   [leftTeam, rightTeam].forEach((team, i) => {
-    team.sort((a, b) => a.order - b.order);
+    team.sort((a, b) => {
+      const indexA = orderedPositions.indexOf(a.position);
+      const indexB = orderedPositions.indexOf(b.position);
+      return indexA - indexB;
+    });
+
     const list = i === 0 ? leftLineupList : rightLineupList;
+
     team.forEach(p => {
       const li = document.createElement("li");
       li.textContent = p.name;
+      li.setAttribute("data-player-id", p.id);
       list.appendChild(li);
+    });
+  });
+
+  // 🔥 Hover effect: highlight pitch player
+  document.querySelectorAll("li[data-player-id]").forEach(li => {
+    li.addEventListener("mouseenter", () => {
+      const id = li.getAttribute("data-player-id");
+      const img = document.querySelector(`.player-img[data-player-id="${id}"]`);
+      if (img) img.classList.add("highlighted");
+    });
+    li.addEventListener("mouseleave", () => {
+      const id = li.getAttribute("data-player-id");
+      const img = document.querySelector(`.player-img[data-player-id="${id}"]`);
+      if (img) img.classList.remove("highlighted");
     });
   });
 })

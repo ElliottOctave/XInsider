@@ -12,14 +12,28 @@
 
   <main class="pitch-container">
     <div class="lineup-table left-lineup">
-      <h3 id="left-team-name">Left Team</h3>
+      <div class="team-panel">
+        <h3 id="left-team-name">
+          <img id="left-team-logo" class="team-logo" />
+          <span></span>
+        </h3>
+        <div id="left-team-manager" class="team-manager"></div>
+        <div id="left-team-formation" class="team-formation">4-3-3</div>
+      </div>
       <ul id="left-lineup-list"></ul>
     </div>
 
     <div id="pitch"></div>
 
     <div class="lineup-table right-lineup">
-      <h3 id="right-team-name">Right Team</h3>
+      <div class="team-panel">
+        <h3 id="right-team-name">
+          <img id="right-team-logo" class="team-logo" />
+          <span></span>
+        </h3>
+        <div id="right-team-manager" class="team-manager"></div>
+        <div id="right-team-formation" class="team-formation">4-3-3</div>
+      </div>
       <ul id="right-lineup-list"></ul>
     </div>
   </main>
