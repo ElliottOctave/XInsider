@@ -4,23 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Players - Football Dashboard</title>
-  <link rel="stylesheet" href="/Home/static/styles/home.css" />
   <link rel="stylesheet" href="/Home/static/styles/chart.css" />
   <link rel="stylesheet" href="/Home/static/styles/player_list.css" />
+  <link rel="stylesheet" href="/Home/static/styles/XInsider.css" />
+
 </head>
 <body>
   <!-- Navbar -->
-  <nav class="navbar">
-    <a href="/Home/templates/home.html" class="logo">
-      <img src="/ressources/XInsider2.png" alt="Football Dashboard Logo" style="height: 60px;" />
-    </a>
-    <ul class="nav-links">
-      <li><a href="/Home/templates/players.html">Players</a></li>
-      <li><a href="#clubs">Clubs</a></li>
-      <li><a href="games.html">Games</a></li>
-    </ul>
-    <input type="text" id="search-bar" placeholder="Search players, teams..." />
-  </nav>
+  <div id="navbar-container"></div>
 
   <main class="dashboard">
     <input type="text" id="player-search-bar" placeholder="Search for a player..." class="search-bar" />
@@ -40,5 +31,7 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/papaparse/5.3.0/papaparse.min.js"></script> <!-- PapaParse library -->
   <script src="/Home/static/scripts/playerList.js"></script>
+  <script src="/Home/static/scripts/navbar.js"></script>
+  <script src="/Home/static/scripts/navbarSearch.js"></script>
 </body>
 </html>

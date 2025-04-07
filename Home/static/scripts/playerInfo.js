@@ -39,13 +39,13 @@ fetch('../../processed_data/player_summary.csv')
       
             // Example transfer data
       const transfers = [
-        { origin: "United States", destination: "Germany" },
-        { origin: "Brazil", destination: "Spain" },
-        { origin: "Australia", destination: "Japan" }
+        { origin: "Germany", destination: "Germany" },
+        { origin: "Germany", destination: "Spain" },
+        { origin: "Spain", destination: "Japan" }
       ];
 
       // Call the function to start the world tour animation with transfers
-      renderTransfersWorldTour(transfers);
+      renderTransfersWorldTour(playerId);
       renderMap(player);
       drawGoalsAndAssistsChart(player);
       drawCardsChart(player);
@@ -723,74 +723,92 @@ class Versor {
   }
 }
 
-async function renderTransfersWorldTour(transfers) {
-  const width = 800;
-  const height = Math.min(width, 720);
+async function renderTransfersWorldTour(playerId) {
+  const width = 400;
+  const height = Math.min(width, 400);
 
   const world = await d3.json("https://unpkg.com/world-atlas@2/countries-110m.json");
   const countries = topojson.feature(world, world.objects.countries).features;
   const borders = topojson.mesh(world, world.objects.countries, (a, b) => a !== b);
   const land = topojson.feature(world, world.objects.land);
 
-  const svg = d3.select("#transfer-map")
-    .attr("width", width)
-    .attr("height", height);
+  const canvas = document.getElementById("transfer-map");
+  const context = canvas.getContext("2d");
+
+  // Set canvas dimensions
+  canvas.width = width;
+  canvas.height = height;
 
   // Create a projection and path generator
   const projection = d3.geoOrthographic()
-    .fitSize([width, height], topojson.feature(world, world.objects.land));
+    .scale(width / 2) // Adjust scale
+    .translate([width / 2, height / 2]) // Center the projection
+    .rotate([0, 0]); // No initial rotation
 
-  const path = d3.geoPath().projection(projection);
+  const path = d3.geoPath().projection(projection).context(context);
 
   const tilt = 20;
 
+  // Clear canvas before rendering new paths
+  function clearCanvas() {
+    context.clearRect(0, 0, width, height);
+  }
+
+  // Function to render the map and arcs
   function render(country, arc) {
-    svg.selectAll("*").remove();  // Clear the SVG for every new render
+    clearCanvas();
 
-    // Land background
-    svg.append("g").selectAll("path")
-      .data([land])
-      .enter().append("path")
-      .attr("d", path)
-      .attr("fill", "#ccc");
+    // Draw Land
+    context.beginPath();
+    path(land);
+    context.fillStyle = "#ccc";
+    context.fill();
 
-    // Country highlight
-    svg.append("g").selectAll("path")
-      .data([country])
-      .enter().append("path")
-      .attr("d", path)
-      .attr("fill", "#f00");
+    // Draw Country
+    context.beginPath();
+    path(country);
+    context.fillStyle = "#f00";
+    context.fill();
 
-    // Borders
-    svg.append("g").selectAll("path")
-      .data([borders])
-      .enter().append("path")
-      .attr("d", path)
-      .attr("stroke", "#fff")
-      .attr("stroke-width", 0.5);
+    // Draw Borders
+    context.beginPath();
+    path(borders);
+    context.strokeStyle = "#fff";
+    context.lineWidth = 0.5;
+    context.stroke();
 
-    // Earth outline
-    svg.append("g").selectAll("path")
-      .data([{ type: "Sphere" }])
-      .enter().append("path")
-      .attr("d", path)
-      .attr("stroke", "#000")
-      .attr("stroke-width", 1.5);
+    // Draw Earth Outline
+    context.beginPath();
+    path({ type: "Sphere" });
+    context.strokeStyle = "#000";
+    context.lineWidth = 1.5;
+    context.stroke();
 
-    // Arc path
-    svg.append("g").selectAll("path")
-      .data([arc])
-      .enter().append("path")
-      .attr("d", path)
-      .attr("stroke", "#00f")
-      .attr("stroke-width", 2);
+    // Draw Arc Path
+    context.beginPath();
+    path(arc);
+    context.strokeStyle = "#00f";
+    context.lineWidth = 2;
+    context.stroke();
+  }
+
+  // Function to load CSV data
+  async function loadCSV(file) {
+    const response = await fetch(file);
+    const data = await response.text();
+    const parsedData = d3.csvParse(data);
+    return parsedData;
   }
 
   let p1, p2 = [0, 0], r1, r2 = [0, 0, 0];
+  const transfers = await loadCSV('../../processed_data/transfers_preprocessed.csv');
+  // Filter transfers for the given playerId
+  const playerTransfers = transfers.filter(transfer => transfer.player_id === playerId);
 
-  for (const transfer of transfers) {
-    const originCountry = transfer.origin;
-    const destinationCountry = transfer.destination;
+
+  for (const transfer of playerTransfers) {
+    const originCountry = transfer.from_country_name;
+    const destinationCountry = transfer.to_country_name;
 
     const origin = countries.find(c => c.properties.name === originCountry);
     const destination = countries.find(c => c.properties.name === destinationCountry);
@@ -799,14 +817,15 @@ async function renderTransfersWorldTour(transfers) {
       const originCentroid = d3.geoCentroid(origin);
       const destinationCentroid = d3.geoCentroid(destination);
 
-      p1 = p2;
+      // Interpolation between centroids
+      p1 = originCentroid;
       p2 = destinationCentroid;
-      r1 = r2;
-      r2 = [-destinationCentroid[0], tilt - destinationCentroid[1], 0];
 
+      // Create smooth interpolation for the path
       const ip = d3.geoInterpolate(p1, p2);
-      const iv = Versor.interpolateAngles(r1, r2);
+      const iv = Versor.interpolateAngles([-originCentroid[0], tilt - originCentroid[1], 0], [-destinationCentroid[0], tilt - destinationCentroid[1], 0]);
 
+      // Transition to draw arcs smoothly
       await d3.transition()
         .duration(1250)
         .tween("render", () => t => {
@@ -821,6 +840,11 @@ async function renderTransfersWorldTour(transfers) {
     }
   }
 }
+
+
+
+
+   
 
 
 
