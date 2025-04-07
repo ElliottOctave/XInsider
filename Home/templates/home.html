@@ -9,17 +9,7 @@
 </head>
 <body>
   <!-- Navbar -->
-  <nav class="navbar">
-    <a href="/Home/templates/home.html" class="logo">
-      <img src="/ressources/XInsider2.png" alt="Football Dashboard Logo" style="height: 60px;" />
-    </a>
-    <ul class="nav-links">
-      <li><a href="/Home/templates/players.html">Players</a></li>
-      <li><a href="#clubs">Clubs</a></li>
-      <li><a href="games.html">Games</a></li>
-    </ul>
-    <input type="text" id="search-bar" placeholder="Search players, teams..." />
-  </nav>
+  <div id="navbar-container"></div>
 
   <!-- Main content -->
   <main class="dashboard">
@@ -61,10 +51,6 @@
   </footer>
 
   <!-- Scripts -->
-  <script src="/node_modules/d3/dist/d3.min.js"></script>
-  <script src="/Home/static/scripts/playerChart.js"></script>
-  <script src="/Home/static/scripts/topFifteen.js"></script>
-
   <script>
     // Wait for DOM to load before rendering
     window.addEventListener("DOMContentLoaded", function () {
@@ -85,5 +71,11 @@
       endInput.addEventListener("input", updateChart);
     });
   </script>
+  <script src="/node_modules/d3/dist/d3.min.js"></script>
+  <script src="/Home/static/scripts/playerChart.js"></script>
+  <script src="/Home/static/scripts/topFifteen.js"></script>
+
+  <script src="/Home/static/scripts/navbar.js"></script>
+  <script src="/Home/static/scripts/navbarSearch.js"></script>
 </body>
 </html>

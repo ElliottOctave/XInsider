@@ -1,5 +1,4 @@
 const summaryUrl = "../../data/player_summary.csv"; // Adjust path if needed
-//const summaryUrl = "../../../data/player_summary.csv"; // Adjust path if needed
 
 const categories = [];
 
