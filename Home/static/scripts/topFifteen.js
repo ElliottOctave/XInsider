@@ -1,4 +1,4 @@
-const summaryUrl = "../../../data/player_summary.csv"; // Adjust path if needed
+const summaryUrl = "../../data/player_summary.csv"; // Adjust path if needed
 const categories = [];
 
 d3.csv(summaryUrl).then(data => {
