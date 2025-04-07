@@ -4,54 +4,31 @@ const gameId = urlParams.get("gameId");
 const lineupsCsvPath = "../../data/game_lineups.csv";
 const playersCsvPath = "../../data/players.csv";
 
+const svgWidth = 800;
+const svgHeight = 480;
+
 const positionCoordinates = {
-  // LEFT TEAM
-  "Goalkeeper_left": { x: 10, y: 50 },
-  "Left-Back_left": { x: 25, y: 20 },
-  "Right-Back_left": { x: 25, y: 80 },
-  "Centre-Back_left": [
-    { x: 20, y: 40 },
-    { x: 20, y: 60 }
-  ],
-  "Defensive Midfield_left": [
-    { x: 27, y: 50 },
-    { x: 30, y: 60 }
-  ],
-  "Central Midfield_left": [
-    { x: 33, y: 35 },
-    { x: 33, y: 65 }
-  ],
-  "Attacking Midfield_left": [
-    { x: 33, y: 65 },
-    { x: 33, y: 35 }
-  ],
+  "Goalkeeper_left": { x: 5, y: 50 },
+  "Left-Back_left": { x: 20, y: 20 },
+  "Right-Back_left": { x: 20, y: 80 },
+  "Centre-Back_left": [{ x: 15, y: 40 }, { x: 15, y: 60 }],
+  "Defensive Midfield_left": [{ x: 27, y: 50 }, { x: 30, y: 60 }],
+  "Central Midfield_left": [{ x: 33, y: 35 }, { x: 33, y: 65 }],
+  "Attacking Midfield_left": [{ x: 36, y: 65 }, { x: 36, y: 35 }],
   "Left Winger_left": { x: 40, y: 20 },
   "Right Winger_left": { x: 40, y: 80 },
-  "Centre-Forward_left": { x: 40, y: 50 },
+  "Centre-Forward_left": { x: 45, y: 50 },
 
-  // RIGHT TEAM (mirrored)
-  "Goalkeeper_right": { x: 90, y: 50 },
-  "Left-Back_right": { x: 75, y: 80 },
-  "Right-Back_right": { x: 75, y: 20 },
-  "Centre-Back_right": [
-    { x: 80, y: 60 },
-    { x: 80, y: 40 }
-  ],
-  "Defensive Midfield_right": [
-    { x: 73, y: 50 },
-    { x: 70, y: 40 }
-  ],
-  "Central Midfield_right": [
-    { x: 67, y: 65 },
-    { x: 67, y: 35 }
-  ],
-  "Attacking Midfield_right": [
-    { x: 67, y: 35 },
-    { x: 67, y: 65 }
-  ],
+  "Goalkeeper_right": { x: 95, y: 50 },
+  "Left-Back_right": { x: 80, y: 80 },
+  "Right-Back_right": { x: 80, y: 20 },
+  "Centre-Back_right": [{ x: 85, y: 60 }, { x: 85, y: 40 }],
+  "Defensive Midfield_right": [{ x: 73, y: 50 }, { x: 70, y: 40 }],
+  "Central Midfield_right": [{ x: 67, y: 65 }, { x: 67, y: 35 }],
+  "Attacking Midfield_right": [{ x: 64, y: 35 }, { x: 64, y: 65 }],
   "Left Winger_right": { x: 60, y: 80 },
   "Right Winger_right": { x: 60, y: 20 },
-  "Centre-Forward_right": { x: 60, y: 50 }
+  "Centre-Forward_right": { x: 55, y: 50 }
 };
 
 let positionCounts = {
@@ -60,9 +37,48 @@ let positionCounts = {
   "Defensive Midfield_left": 0,
   "Defensive Midfield_right": 0,
   "Central Midfield_left": 0,
-  "Central Midfield_right": 0
+  "Central Midfield_right": 0,
+  "Attacking Midfield_left": 0,
+  "Attacking Midfield_right": 0
 };
 
+const svg = d3.select("#pitch")
+  .append("svg")
+  .attr("viewBox", `0 0 ${svgWidth} ${svgHeight}`)
+  .attr("preserveAspectRatio", "xMidYMid meet");
+
+// Draw pitch
+svg.append("rect")
+  .attr("x", 0).attr("y", 0)
+  .attr("width", svgWidth)
+  .attr("height", svgHeight)
+  .attr("fill", "#0b6623")
+  .attr("rx", 15);
+
+// Midline
+svg.append("line")
+  .attr("x1", svgWidth / 2).attr("y1", 0)
+  .attr("x2", svgWidth / 2).attr("y2", svgHeight)
+  .attr("stroke", "#fff").attr("stroke-width", 2);
+
+// Center circle
+svg.append("circle")
+  .attr("cx", svgWidth / 2).attr("cy", svgHeight / 2)
+  .attr("r", 60)
+  .attr("stroke", "#fff").attr("stroke-width", 2).attr("fill", "none");
+
+// Penalty boxes (left and right)
+svg.append("rect")
+  .attr("x", 0).attr("y", svgHeight * 0.25)
+  .attr("width", 80).attr("height", svgHeight * 0.5)
+  .attr("stroke", "#fff").attr("stroke-width", 2).attr("fill", "none");
+
+svg.append("rect")
+  .attr("x", svgWidth - 80).attr("y", svgHeight * 0.25)
+  .attr("width", 80).attr("height", svgHeight * 0.5)
+  .attr("stroke", "#fff").attr("stroke-width", 2).attr("fill", "none");
+
+// Load player data
 Promise.all([
   fetch(lineupsCsvPath).then(res => res.text()),
   fetch(playersCsvPath).then(res => res.text())
@@ -96,8 +112,6 @@ Promise.all([
     const leftClub = gameLineup[0].club_id;
     const rightClub = gameLineup.find(p => p.club_id !== leftClub)?.club_id;
 
-    const overlay = document.getElementById("pitch-overlay");
-
     gameLineup.forEach(player => {
       const fullPlayer = allPlayers.find(p => p.player_id === player.player_id);
       if (!fullPlayer || !fullPlayer.image_url) return;
@@ -122,15 +136,17 @@ Promise.all([
         y = pos.y;
       }
 
-      const img = document.createElement("img");
-      img.className = "player-img";
-      img.src = fullPlayer.image_url;
-      img.alt = fullPlayer.name;
-      img.title = fullPlayer.name;
-      img.style.left = `${x}%`;
-      img.style.top = `${y}%`;
+      const absX = (x / 100) * svgWidth;
+      const absY = (y / 100) * svgHeight;
 
-      overlay.appendChild(img);
+      d3.select("#pitch")
+        .append("img")
+        .attr("src", fullPlayer.image_url)
+        .attr("alt", fullPlayer.name)
+        .attr("title", fullPlayer.name)
+        .attr("class", "player-img")
+        .style("left", `${absX}px`)
+        .style("top", `${absY}px`);
     });
   })
   .catch(err => {
