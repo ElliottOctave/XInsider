@@ -316,89 +316,119 @@ function drawGoalsAndAssistsChart(player) {
 function renderFieldPositions(playerId) {
   d3.csv('../../processed_data/position_count.csv').then(function(data) {
 
-    // 2. Set up the pitch configuration using d3_soccer.pitch
     const pitch = d3Soccer.pitch()
-      .height(300)                // Set the height of the SVG element (in pixels)
-      .showDirOfPlay(false)       // Do not show the direction of play
-      .shadeMiddleThird(false)    // Do not shade the middle third of the field
+      .height(300)
       .showDirOfPlay(true)
-      .pitchStrokeWidth(.5)       // Set the width of the pitch lines
-      .goals("line")              // Use a line style for the goals
+      .shadeMiddleThird(false)
+      .pitchStrokeWidth(.5)
+      .goals("line");
 
-    // 3. Create the SVG element for the pitch
     const svg = d3.select("#halfField")
-      .attr("width", 500)   // Set the width of the field to 400px
-      .attr("height", 300)  // Set the height of the field to 300px
-      .call(pitch);         // Draw the pitch on the SVG
+      .attr("width", 500)
+      .attr("height", 300)
+      .call(pitch);
 
-    // 4. Filter data for the playerId
-    var playerData = data.filter(player => player.player_id == playerId);
+    // Tooltip
+    const tooltip = d3.select("body")
+      .append("div")
+      .attr("class", "tooltip")
+      .style("position", "absolute")
+      .style("background", "white")
+      .style("padding", "6px 10px")
+      .style("border", "1px solid #ccc")
+      .style("border-radius", "4px")
+      .style("font-size", "12px")
+      .style("pointer-events", "none")
+      .style("opacity", 0);
 
-    // If no data is found for the playerId, return early
+    const playerData = data.filter(player => player.player_id == playerId);
     if (playerData.length === 0) {
       console.log('No data found for player with id ' + playerId);
       return;
     }
 
-    // 5. Define position coordinates relative to the pitch size
     const positionCoords = {
-      "Goalkeeper": [40, 150],                            // [62.5, 50]
-      "Right-Back": [90, 260],                          // [150, 100]
-      "Centre-Back": [100, 150],                         // [250, 120]
-      "Left-Back": [90, 40],                            // [100, 130]
-      "Defensive Midfield": [180, 150],                  // [225, 150]
-      "Central Midfield": [240, 150],                    // [250, 200]
-      "Attacking Midfield": [280, 150],                  // [312.5, 180]
-      "Right Midfield": [240, 260],                      // [350, 100]
-      "Left Midfield": [240, 40],                       // [150, 200]
-      "Right Winger": [120, 260],                        // [400, 120]
-      "Left Winger": [120, 40],                         // [100, 200]
-      "Centre-Forward": [390, 150],                      // [375, 200]
-      "Second Striker": [350, 150]                       // [312.5, 240]
+      "Goalkeeper": [40, 150],
+      "Right-Back": [90, 260],
+      "Centre-Back": [100, 150],
+      "Left-Back": [90, 40],
+      "Defensive Midfield": [180, 150],
+      "Central Midfield": [240, 150],
+      "Attacking Midfield": [280, 150],
+      "Right Midfield": [240, 260],
+      "Left Midfield": [240, 40],
+      "Right Winger": [350, 260],
+      "Left Winger": [350, 40],
+      "Centre-Forward": [390, 150],
+      "Second Striker": [350, 150]
     };
-    
-    
 
+    const positionInitials = {
+      "Goalkeeper": "GK",
+      "Right-Back": "RB",
+      "Centre-Back": "CB",
+      "Left-Back": "LB",
+      "Defensive Midfield": "DM",
+      "Central Midfield": "CM",
+      "Attacking Midfield": "AM",
+      "Right Midfield": "RM",
+      "Left Midfield": "LM",
+      "Right Winger": "RW",
+      "Left Winger": "LW",
+      "Centre-Forward": "CF",
+      "Second Striker": "SS"
+    };
 
-    // 6. Process the dataset for the selected player
     playerData.forEach(function(player) {
-      // Loop through each position in the player's row
       for (let position in player) {
         if (position !== "player_id" && position !== "player_name" && player[position] > 0) {
-          const matches = +player[position]; // Get number of matches played
+          const matches = +player[position];
           const [x, y] = positionCoords[position];
-
-          // Scale the x coordinate to fit the half field (left side)
-          const scaledX = x;
-
-          // Calculate circle radius based on matches played
           const radius = Math.sqrt(matches) * 2;
 
-          // Draw the circle for the position
+          // Draw circle
           svg.append("circle")
-            .attr("cx", scaledX)
+            .attr("cx", x)
             .attr("cy", y)
             .attr("r", radius)
-            .attr("class", "circle")
             .style("fill", "blue")
             .style("opacity", 0.6);
 
-          // Add label (position name and match count)
+          // Draw initials **above** the circle
           svg.append("text")
-            .attr("x", scaledX)
+            .attr("x", x)
             .attr("y", y - radius - 5)
-            .text(`${position} (${matches})`)
+            .text(positionInitials[position])
             .attr("text-anchor", "middle")
             .style("font-size", "10px")
             .style("fill", "black");
+
+          // Transparent hover zone (better for tiny circles)
+          svg.append("rect")
+            .attr("x", x - 15)
+            .attr("y", y - 15)
+            .attr("width", 30)
+            .attr("height", 30)
+            .style("fill", "transparent")
+            .on("mouseover", function(event) {
+              const [mouseX, mouseY] = d3.pointer(event);
+              tooltip.transition().duration(200).style("opacity", 0.9);
+              tooltip.html(`<strong>${position}</strong><br>Games played: ${matches}`)
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY - 28) + "px");
+            })
+            .on("mouseout", function() {
+              tooltip.transition().duration(300).style("opacity", 0);
+            });
         }
       }
     });
-
   }).catch(function(error) {
     console.error('Error loading the CSV data: ', error);
   });
 }
+
+
 
 
 
