@@ -10,10 +10,16 @@
 
 </head>
 <body>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay">
+    <div class="spinner"></div>
+  </div>
+
   <!-- Navbar -->
   <div id="navbar-container"></div>
 
-  <main class="dashboard">
+  <main class="dashboard" id="main-content" style="display: none;">
     <input type="text" id="player-search-bar" placeholder="Search for a player..." class="search-bar" />
     <div id="players-list"></div> <!-- Container for the player list -->
         <!-- Pagination -->
@@ -33,5 +39,6 @@
   <script src="/Home/static/components/navbarSearch.js"></script>
   <script src="/Home/static/components/navbar.js"></script>
   <script src="/Home/static/components/footer.js"></script>
+  <script src="/Home/static/components/loader.js"></script>
 </body>
 </html>

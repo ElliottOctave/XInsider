@@ -8,11 +8,17 @@
   <link rel="stylesheet" href="/Home/static/styles/XInsider.css" />
 </head>
 <body>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay">
+    <div class="spinner"></div>
+  </div>
+
   <!-- Navbar -->
   <div id="navbar-container"></div>
 
   <!-- Main content -->
-  <main class="dashboard">
+  <main class="dashboard" id="main-content" style="display: none;">
     <div class="left-panel">
       <h2>Compare</h2>
       <form id="compare-form">
@@ -70,5 +76,6 @@
   <script src="/Home/static/components/navbarSearch.js"></script>
   <script src="/Home/static/components/navbar.js"></script>
   <script src="/Home/static/components/footer.js"></script>
+  <script src="/Home/static/components/loader.js"></script>
 </body>
 </html>
