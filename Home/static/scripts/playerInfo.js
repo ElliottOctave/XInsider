@@ -804,11 +804,15 @@ async function renderTransfersWorldTour(playerId) {
   const transfers = await loadCSV('../../processed_data/transfers_preprocessed.csv');
   // Filter transfers for the given playerId
   const playerTransfers = transfers.filter(transfer => transfer.player_id === playerId);
+  console.log(playerId);
+  console.log(playerTransfers);
 
 
   for (const transfer of playerTransfers) {
+    console.log(transfer);
     const originCountry = transfer.from_country_name;
     const destinationCountry = transfer.to_country_name;
+    console.log("next transfer")
 
     const origin = countries.find(c => c.properties.name === originCountry);
     const destination = countries.find(c => c.properties.name === destinationCountry);
@@ -827,7 +831,7 @@ async function renderTransfersWorldTour(playerId) {
 
       // Transition to draw arcs smoothly
       await d3.transition()
-        .duration(1250)
+        .duration(500)
         .tween("render", () => t => {
           projection.rotate(iv(t));
           render(origin, { type: "LineString", coordinates: [p1, ip(t)] });
