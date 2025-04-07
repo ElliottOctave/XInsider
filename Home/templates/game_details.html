@@ -8,9 +8,16 @@
   <link rel="stylesheet" href="/Home/static/styles/XInsider.css" />
 </head>
 <body>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Navbar -->
   <div id="navbar-container"></div>
 
-  <main class="pitch-container">
+  <main class="pitch-container" id="main-content" style="display: none;">
     <div class="lineup-table left-lineup">
       <h3 id="left-team-name">Left Team</h3>
       <ul id="left-lineup-list"></ul>
@@ -24,6 +31,7 @@
     </div>
   </main>
 
+  <!-- Footer -->
   <div id="footer-container"></div>
 
   <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -31,5 +39,6 @@
   <script src="/Home/static/components/navbarSearch.js"></script>
   <script src="/Home/static/components/navbar.js"></script>
   <script src="/Home/static/components/footer.js"></script>
+  <script src="/Home/static/components/loader.js"></script>
 </body>
 </html>

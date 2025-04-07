@@ -9,10 +9,16 @@
   <link rel="stylesheet" href="/Home/static/styles/XInsider.css" />
 </head>
 <body>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay">
+    <div class="spinner"></div>
+  </div>
+
   <!-- Navbar -->
   <div id="navbar-container"></div>
 
-  <main class="dashboard">
+  <main class="dashboard" id="main-content" style="display: none;">
     <h2>All Matches</h2>
 
     <!-- Filters -->
@@ -44,5 +50,6 @@
   <script src="/Home/static/components/navbarSearch.js"></script>
   <script src="/Home/static/components/navbar.js"></script>
   <script src="/Home/static/components/footer.js"></script>
+  <script src="/Home/static/components/loader.js"></script>
 </body>
 </html>
