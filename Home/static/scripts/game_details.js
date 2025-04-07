@@ -3,6 +3,7 @@ const gameId = urlParams.get("gameId");
 
 const lineupsCsvPath = "../../data/game_lineups.csv";
 const playersCsvPath = "../../data/players.csv";
+const clubsCsvPath = "../../data/clubs.csv";
 
 const svgWidth = 800;
 const svgHeight = 480;
@@ -47,7 +48,6 @@ const svg = d3.select("#pitch")
   .attr("viewBox", `0 0 ${svgWidth} ${svgHeight}`)
   .attr("preserveAspectRatio", "xMidYMid meet");
 
-// Draw pitch
 svg.append("rect")
   .attr("x", 0).attr("y", 0)
   .attr("width", svgWidth)
@@ -55,19 +55,16 @@ svg.append("rect")
   .attr("fill", "#0b6623")
   .attr("rx", 15);
 
-// Midline
 svg.append("line")
   .attr("x1", svgWidth / 2).attr("y1", 0)
   .attr("x2", svgWidth / 2).attr("y2", svgHeight)
   .attr("stroke", "#fff").attr("stroke-width", 2);
 
-// Center circle
 svg.append("circle")
   .attr("cx", svgWidth / 2).attr("cy", svgHeight / 2)
   .attr("r", 60)
   .attr("stroke", "#fff").attr("stroke-width", 2).attr("fill", "none");
 
-// Penalty boxes (left and right)
 svg.append("rect")
   .attr("x", 0).attr("y", svgHeight * 0.25)
   .attr("width", 80).attr("height", svgHeight * 0.5)
@@ -78,77 +75,119 @@ svg.append("rect")
   .attr("width", 80).attr("height", svgHeight * 0.5)
   .attr("stroke", "#fff").attr("stroke-width", 2).attr("fill", "none");
 
-// Load player data
+const leftLineupList = document.getElementById("left-lineup-list");
+const rightLineupList = document.getElementById("right-lineup-list");
+const leftTeamNameEl = document.getElementById("left-team-name");
+const rightTeamNameEl = document.getElementById("right-team-name");
+
 Promise.all([
   fetch(lineupsCsvPath).then(res => res.text()),
-  fetch(playersCsvPath).then(res => res.text())
+  fetch(playersCsvPath).then(res => res.text()),
+  fetch(clubsCsvPath).then(res => res.text())
 ])
-  .then(([lineupsCsv, playersCsv]) => {
-    const parseCsv = (csvText) => {
-      const rows = csvText.trim().split('\n');
-      const headers = rows[0].split(',');
-      return rows.slice(1).map(row => {
-        const values = row.split(',');
-        const obj = {};
-        headers.forEach((header, i) => {
-          obj[header.trim()] = values[i]?.trim();
-        });
-        return obj;
+.then(([lineupsCsv, playersCsv, clubsCsv]) => {
+  const parseCsv = (csvText) => {
+    const rows = csvText.trim().split('\n');
+    const headers = rows[0].split(',');
+    return rows.slice(1).map(row => {
+      const values = row.split(',');
+      const obj = {};
+      headers.forEach((header, i) => {
+        obj[header.trim()] = values[i]?.trim();
       });
-    };
+      return obj;
+    });
+  };
 
-    const allLineups = parseCsv(lineupsCsv);
-    const allPlayers = parseCsv(playersCsv);
+  const allLineups = parseCsv(lineupsCsv);
+  const allPlayers = parseCsv(playersCsv);
+  const allClubs = parseCsv(clubsCsv);
 
-    const gameLineup = allLineups.filter(
-      p => p.game_id === gameId && p.type === "starting_lineup"
-    );
+  const gameLineup = allLineups.filter(
+    p => p.game_id === gameId && p.type === "starting_lineup"
+  );
 
-    if (gameLineup.length === 0) {
-      console.warn("No starting lineup found for gameId:", gameId);
-      return;
+  if (gameLineup.length === 0) {
+    console.warn("No starting lineup found for gameId:", gameId);
+    return;
+  }
+
+  const leftClub = gameLineup[0].club_id;
+  const rightClub = gameLineup.find(p => p.club_id !== leftClub)?.club_id;
+
+  const clubMap = new Map();
+  allClubs.forEach(c => clubMap.set(c.club_id, c.name));
+
+  leftTeamNameEl.textContent = clubMap.get(leftClub) || "Left Team";
+  rightTeamNameEl.textContent = clubMap.get(rightClub) || "Right Team";
+
+  const positionOrder = {
+    "Goalkeeper": 1,
+    "Centre-Back": 2, "Left-Back": 2, "Right-Back": 2,
+    "Defensive Midfield": 3, "Central Midfield": 3, "Attacking Midfield": 3,
+    "Left Winger": 4, "Right Winger": 4, "Centre-Forward": 4
+  };
+
+  const leftTeam = [];
+  const rightTeam = [];
+
+  gameLineup.forEach(player => {
+    const fullPlayer = allPlayers.find(p => p.player_id === player.player_id);
+    if (!fullPlayer || !fullPlayer.image_url) return;
+
+    const isLeft = player.club_id === leftClub;
+    const side = isLeft ? "left" : "right";
+    const key = `${player.position}_${side}`;
+    const pos = positionCoordinates[key];
+    if (!pos) return;
+
+    let x, y;
+    if (Array.isArray(pos)) {
+      const index = positionCounts[key] || 0;
+      if (index >= pos.length) return;
+      x = pos[index].x;
+      y = pos[index].y;
+      positionCounts[key] = index + 1;
+    } else {
+      x = pos.x;
+      y = pos.y;
     }
 
-    const leftClub = gameLineup[0].club_id;
-    const rightClub = gameLineup.find(p => p.club_id !== leftClub)?.club_id;
+    const absX = (x / 100) * svgWidth;
+    const absY = (y / 100) * svgHeight;
 
-    gameLineup.forEach(player => {
-      const fullPlayer = allPlayers.find(p => p.player_id === player.player_id);
-      if (!fullPlayer || !fullPlayer.image_url) return;
+    d3.select("#pitch")
+      .append("img")
+      .attr("src", fullPlayer.image_url)
+      .attr("alt", fullPlayer.name)
+      .attr("title", fullPlayer.name)
+      .attr("class", "player-img")
+      .style("left", `${absX}px`)
+      .style("top", `${absY}px`);
 
-      const isLeft = player.club_id === leftClub;
-      const side = isLeft ? "left" : "right";
-      const key = `${player.position}_${side}`;
-      const pos = positionCoordinates[key];
+    const playerInfo = {
+      name: fullPlayer.name,
+      position: player.position,
+      order: positionOrder[player.position] || 5
+    };
 
-      if (!pos) return;
-
-      let x, y;
-
-      if (Array.isArray(pos)) {
-        const index = positionCounts[key] || 0;
-        if (index >= pos.length) return;
-        x = pos[index].x;
-        y = pos[index].y;
-        positionCounts[key] = index + 1;
-      } else {
-        x = pos.x;
-        y = pos.y;
-      }
-
-      const absX = (x / 100) * svgWidth;
-      const absY = (y / 100) * svgHeight;
-
-      d3.select("#pitch")
-        .append("img")
-        .attr("src", fullPlayer.image_url)
-        .attr("alt", fullPlayer.name)
-        .attr("title", fullPlayer.name)
-        .attr("class", "player-img")
-        .style("left", `${absX}px`)
-        .style("top", `${absY}px`);
-    });
-  })
-  .catch(err => {
-    console.error("Failed to load lineups or players:", err);
+    if (isLeft) {
+      leftTeam.push(playerInfo);
+    } else {
+      rightTeam.push(playerInfo);
+    }
   });
+
+  [leftTeam, rightTeam].forEach((team, i) => {
+    team.sort((a, b) => a.order - b.order);
+    const list = i === 0 ? leftLineupList : rightLineupList;
+    team.forEach(p => {
+      const li = document.createElement("li");
+      li.textContent = p.name;
+      list.appendChild(li);
+    });
+  });
+})
+.catch(err => {
+  console.error("Failed to load data:", err);
+});

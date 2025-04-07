@@ -6,16 +6,24 @@
   <title>Game Details - Football Dashboard</title>
   <link rel="stylesheet" href="/Home/static/styles/game_details.css" />
   <link rel="stylesheet" href="/Home/static/styles/XInsider.css" />
-  
 </head>
 <body>
   <div id="navbar-container"></div>
 
   <main class="pitch-container">
+    <div class="lineup-table left-lineup">
+      <h3 id="left-team-name">Left Team</h3>
+      <ul id="left-lineup-list"></ul>
+    </div>
+
     <div id="pitch"></div>
+
+    <div class="lineup-table right-lineup">
+      <h3 id="right-team-name">Right Team</h3>
+      <ul id="right-lineup-list"></ul>
+    </div>
   </main>
 
-  <!-- Footer -->
   <div id="footer-container"></div>
 
   <script src="https://d3js.org/d3.v7.min.js"></script>
