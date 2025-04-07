@@ -12,40 +12,40 @@ d3.csv(summaryUrl).then(data => {
     d.minutes = +d.minutes;
   });
 
-  // Top 15 Scorers
+  // Top 10 Scorers
   const topGoals = [...data]
     .sort((a, b) => b.goals - a.goals)
-    .slice(0, 15)
-    .map(p => ({ Player: p.name, Goals: p.goals }));
-  categories.push({ title: "Top 15 Goal Scorers", data: topGoals });
+    .slice(0, 10)
+    .map((p, i) => ({ Ranking: i + 1, Player: p.name, Goals: p.goals }));
+  categories.push({ title: "Top 10 Goal Scorers", data: topGoals });
 
-  // Top 15 Assists
+  // Top 10 Assists
   const topAssists = [...data]
     .sort((a, b) => b.assists - a.assists)
-    .slice(0, 15)
-    .map(p => ({ Player: p.name, Assists: p.assists }));
-  categories.push({ title: "Top 15 Assists", data: topAssists });
+    .slice(0, 10)
+    .map((p, i) => ({ Ranking: i + 1, Player: p.name, Assists: p.assists }));
+  categories.push({ title: "Top 10 Assists", data: topAssists });
 
   // Most Yellow Cards
   const topYellow = [...data]
     .sort((a, b) => b.yellow_cards - a.yellow_cards)
-    .slice(0, 15)
-    .map(p => ({ Player: p.name, "Yellow Cards": p.yellow_cards }));
-  categories.push({ title: "Top 15 Players with Yellow Cards", data: topYellow });
+    .slice(0, 10)
+    .map((p, i) => ({ Ranking: i + 1, Player: p.name, "Yellow Cards": p.yellow_cards }));
+  categories.push({ title: "Top 10 Players with Yellow Cards", data: topYellow });
 
   // Most Red Cards
   const topRed = [...data]
     .sort((a, b) => b.red_cards - a.red_cards)
-    .slice(0, 15)
-    .map(p => ({ Player: p.name, "Red Cards": p.red_cards }));
-  categories.push({ title: "Top 15 Players with Red Cards", data: topRed });
+    .slice(0, 10)
+    .map((p, i) => ({ Ranking: i + 1,Player: p.name, "Red Cards": p.red_cards }));
+  categories.push({ title: "Top 10 Players with Red Cards", data: topRed });
 
   // Most Minutes Played
   const topMinutes = [...data]
     .sort((a, b) => b.minutes - a.minutes)
-    .slice(0, 15)
-    .map(p => ({ Player: p.name, "Minutes Played": p.minutes }));
-  categories.push({ title: "Top 15 Players by Minutes Played", data: topMinutes });
+    .slice(0, 10)
+    .map((p, i) => ({ Ranking: i + 1,Player: p.name, "Minutes Played": p.minutes }));
+  categories.push({ title: "Top 10 Players by Minutes Played", data: topMinutes });
 
   rotateTable();
 });
@@ -54,7 +54,7 @@ let categoryIndex = 0;
 let autoRotateInterval;
 
 function updateTable() {
-  const container = document.getElementById("top15-table");
+  const container = document.getElementById("top10-table");
   const current = categories[categoryIndex];
   container.style.opacity = 0;
 
@@ -69,10 +69,15 @@ function buildTableHTML(data) {
   const keys = Object.keys(data[0]);
   const header = `<tr>${keys.map(k => `<th>${k}</th>`).join("")}</tr>`;
   const rows = data.map(row =>
-    `<tr>${keys.map(k => `<td>${row[k]}</td>`).join("")}</tr>`
+    `<tr>${keys.map(k => {
+      const cell = row[k];
+      const isRanking = k.toLowerCase() === "ranking";
+      return `<td${isRanking ? ' style="font-weight:bold;"' : ''}>${cell}</td>`;
+    }).join("")}</tr>`
   ).join("");
   return `<table>${header}${rows}</table>`;
 }
+
 
 function rotateTable() {
   updateTable();

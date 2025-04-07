@@ -1,95 +1,6 @@
-/* Reset and base styles */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f7f9fc;
-  color: #333;
-  line-height: 1.6;
-}
-
-html, body {
-  height: 100%;
-}
-
-/* Navbar */
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #003366;
-  color: #fff;
-  padding: 15px 30px;
-}
-
-.navbar-search {
-  position: relative;
-  width: 250px;
-}
-
-.search-results {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
-  background: white;
-  color: black;
-  border: 1px solid #ccc;
-  max-height: 200px;
-  overflow-y: auto;
-  z-index: 100;
-  display: none;
-}
-
-.search-results div {
-  padding: 8px 12px;
-  cursor: pointer;
-}
-
-.search-results div:hover {
-  background-color: #f0f0f0;
-}
-
-
-.navbar .logo {
-  font-size: 1.5rem;
-  font-weight: bold;
-}
-
-.nav-links {
-  list-style: none;
-  display: flex;
-  gap: 20px;
-}
-
-.nav-links li {
-  display: inline;
-}
-
-.nav-links a {
-  color: white;
-  text-decoration: none;
-  font-size: 1rem;
-  transition: color 0.3s;
-}
-
-.nav-links a:hover {
-  color: #f0a500;
-}
-
-#search-bar {
-  padding: 8px 12px;
-  border: none;
-  border-radius: 4px;
-  width: 250px;
-}
-
 /* Main dashboard layout */
 .dashboard {
+  height: 82.5vh;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -141,30 +52,40 @@ html, body {
 
 /* Right Panel – Top 15 */
 .right-panel {
-  width: 400px;
+  width: 550px;
+  height: 650px;
   background-color: #fff;
   padding: 25px;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
+  text-align: center;
 }
 
-#top15-table {
+#prev-btn, #next-btn{
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  width: 15%; /* Adjust based on the width you want for the button sections */
+}
+
+#top10-table {
   width: 100%;
-  max-height: 400px;
+  height: 100%;
   overflow-y: auto;
   margin-top: 10px;
 }
 
-#top15-table table {
+#top10-table table {
   width: 100%;
   border-collapse: collapse;
 }
 
-#top15-table th,
-#top15-table td {
+#top10-table th,
+#top10-table td {
   text-align: left;
   padding: 10px;
   border-bottom: 1px solid #eee;
@@ -209,12 +130,3 @@ html, body {
   width: 90px;
 }
 
-/* Footer */
-footer {
-  margin-top: 50px;
-  background-color: #003366;
-  color: white;
-  text-align: center;
-  padding: 20px 10px;
-  font-size: 0.95rem;
-}
