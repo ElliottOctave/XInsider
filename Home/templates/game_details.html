@@ -8,22 +8,12 @@
   <link rel="stylesheet" href="/Home/static/styles/XInsider.css" />
 </head>
 <body>
-
-  <!-- Loading Overlay -->
-  <div id="loading-overlay">
-    <div class="spinner"></div>
-  </div>
-
-  <!-- Navbar -->
   <div id="navbar-container"></div>
 
-  <main class="pitch-container" id="main-content" style="display: none;">
+  <main class="pitch-container" id="main-content">
     <div class="lineup-table left-lineup">
       <div class="team-panel">
-        <h3 id="left-team-name">
-          <img id="left-team-logo" class="team-logo" />
-          <span></span>
-        </h3>
+        <h3 id="left-team-name"><img id="left-team-logo" class="team-logo" /><span></span></h3>
         <div id="left-team-manager" class="team-manager"></div>
         <div id="left-team-formation" class="team-formation">4-3-3</div>
       </div>
@@ -34,10 +24,7 @@
 
     <div class="lineup-table right-lineup">
       <div class="team-panel">
-        <h3 id="right-team-name">
-          <img id="right-team-logo" class="team-logo" />
-          <span></span>
-        </h3>
+        <h3 id="right-team-name"><img id="right-team-logo" class="team-logo" /><span></span></h3>
         <div id="right-team-manager" class="team-manager"></div>
         <div id="right-team-formation" class="team-formation">4-3-3</div>
       </div>
@@ -45,7 +32,11 @@
     </div>
   </main>
 
-  <!-- Footer -->
+  <div id="timeline-container">
+    <input type="range" id="minute-slider" min="0" max="90" step="1" value="0" />
+    <div id="current-minute">0'</div>
+  </div>
+
   <div id="footer-container"></div>
 
   <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -53,6 +44,5 @@
   <script src="/Home/static/components/navbarSearch.js"></script>
   <script src="/Home/static/components/navbar.js"></script>
   <script src="/Home/static/components/footer.js"></script>
-  <script src="/Home/static/components/loader.js"></script>
 </body>
 </html>
