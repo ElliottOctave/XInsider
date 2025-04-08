@@ -56,7 +56,8 @@
     color: #fff;
     padding: 15px 30px;
     height: 7.5vh;
-    margin-bottom: 2.5vh;
+    min-height: 100px;
+    overflow: hidden;
   }
 
   .navbar-search {
