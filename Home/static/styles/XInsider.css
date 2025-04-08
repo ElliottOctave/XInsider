@@ -22,8 +22,8 @@
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     background-color: #f7f9fc;
     z-index: 9999;
     display: flex;
@@ -57,7 +57,7 @@
     padding: 15px 30px;
     height: 7.5vh;
     min-height: 100px;
-    overflow: hidden;
+    margin-bottom: 2.5vh;
   }
 
   .navbar-search {
@@ -129,11 +129,12 @@
   
   /* Footer */
     footer {
-        height: 7.5vh;
-        margin-top: 2.5vh;
-        background-color: #003366;
-        color: white;
-        text-align: center;
-        padding: 20px 10px;
-        font-size: 0.95rem;
+      height: 7.5vh;
+      min-height: 100px;
+      margin-top: 2.5vh;
+      background-color: #003366;
+      color: white;
+      text-align: center;
+      padding: 20px 10px;
+      font-size: 0.95rem;
     }

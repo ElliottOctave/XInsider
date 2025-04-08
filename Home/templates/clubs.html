@@ -3,9 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Players - Football Dashboard</title>
-  <link rel="stylesheet" href="/Home/static/styles/chart.css" />
-  <link rel="stylesheet" href="/Home/static/styles/player_list.css" />
+  <link rel="stylesheet" href="/Home/static/styles/clubs.css" />
   <link rel="stylesheet" href="/Home/static/styles/XInsider.css" />
 
 </head>
@@ -19,22 +17,16 @@
   <!-- Navbar -->
   <div id="navbar-container"></div>
 
+  <!-- Main content -->
   <main class="dashboard" id="main-content">
-    <input type="text" id="player-search-bar" placeholder="Search for a player..." class="search-bar" />
-    <div id="players-list"></div> <!-- Container for the player list -->
-        <!-- Pagination -->
-    <div class="pagination">
-      <button id="prevPage">&laquo; Prev</button>
-      <span id="pageInfo"></span>
-      <button id="nextPage">Next &raquo;</button>
-    </div>
+   <h1>Football Dashboard</h1>
+   <h2>Clubs</h2>
   </main>
 
   <!-- Footer -->
   <div id="footer-container"></div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/papaparse/5.3.0/papaparse.min.js"></script> <!-- PapaParse library -->
-  <script src="/Home/static/scripts/playerList.js"></script>
+  <script src="/node_modules/d3/dist/d3.min.js"></script>
 
   <script src="/Home/static/components/navbarSearch.js"></script>
   <script src="/Home/static/components/navbar.js"></script>

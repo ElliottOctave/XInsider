@@ -4,7 +4,6 @@
   function tryShowContent() {
     if (navbarLoaded && footerLoaded) {
       document.getElementById('loading-overlay').style.display = 'none';
-      document.getElementById('main-content').style.display = 'flex';
     }
   }
 
