@@ -42,7 +42,7 @@ const observer = new MutationObserver(() => {
           </div>`
         ).join("");
   
-        resultBox.style.display = results.length ? "block" : "none";
+        resultBox.style.display = results.length ? "flex" : "none";
       });
   
       searchInput.addEventListener("blur", () => {
