@@ -7,7 +7,6 @@ const clubsCsvPath = "../../data/clubs.csv";
 const gamesCsvPath = "../../data/games.csv";
 const logosCsvPath = "../../data/club_logos.csv";
 const eventsCsvPath = "../../data/game_events.csv";
-
 const svgWidth = 800;
 const svgHeight = 480;
 
@@ -178,13 +177,13 @@ function renderLineup(minute) {
   visiblePlayers.forEach(player => {
     const fullPlayer = playerMap.get(player.player_id);
     if (!fullPlayer || !fullPlayer.image_url) return;
-
+  
     const isLeft = player.club_id === leftClub;
     const side = isLeft ? "left" : "right";
     const key = `${player.position}_${side}`;
     const pos = positionCoordinates[key];
     if (!pos) return;
-
+  
     let x, y;
     if (Array.isArray(pos)) {
       const idx = positionCounts[key] || 0;
@@ -196,10 +195,11 @@ function renderLineup(minute) {
       x = pos.x;
       y = pos.y;
     }
-
+  
     const absX = (x / 100) * svgWidth;
     const absY = (y / 100) * svgHeight;
-
+  
+    // 🧍 Add player image
     d3.select("#pitch")
       .append("img")
       .attr("src", fullPlayer.image_url)
@@ -209,36 +209,86 @@ function renderLineup(minute) {
       .attr("data-player-id", player.player_id)
       .style("left", `${absX}px`)
       .style("top", `${absY}px`);
-
+  
+    // 🎯 Get all events for this player
     const events = eventsUntilNow.filter(e => e.player_id === player.player_id);
-    events.forEach(ev => {
-      let icon = ev.description?.includes("Yellow") ? "🟨" :
-                 ev.description?.includes("Red") ? "🟥" :
-                 ev.type === "Goals" ? "⚽" : "";
-      if (icon) {
-        d3.select("#pitch")
-          .append("div")
-          .attr("class", "event-icon")
-          .style("left", `${absX + 15}px`)
-          .style("top", `${absY - 15}px`)
-          .text(icon);
-      }
-    });
+  
+    // 🟥 Handle second yellow card = red card
+    const yellowCards = events.filter(ev => ev.description?.includes("Yellow"));
+    const redCards = events.filter(ev => ev.description?.includes("Red"));
+    const goals = events.filter(ev => ev.type === "Goals");
+    const subs = events.filter(ev => ev.type === "Substitutions");
+    
+    const icons = [];
+    
+    if (yellowCards.length >= 2 && redCards.length === 0) {
+      icons.push("🟥");
+    } else {
+      icons.push(...yellowCards.map(() => "🟨"));
+      icons.push(...redCards.map(() => "🟥"));
+    }
+    icons.push(...goals.map(() => "⚽"));
+    
+  
+    // 🏅 Check for captain
+    const playerLineup = allLineups.find(l => l.player_id === player.player_id && l.game_id === gameId);
+    if (playerLineup?.team_captain === "1") {
+      d3.select("#pitch")
+        .append("img")
+        .attr("src", "/ressources/Captain.png")
+        .attr("class", "event-icon")
+        .style("width", "20px")
+        .style("height", "20px")
+        .style("left", `${absX + 15}px`)
+        .style("top", `${absY + 20}px`);
+    }    
+  
+    // 🔠 Render icons side by side (no stacking)
+    let iconOffset = 0;
 
+    icons.forEach((icon, i) => {
+      d3.select("#pitch")
+        .append("div")
+        .attr("class", "event-icon")
+        .style("left", `${absX + 15 + (iconOffset)}px`)
+        .style("top", `${absY - 20}px`)
+        .text(icon);
+    
+      iconOffset += 18;
+    });
+    
+    // ✅ Render Substitution icon(s) as image(s)
+    subs.forEach((_, i) => {
+      d3.select("#pitch")
+        .append("img")
+        .attr("src", "/ressources/Substitution.png")
+        .attr("class", "event-icon")
+        .style("width", "18px")
+        .style("height", "18px")
+        .style("left", `${absX + 15 + (iconOffset)}px`)
+        .style("top", `${absY - 20}px`);
+    
+      iconOffset += 20;
+    });     
+  
+    // 📋 Add to lineup table
     const teamArray = isLeft ? leftTeam : rightTeam;
     teamArray.push({ id: player.player_id, name: fullPlayer.name, position: player.position });
   });
+  
 
   [leftTeam, rightTeam].forEach((team, i) => {
     team.sort((a, b) => orderedPositions.indexOf(a.position) - orderedPositions.indexOf(b.position));
     const list = i === 0 ? leftLineupList : rightLineupList;
 
     team.forEach(p => {
+      const playerLineup = allLineups.find(l => l.player_id === p.id && l.game_id === gameId);
+      const number = playerLineup?.number || "";
       const li = document.createElement("li");
-      li.textContent = p.name;
+      li.textContent = number ? `${number} ${p.name}` : p.name;
       li.setAttribute("data-player-id", p.id);
       list.appendChild(li);
-    });
+    });    
   });
 
   document.querySelectorAll("li[data-player-id]").forEach(li => {
@@ -268,18 +318,31 @@ function setupTimeline() {
   relevantEvents.forEach(e => {
     const icon = e.description?.includes("Yellow") ? "🟨" :
                  e.description?.includes("Red") ? "🟥" :
-                 e.type === "Goals" ? "⚽" :
-                 e.type === "Substitutions" ? "🔁" : "";
-
+                 e.type === "Goals" ? "⚽" : "";
+  
+    const leftPercent = (parseInt(e.minute) / 90) * 100;
+  
     if (icon) {
       const div = document.createElement("div");
       div.className = "timeline-event-marker";
-      div.style.left = `${(parseInt(e.minute) / 90) * 100}%`;
+      div.style.left = `${leftPercent}%`;
       div.textContent = icon;
       div.title = `${e.minute}'`;
       timelineBar.appendChild(div);
     }
-  });
+  
+    // ✅ Render substitution icon as image
+    if (e.type === "Substitutions") {
+      const img = document.createElement("img");
+      img.src = "/ressources/Substitution.png";
+      img.className = "timeline-event-marker";
+      img.style.left = `${leftPercent}%`;
+      img.style.width = "20px";
+      img.style.height = "20px";
+      img.title = `${e.minute}'`;
+      timelineBar.appendChild(img);
+    }
+  });  
 
   renderLineup(0);
   document.getElementById("event-minute").textContent = "0'";
