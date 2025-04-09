@@ -10,37 +10,44 @@ const eventsCsvPath = "../../data/game_events.csv";
 const svgWidth = 800;
 const svgHeight = 480;
 
-const positionCoordinates = {
-  "Goalkeeper_left": { x: 5, y: 50 },
-  "Left-Back_left": { x: 20, y: 20 },
-  "Right-Back_left": { x: 20, y: 80 },
-  "Centre-Back_left": [{ x: 15, y: 40 }, { x: 15, y: 60 }],
-  "Defensive Midfield_left": [{ x: 27, y: 50 }, { x: 30, y: 60 }],
-  "Central Midfield_left": [{ x: 33, y: 35 }, { x: 33, y: 65 }],
-  "Attacking Midfield_left": [{ x: 36, y: 65 }, { x: 36, y: 35 }],
-  "Left Winger_left": { x: 40, y: 20 },
-  "Right Winger_left": { x: 40, y: 80 },
-  "Centre-Forward_left": { x: 45, y: 50 },
+function computeDynamicPositionMap(formationStr, side) {
+  const lines = formationStr.split("-").map(n => parseInt(n));
+  const xSteps = lines.length + 1;
+  const xStart = side === "left" ? 10 : 90;
+  const xEnd = side === "left" ? 45 : 55;
+  const xPositions = [];
 
-  "Goalkeeper_right": { x: 95, y: 50 },
-  "Left-Back_right": { x: 80, y: 80 },
-  "Right-Back_right": { x: 80, y: 20 },
-  "Centre-Back_right": [{ x: 85, y: 60 }, { x: 85, y: 40 }],
-  "Defensive Midfield_right": [{ x: 73, y: 50 }, { x: 70, y: 40 }],
-  "Central Midfield_right": [{ x: 67, y: 65 }, { x: 67, y: 35 }],
-  "Attacking Midfield_right": [{ x: 64, y: 35 }, { x: 64, y: 65 }],
-  "Left Winger_right": { x: 60, y: 80 },
-  "Right Winger_right": { x: 60, y: 20 },
-  "Centre-Forward_right": { x: 55, y: 50 }
-};
+  for (let i = 0; i < lines.length; i++) {
+    const ratio = (i + 1) / xSteps;
+    const x = xStart + (xEnd - xStart) * ratio;
+    xPositions.push(x);
+  }
+
+  const result = [];
+
+  lines.forEach((count, lineIdx) => {
+    const x = xPositions[lineIdx];
+    for (let i = 0; i < count; i++) {
+      const y = ((i + 1) / (count + 1)) * 100;
+      result.push({ x, y });
+    }
+  });
+
+  // Add Goalkeeper in the middle of the goal
+  result.unshift({
+    x: side === "left" ? 5 : 95,
+    y: 50
+  });
+
+  return result;
+}
 
 const orderedPositions = [
-  "Goalkeeper", "Right-Back", "Centre-Back", "Left-Back",
-  "Defensive Midfield", "Central Midfield", "Attacking Midfield",
+  "Goalkeeper", "Right-Back", "Centre-Back", "Left-Back", "Right Midfielder",
+  "Defensive Midfield", "Central Midfield", "Attacking Midfield", "Left Midfielder",
   "Right Winger", "Left Winger", "Centre-Forward"
 ];
 
-let positionCounts;
 let thisGame;
 
 const svg = d3.select("#pitch")
@@ -79,7 +86,6 @@ let allLineups, allPlayers, allClubs, allGames, allLogos, allEvents;
 let playerMap = new Map();
 let leftClub, rightClub;
 let eventMinutes = [], currentEventIndex = 0;
-
 Promise.all([
   fetch(lineupsCsvPath).then(res => res.text()),
   fetch(playersCsvPath).then(res => res.text()),
@@ -105,7 +111,7 @@ Promise.all([
   allLogos = parseCsv(logosCsv);
   allEvents = parseCsv(eventsCsv);
 
-  const thisGame = allGames.find(g => g.game_id === gameId);
+  thisGame = allGames.find(g => g.game_id === gameId);
   leftClub = thisGame.home_club_id;
   rightClub = thisGame.away_club_id;
 
@@ -131,166 +137,155 @@ Promise.all([
 .catch(err => console.error("Failed to load data:", err));
 
 function renderLineup(minute) {
-  positionCounts = {
-    "Centre-Back_left": 0, "Centre-Back_right": 0,
-    "Defensive Midfield_left": 0, "Defensive Midfield_right": 0,
-    "Central Midfield_left": 0, "Central Midfield_right": 0,
-    "Attacking Midfield_left": 0, "Attacking Midfield_right": 0
-  };
-
   d3.selectAll(".player-img").remove();
   d3.selectAll(".event-icon").remove();
   leftLineupList.innerHTML = "";
   rightLineupList.innerHTML = "";
 
   const eventsUntilNow = allEvents.filter(e => e.game_id === gameId && parseInt(e.minute) <= minute);
-  const activePlayers = new Set(allLineups
-    .filter(p => p.game_id === gameId && p.type === "starting_lineup")
-    .map(p => p.player_id));
 
+  const activePlayers = new Set(
+    allLineups.filter(p => p.game_id === gameId && p.type === "starting_lineup").map(p => p.player_id)
+  );
+
+  // Substitutions
   eventsUntilNow.forEach(e => {
     if (e.type === "Substitutions") {
       const subOut = e.player_id;
       const subIn = e.player_assist_id?.trim();
-
       activePlayers.delete(subOut);
-
       if (subIn && subIn !== "") {
         const incomingPlayer = allPlayers.find(p => p.player_id === subIn);
-        const outgoingPlayerLineup = allLineups.find(p => p.player_id === subOut && p.game_id === gameId);
-        if (incomingPlayer && outgoingPlayerLineup) {
-          const subbedInLineup = allLineups.find(p => p.player_id === subIn && p.game_id === gameId);
-          if (subbedInLineup) {
-            subbedInLineup.position = outgoingPlayerLineup.position;
-          }
+        const outgoing = allLineups.find(p => p.player_id === subOut && p.game_id === gameId);
+        const subbedIn = allLineups.find(p => p.player_id === subIn && p.game_id === gameId);
+        if (incomingPlayer && outgoing && subbedIn) {
+          subbedIn.position = outgoing.position;
+          activePlayers.add(subIn);
         }
-        activePlayers.add(subIn);
       }
     }
   });
 
-  const visiblePlayers = allLineups
-    .filter(p => p.game_id === gameId && activePlayers.has(p.player_id));
+  const visiblePlayers = allLineups.filter(p => p.game_id === gameId && activePlayers.has(p.player_id));
 
-  const leftTeam = [], rightTeam = [];
+  const leftFormation = thisGame.home_club_formation;
+  const rightFormation = thisGame.away_club_formation;
 
-  visiblePlayers.forEach(player => {
-    const fullPlayer = playerMap.get(player.player_id);
-    if (!fullPlayer || !fullPlayer.image_url) return;
-  
-    const isLeft = player.club_id === leftClub;
-    const side = isLeft ? "left" : "right";
-    const key = `${player.position}_${side}`;
-    const pos = positionCoordinates[key];
-    if (!pos) return;
-  
-    let x, y;
-    if (Array.isArray(pos)) {
-      const idx = positionCounts[key] || 0;
-      if (idx >= pos.length) return;
-      x = pos[idx].x;
-      y = pos[idx].y;
-      positionCounts[key] = idx + 1;
-    } else {
-      x = pos.x;
-      y = pos.y;
-    }
-  
-    const absX = (x / 100) * svgWidth;
-    const absY = (y / 100) * svgHeight;
-  
-    // 🧍 Add player image
-    d3.select("#pitch")
-      .append("img")
-      .attr("src", fullPlayer.image_url)
-      .attr("alt", fullPlayer.name)
-      .attr("title", fullPlayer.name)
-      .attr("class", "player-img")
-      .attr("data-player-id", player.player_id)
-      .style("left", `${absX}px`)
-      .style("top", `${absY}px`);
-  
-    // 🎯 Get all events for this player
-    const events = eventsUntilNow.filter(e => e.player_id === player.player_id);
-  
-    // 🟥 Handle second yellow card = red card
-    const yellowCards = events.filter(ev => ev.description?.includes("Yellow"));
-    const redCards = events.filter(ev => ev.description?.includes("Red"));
-    const goals = events.filter(ev => ev.type === "Goals");
-    const subs = events.filter(ev => ev.type === "Substitutions");
-    
-    const icons = [];
-    
-    if (yellowCards.length >= 2 && redCards.length === 0) {
-      icons.push("🟥");
-    } else {
-      icons.push(...yellowCards.map(() => "🟨"));
-      icons.push(...redCards.map(() => "🟥"));
-    }
-    icons.push(...goals.map(() => "⚽"));
-    
-  
-    // 🏅 Check for captain
-    const playerLineup = allLineups.find(l => l.player_id === player.player_id && l.game_id === gameId);
-    if (playerLineup?.team_captain === "1") {
-      d3.select("#pitch")
-        .append("img")
-        .attr("src", "/ressources/Captain.png")
-        .attr("class", "event-icon")
-        .style("width", "20px")
-        .style("height", "20px")
-        .style("left", `${absX + 15}px`)
-        .style("top", `${absY + 20}px`);
-    }    
-  
-    // 🔠 Render icons side by side (no stacking)
-    let iconOffset = 0;
+  const orderedPositions = [
+    "Goalkeeper", "Right-Back", "Centre-Back", "Left-Back", "Right Midfield",
+    "Defensive Midfield", "Central Midfield", "Attacking Midfield", "Left Midfield",
+    "Right Winger","Centre-Forward", "Left Winger"
+  ];
 
-    icons.forEach((icon, i) => {
-      d3.select("#pitch")
-        .append("div")
-        .attr("class", "event-icon")
-        .style("left", `${absX + 15 + (iconOffset)}px`)
-        .style("top", `${absY - 20}px`)
-        .text(icon);
-    
-      iconOffset += 18;
-    });
-    
-    // ✅ Render Substitution icon(s) as image(s)
-    subs.forEach((_, i) => {
-      d3.select("#pitch")
-        .append("img")
-        .attr("src", "/ressources/Substitution.png")
-        .attr("class", "event-icon")
-        .style("width", "18px")
-        .style("height", "18px")
-        .style("left", `${absX + 15 + (iconOffset)}px`)
-        .style("top", `${absY - 20}px`);
-    
-      iconOffset += 20;
-    });     
-  
-    // 📋 Add to lineup table
-    const teamArray = isLeft ? leftTeam : rightTeam;
-    teamArray.push({ id: player.player_id, name: fullPlayer.name, position: player.position });
-  });
-  
+  const positionOrderMap = Object.fromEntries(orderedPositions.map((p, i) => [p, i]));
 
-  [leftTeam, rightTeam].forEach((team, i) => {
-    team.sort((a, b) => orderedPositions.indexOf(a.position) - orderedPositions.indexOf(b.position));
-    const list = i === 0 ? leftLineupList : rightLineupList;
+  const leftPlayers = visiblePlayers.filter(p => p.club_id === leftClub).sort((a, b) =>
+    (positionOrderMap[a.position] ?? 999) - (positionOrderMap[b.position] ?? 999)
+  );
 
-    team.forEach(p => {
-      const playerLineup = allLineups.find(l => l.player_id === p.id && l.game_id === gameId);
+  const rightPlayers = visiblePlayers.filter(p => p.club_id === rightClub).sort((a, b) =>
+    (positionOrderMap[a.position] ?? 999) - (positionOrderMap[b.position] ?? 999)
+  );
+
+  const leftPositions = computeDynamicPositionMap(leftFormation, "left");
+  const rightPositions = computeDynamicPositionMap(rightFormation, "right");
+
+  const layoutPlayers = (players, positions, side) => {
+    const list = side === "left" ? leftLineupList : rightLineupList;
+    const teamArray = [];
+
+    players.forEach((player, idx) => {
+      const fullPlayer = playerMap.get(player.player_id);
+      if (!fullPlayer || !fullPlayer.image_url) return;
+      if (idx >= positions.length) return;
+
+      let { x, y } = positions[idx];
+      if (side === "left") {
+        y = 100 - y; // 🪞 Mirror horizontally for left team
+      }
+      const absX = (x / 100) * svgWidth;
+      
+      const absY = (y / 100) * svgHeight;
+
+      // 👤 Image
+      d3.select("#pitch").append("img")
+        .attr("src", fullPlayer.image_url)
+        .attr("alt", fullPlayer.name)
+        .attr("title", fullPlayer.name)
+        .attr("class", "player-img")
+        .attr("data-player-id", player.player_id)
+        .style("left", `${absX}px`)
+        .style("top", `${absY}px`);
+
+      // 🎯 Events
+      const events = eventsUntilNow.filter(e => e.player_id === player.player_id);
+      const yellowCards = events.filter(ev => ev.description?.includes("Yellow"));
+      const redCards = events.filter(ev => ev.description?.includes("Red"));
+      const goals = events.filter(ev => ev.type === "Goals");
+      const subs = events.filter(ev => ev.type === "Substitutions");
+
+      const icons = [];
+      if (yellowCards.length >= 2 && redCards.length === 0) {
+        icons.push("🟥");
+      } else {
+        icons.push(...yellowCards.map(() => "🟨"));
+        icons.push(...redCards.map(() => "🟥"));
+      }
+      icons.push(...goals.map(() => "⚽"));
+
+      const playerLineup = allLineups.find(l => l.player_id === player.player_id && l.game_id === gameId);
+
+      if (playerLineup?.team_captain === "1") {
+        d3.select("#pitch")
+          .append("img")
+          .attr("src", "/ressources/Captain.png")
+          .attr("class", "event-icon")
+          .style("width", "20px")
+          .style("height", "20px")
+          .style("left", `${absX + 15}px`)
+          .style("top", `${absY + 20}px`);
+      }
+
+      // Icons
+      let iconOffset = 0;
+      icons.forEach(icon => {
+        d3.select("#pitch")
+          .append("div")
+          .attr("class", "event-icon")
+          .style("left", `${absX + 15 + iconOffset}px`)
+          .style("top", `${absY - 20}px`)
+          .text(icon);
+        iconOffset += 18;
+      });
+
+      // Substitutions
+      subs.forEach(() => {
+        d3.select("#pitch")
+          .append("img")
+          .attr("src", "/ressources/Substitution.png")
+          .attr("class", "event-icon")
+          .style("width", "18px")
+          .style("height", "18px")
+          .style("left", `${absX + 15 + iconOffset}px`)
+          .style("top", `${absY - 20}px`);
+        iconOffset += 20;
+      });
+
+      // 📋 Lineup list
       const number = playerLineup?.number || "";
       const li = document.createElement("li");
-      li.textContent = number ? `${number} ${p.name}` : p.name;
-      li.setAttribute("data-player-id", p.id);
+      li.textContent = number ? `${number} ${fullPlayer.name}` : fullPlayer.name;
+      li.setAttribute("data-player-id", player.player_id);
       list.appendChild(li);
-    });    
-  });
 
+      teamArray.push({ id: player.player_id, name: fullPlayer.name, position: player.position });
+    });
+  };
+
+  layoutPlayers(leftPlayers, leftPositions, "left");
+  layoutPlayers(rightPlayers, rightPositions, "right");
+
+  // ✨ Highlight on hover
   document.querySelectorAll("li[data-player-id]").forEach(li => {
     li.addEventListener("mouseenter", () => {
       const id = li.getAttribute("data-player-id");
