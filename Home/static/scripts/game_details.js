@@ -72,7 +72,6 @@ svg.append("rect").attr("x", svgWidth - 80).attr("y", svgHeight * 0.25).attr("wi
 
 const leftLineupList = document.getElementById("left-lineup-list");
 const rightLineupList = document.getElementById("right-lineup-list");
-
 const leftLogoEl = document.getElementById("left-team-logo");
 const rightLogoEl = document.getElementById("right-team-logo");
 const leftTeamNameSpan = document.querySelector("#left-team-name span");
@@ -81,6 +80,8 @@ const leftFormationEl = document.getElementById("left-team-formation");
 const rightFormationEl = document.getElementById("right-team-formation");
 const leftManagerEl = document.getElementById("left-team-manager");
 const rightManagerEl = document.getElementById("right-team-manager");
+const leftTimelineLogo = document.getElementById("home-timeline-logo");
+const rightTimelineLogo = document.getElementById("away-timeline-logo");
 
 let allLineups, allPlayers, allClubs, allGames, allLogos, allEvents;
 let playerMap = new Map();
@@ -123,6 +124,8 @@ Promise.all([
   rightTeamNameSpan.textContent = clubMap.get(rightClub);
   leftLogoEl.src = logoMap.get(leftClub);
   rightLogoEl.src = logoMap.get(rightClub);
+  leftTimelineLogo.src = logoMap.get(leftClub);
+  rightTimelineLogo.src = logoMap.get(rightClub);
   leftManagerEl.textContent = thisGame.home_club_manager_name;
   rightManagerEl.textContent = thisGame.away_club_manager_name;
   leftFormationEl.textContent = thisGame.home_club_formation;
@@ -315,26 +318,35 @@ function setupTimeline() {
                  e.description?.includes("Red") ? "🟥" :
                  e.type === "Goals" ? "⚽" : "";
   
+    const isHomeTeam = e.club_id === leftClub;
     const leftPercent = (parseInt(e.minute) / 90) * 100;
+    const verticalOffset = isHomeTeam ? "-25px" : "25px";
   
+    // 🟨🟥⚽ as emoji
     if (icon) {
       const div = document.createElement("div");
       div.className = "timeline-event-marker";
-      div.style.left = `${leftPercent}%`;
       div.textContent = icon;
       div.title = `${e.minute}'`;
+      div.style.left = `${leftPercent}%`;
+      div.style.position = "absolute";
+      div.style.transform = "translateX(-50%)";
+      div.style.top = verticalOffset;
       timelineBar.appendChild(div);
     }
   
-    // ✅ Render substitution icon as image
+    // 🔁 Substitution as image
     if (e.type === "Substitutions") {
       const img = document.createElement("img");
       img.src = "/ressources/Substitution.png";
       img.className = "timeline-event-marker";
+      img.title = `${e.minute}'`;
       img.style.left = `${leftPercent}%`;
       img.style.width = "20px";
       img.style.height = "20px";
-      img.title = `${e.minute}'`;
+      img.style.position = "absolute";
+      img.style.transform = "translateX(-50%)";
+      img.style.top = verticalOffset;
       timelineBar.appendChild(img);
     }
   });  
