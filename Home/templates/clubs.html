@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Clubs - Football Dashboard</title>
+  <link rel="stylesheet" href="/Home/static/styles/chart.css" />
   <link rel="stylesheet" href="/Home/static/styles/clubs.css" />
   <link rel="stylesheet" href="/Home/static/styles/XInsider.css" />
-
 </head>
 <body>
 
@@ -19,14 +20,22 @@
 
   <!-- Main content -->
   <main class="dashboard" id="main-content">
-   <h1>Football Dashboard</h1>
-   <h2>Clubs</h2>
+    <input type="text" id="club-search-bar" placeholder="Search for a club..." class="search-bar" />
+    <div id="clubs-list"></div> <!-- Container for the club list -->
+    
+    <!-- Pagination -->
+    <div class="pagination">
+      <button id="prevPage">&laquo; Prev</button>
+      <span id="pageInfo"></span>
+      <button id="nextPage">Next &raquo;</button>
+    </div>
   </main>
 
   <!-- Footer -->
   <div id="footer-container"></div>
 
-  <script src="/node_modules/d3/dist/d3.min.js"></script>
+  <!-- Scripts -->
+  <script src="/Home/static/scripts/clubList.js"></script>
 
   <script src="/Home/static/components/navbarSearch.js"></script>
   <script src="/Home/static/components/navbar.js"></script>
