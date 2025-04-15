@@ -7,9 +7,11 @@ body {
 
 .pitch-container {
   display: flex;
+  flex-direction: row;
   justify-content: center;
-  align-items: center;
-  margin: 2rem auto;
+  align-items: flex-start;
+  margin: 2rem auto 1rem auto;
+  gap: 1rem;
 }
 
 #pitch {
@@ -32,3 +34,207 @@ body {
   transform: translate(-50%, -50%);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
+
+.player-img.highlighted {
+  transform: translate(-50%, -50%) scale(1.4);
+  z-index: 10;
+  border: 3px solid #A0E5AF;
+}
+
+.lineup-table {
+  width: 220px;
+  padding: 1rem;
+  background: linear-gradient(to bottom right, #ffffff, #f2f6fc);
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  max-height: 480px;
+  overflow-y: auto;
+  transition: transform 0.3s ease;
+}
+
+.lineup-table:hover {
+  transform: translateY(-2px);
+}
+
+.lineup-table ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.lineup-table li {
+  margin-bottom: 0.5rem;
+  padding: 0.3rem 0.5rem;
+  background-color: #e6eef7;
+  border-radius: 8px;
+  color: #002244;
+  text-align: center;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.lineup-table li:hover {
+  background-color: #d4ebff;
+  color: #003366;
+  font-weight: 600;
+  transform: scale(1.03);
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.team-panel {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.team-logo {
+  height: 35px;
+  vertical-align: middle;
+  margin-right: 0.5rem;
+}
+
+.team-manager {
+  font-size: 0.85rem;
+  color: #444;
+  margin-top: 0.2rem;
+}
+
+.team-formation {
+  font-size: 0.85rem;
+  color: #777;
+  margin-top: 0.1rem;
+}
+
+#timeline-container {
+  width: 100%;
+  margin-top: -250px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 1.5rem;
+  position: relative;
+}
+
+#timeline-bar {
+  position: relative;
+  width: 1225px;
+  height: 10px;
+  background: linear-gradient(to right, #A0E5AF 0%, #60C57D 100%);
+  border-radius: 5px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  margin-bottom: 0.5rem;
+}
+
+.timeline-event-marker {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  font-size: 18px;
+  line-height: 24px;
+  text-align: center;
+  background: #fff;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+
+.timeline-event-marker.home {
+  top: -28px;
+}
+
+.timeline-event-marker.away {
+  top: 18px;
+}
+
+.timeline-event-marker.active {
+  background: #d5ffe3;
+  border: 2px solid #003c22;
+  font-weight: bold;
+}
+
+.timeline-event-marker .minute {
+  position: absolute;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  color: #003c22;
+  font-weight: 600;
+}
+
+#timeline-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 1.25rem;
+}
+
+#timeline-controls button {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: bold;
+  background-color: #60C57D;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#timeline-controls button:hover {
+  background-color: #49aa69;
+}
+
+.event-icon {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  font-size: 16px;
+  line-height: 20px;
+  text-align: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  z-index: 5;
+  transform: translate(-50%, -50%);
+}
+
+.event-marker {
+  position: absolute;
+  bottom: -25px;
+  transform: translateX(-50%);
+  font-size: 14px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.timeline-bar-wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.timeline-logos {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 70px;
+  align-items: center;
+}
+
+.timeline-club-logo {
+  width: 35px;
+  height: 35px;
+  object-fit: contain;
+}
+

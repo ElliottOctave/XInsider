@@ -6,22 +6,66 @@
   <title>Game Details - Football Dashboard</title>
   <link rel="stylesheet" href="/Home/static/styles/game_details.css" />
   <link rel="stylesheet" href="/Home/static/styles/XInsider.css" />
-  
 </head>
 <body>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Navbar -->
   <div id="navbar-container"></div>
 
-  <main class="pitch-container">
+  <main class="pitch-container" id="main-content">
+    <div class="lineup-table left-lineup">
+      <div class="team-panel">
+        <h3 id="left-team-name"><img id="left-team-logo" class="team-logo" /><span></span></h3>
+        <div id="left-team-manager" class="team-manager"></div>
+        <div id="left-team-formation" class="team-formation"></div>
+      </div>
+      <ul id="left-lineup-list"></ul>
+    </div>
+
     <div id="pitch"></div>
+
+    <div class="lineup-table right-lineup">
+      <div class="team-panel">
+        <h3 id="right-team-name"><img id="right-team-logo" class="team-logo" /><span></span></h3>
+        <div id="right-team-manager" class="team-manager"></div>
+        <div id="right-team-formation" class="team-formation"></div>
+      </div>
+      <ul id="right-lineup-list"></ul>
+    </div>
   </main>
 
+  <!-- 🎯 Timeline with event markers -->
+  <div id="timeline-container">
+    <div class="timeline-bar-wrapper">
+      <div class="timeline-logos">
+        <img id="home-timeline-logo" class="timeline-club-logo top"/>
+        <img id="away-timeline-logo" class="timeline-club-logo bottom"/>
+      </div>
+      <div id="timeline-bar"></div>
+    </div>
+    <div id="timeline-controls">
+      <button id="prev-button">⏮ Previous</button>
+      <div id="event-minute">0'</div>
+      <button id="next-button">Next ⏭</button>
+    </div>
+  </div>
+  
+  
+  
   <!-- Footer -->
   <div id="footer-container"></div>
 
+  <!-- Scripts -->
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="/Home/static/scripts/game_details.js"></script>
   <script src="/Home/static/components/navbarSearch.js"></script>
   <script src="/Home/static/components/navbar.js"></script>
   <script src="/Home/static/components/footer.js"></script>
+  <script src="/Home/static/components/loader.js"></script>
 </body>
 </html>

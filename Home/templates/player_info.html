@@ -10,11 +10,17 @@
 
 </head>
 <body>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay">
+    <div class="spinner"></div>
+  </div>
+
   <!-- Navbar -->
   <div id="navbar-container"></div>
 
   <!-- Player Profile Section -->
-  <main class="player-profile">
+  <main class="player-profile" id="main-content">
     <div id="player-details" class="player-details chart-section">
       <div id="player-info" class="player-info"></div>
       <!-- Player info will be dynamically inserted here -->
@@ -65,5 +71,6 @@
   <script src="/Home/static/components/navbarSearch.js"></script>
   <script src="/Home/static/components/navbar.js"></script>
   <script src="/Home/static/components/footer.js"></script>
+  <script src="/Home/static/components/loader.js"></script>
 </body>
 </html>

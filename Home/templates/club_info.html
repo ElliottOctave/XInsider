@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Club Info - Football Dashboard</title>
+
+  <!-- Stijlen -->
+  <link rel="stylesheet" href="/Home/static/styles/home.css" />
+  <link rel="stylesheet" href="/Home/static/styles/club_info.css" />
+  <link rel="stylesheet" href="/Home/static/styles/XInsider.css" />
+</head>
+<body>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Navbar -->
+  <div id="navbar-container"></div>
+
+  <!-- Hero Section -->
+  <main>
+    <section id="hero-section">
+      <img id="club-logo" alt="Club Logo" />
+      <h1 id="club-name"></h1>
+    </section>
+
+    <!-- Club Details Section -->
+    <section id="club-details">
+      <!-- JS zal hier extra data & grafieken injecteren -->
+    </section>
+  </main>
+
+  
+
+  <!-- Externe scripts -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+  <script src="https://unpkg.com/versor@0.4.2/versor.min.js"></script>
+  <script src="https://unpkg.com/topojson@3"></script>
+
+  <!-- Custom JS -->
+  <script type="module" src="/Home/static/scripts/clubInfo.js"></script>
+
+
+
+  <!-- Componenten -->
+  <script src="/Home/static/components/navbarSearch.js"></script>
+  <script src="/Home/static/components/navbar.js"></script>
+  <script src="/Home/static/components/footer.js"></script>
+  <script src="/Home/static/components/loader.js"></script>
+
+  <!-- Footer -->
+  <div id="footer-container"></div>
+</body>
+</html>

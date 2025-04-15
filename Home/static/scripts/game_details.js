@@ -3,152 +3,379 @@ const gameId = urlParams.get("gameId");
 
 const lineupsCsvPath = "../../data/game_lineups.csv";
 const playersCsvPath = "../../data/players.csv";
-
+const clubsCsvPath = "../../data/clubs.csv";
+const gamesCsvPath = "../../data/games.csv";
+const logosCsvPath = "../../data/club_logos.csv";
+const eventsCsvPath = "../../data/game_events.csv";
 const svgWidth = 800;
 const svgHeight = 480;
 
-const positionCoordinates = {
-  "Goalkeeper_left": { x: 5, y: 50 },
-  "Left-Back_left": { x: 20, y: 20 },
-  "Right-Back_left": { x: 20, y: 80 },
-  "Centre-Back_left": [{ x: 15, y: 40 }, { x: 15, y: 60 }],
-  "Defensive Midfield_left": [{ x: 27, y: 50 }, { x: 30, y: 60 }],
-  "Central Midfield_left": [{ x: 33, y: 35 }, { x: 33, y: 65 }],
-  "Attacking Midfield_left": [{ x: 36, y: 65 }, { x: 36, y: 35 }],
-  "Left Winger_left": { x: 40, y: 20 },
-  "Right Winger_left": { x: 40, y: 80 },
-  "Centre-Forward_left": { x: 45, y: 50 },
+function computeDynamicPositionMap(formationStr, side) {
+  const lines = formationStr.split("-").map(n => parseInt(n));
+  const xSteps = lines.length + 1;
+  const xStart = side === "left" ? 10 : 90;
+  const xEnd = side === "left" ? 45 : 55;
+  const xPositions = [];
 
-  "Goalkeeper_right": { x: 95, y: 50 },
-  "Left-Back_right": { x: 80, y: 80 },
-  "Right-Back_right": { x: 80, y: 20 },
-  "Centre-Back_right": [{ x: 85, y: 60 }, { x: 85, y: 40 }],
-  "Defensive Midfield_right": [{ x: 73, y: 50 }, { x: 70, y: 40 }],
-  "Central Midfield_right": [{ x: 67, y: 65 }, { x: 67, y: 35 }],
-  "Attacking Midfield_right": [{ x: 64, y: 35 }, { x: 64, y: 65 }],
-  "Left Winger_right": { x: 60, y: 80 },
-  "Right Winger_right": { x: 60, y: 20 },
-  "Centre-Forward_right": { x: 55, y: 50 }
-};
+  for (let i = 0; i < lines.length; i++) {
+    const ratio = (i + 1) / xSteps;
+    const x = xStart + (xEnd - xStart) * ratio;
+    xPositions.push(x);
+  }
 
-let positionCounts = {
-  "Centre-Back_left": 0,
-  "Centre-Back_right": 0,
-  "Defensive Midfield_left": 0,
-  "Defensive Midfield_right": 0,
-  "Central Midfield_left": 0,
-  "Central Midfield_right": 0,
-  "Attacking Midfield_left": 0,
-  "Attacking Midfield_right": 0
-};
+  const result = [];
+
+  lines.forEach((count, lineIdx) => {
+    const x = xPositions[lineIdx];
+    for (let i = 0; i < count; i++) {
+      const y = ((i + 1) / (count + 1)) * 100;
+      result.push({ x, y });
+    }
+  });
+
+  // Add Goalkeeper in the middle of the goal
+  result.unshift({
+    x: side === "left" ? 5 : 95,
+    y: 50
+  });
+
+  return result;
+}
+
+const orderedPositions = [
+  "Goalkeeper", "Right-Back", "Centre-Back", "Left-Back", "Right Midfielder",
+  "Defensive Midfield", "Central Midfield", "Attacking Midfield", "Left Midfielder",
+  "Right Winger", "Left Winger", "Centre-Forward"
+];
+
+let thisGame;
 
 const svg = d3.select("#pitch")
   .append("svg")
   .attr("viewBox", `0 0 ${svgWidth} ${svgHeight}`)
   .attr("preserveAspectRatio", "xMidYMid meet");
 
-// Draw pitch
-svg.append("rect")
-  .attr("x", 0).attr("y", 0)
-  .attr("width", svgWidth)
-  .attr("height", svgHeight)
-  .attr("fill", "#0b6623")
-  .attr("rx", 15);
+svg.append("rect").attr("x", 0).attr("y", 0).attr("width", svgWidth).attr("height", svgHeight)
+  .attr("fill", "#0b6623").attr("rx", 15);
 
-// Midline
-svg.append("line")
-  .attr("x1", svgWidth / 2).attr("y1", 0)
-  .attr("x2", svgWidth / 2).attr("y2", svgHeight)
+svg.append("line").attr("x1", svgWidth / 2).attr("y1", 0).attr("x2", svgWidth / 2).attr("y2", svgHeight)
   .attr("stroke", "#fff").attr("stroke-width", 2);
 
-// Center circle
-svg.append("circle")
-  .attr("cx", svgWidth / 2).attr("cy", svgHeight / 2)
-  .attr("r", 60)
+svg.append("circle").attr("cx", svgWidth / 2).attr("cy", svgHeight / 2).attr("r", 60)
   .attr("stroke", "#fff").attr("stroke-width", 2).attr("fill", "none");
 
-// Penalty boxes (left and right)
-svg.append("rect")
-  .attr("x", 0).attr("y", svgHeight * 0.25)
-  .attr("width", 80).attr("height", svgHeight * 0.5)
+svg.append("rect").attr("x", 0).attr("y", svgHeight * 0.25).attr("width", 80).attr("height", svgHeight * 0.5)
   .attr("stroke", "#fff").attr("stroke-width", 2).attr("fill", "none");
 
-svg.append("rect")
-  .attr("x", svgWidth - 80).attr("y", svgHeight * 0.25)
-  .attr("width", 80).attr("height", svgHeight * 0.5)
+svg.append("rect").attr("x", svgWidth - 80).attr("y", svgHeight * 0.25).attr("width", 80).attr("height", svgHeight * 0.5)
   .attr("stroke", "#fff").attr("stroke-width", 2).attr("fill", "none");
 
-// Load player data
+const leftLineupList = document.getElementById("left-lineup-list");
+const rightLineupList = document.getElementById("right-lineup-list");
+const leftLogoEl = document.getElementById("left-team-logo");
+const rightLogoEl = document.getElementById("right-team-logo");
+const leftTeamNameSpan = document.querySelector("#left-team-name span");
+const rightTeamNameSpan = document.querySelector("#right-team-name span");
+const leftFormationEl = document.getElementById("left-team-formation");
+const rightFormationEl = document.getElementById("right-team-formation");
+const leftManagerEl = document.getElementById("left-team-manager");
+const rightManagerEl = document.getElementById("right-team-manager");
+const leftTimelineLogo = document.getElementById("home-timeline-logo");
+const rightTimelineLogo = document.getElementById("away-timeline-logo");
+
+let allLineups, allPlayers, allClubs, allGames, allLogos, allEvents;
+let playerMap = new Map();
+let leftClub, rightClub;
+let eventMinutes = [], currentEventIndex = 0;
 Promise.all([
   fetch(lineupsCsvPath).then(res => res.text()),
-  fetch(playersCsvPath).then(res => res.text())
+  fetch(playersCsvPath).then(res => res.text()),
+  fetch(clubsCsvPath).then(res => res.text()),
+  fetch(gamesCsvPath).then(res => res.text()),
+  fetch(logosCsvPath).then(res => res.text()),
+  fetch(eventsCsvPath).then(res => res.text())
 ])
-  .then(([lineupsCsv, playersCsv]) => {
-    const parseCsv = (csvText) => {
-      const rows = csvText.trim().split('\n');
-      const headers = rows[0].split(',');
-      return rows.slice(1).map(row => {
-        const values = row.split(',');
-        const obj = {};
-        headers.forEach((header, i) => {
-          obj[header.trim()] = values[i]?.trim();
-        });
-        return obj;
-      });
-    };
+.then(([lineupsCsv, playersCsv, clubsCsv, gamesCsv, logosCsv, eventsCsv]) => {
+  const parseCsv = csv => {
+    const [headerLine, ...lines] = csv.trim().split("\n");
+    const headers = headerLine.split(",");
+    return lines.map(line => {
+      const values = line.split(",");
+      return Object.fromEntries(headers.map((h, i) => [h.trim(), values[i]?.trim()]));
+    });
+  };
 
-    const allLineups = parseCsv(lineupsCsv);
-    const allPlayers = parseCsv(playersCsv);
+  allLineups = parseCsv(lineupsCsv);
+  allPlayers = parseCsv(playersCsv);
+  allClubs = parseCsv(clubsCsv);
+  allGames = parseCsv(gamesCsv);
+  allLogos = parseCsv(logosCsv);
+  allEvents = parseCsv(eventsCsv);
 
-    const gameLineup = allLineups.filter(
-      p => p.game_id === gameId && p.type === "starting_lineup"
-    );
+  thisGame = allGames.find(g => g.game_id === gameId);
+  leftClub = thisGame.home_club_id;
+  rightClub = thisGame.away_club_id;
 
-    if (gameLineup.length === 0) {
-      console.warn("No starting lineup found for gameId:", gameId);
-      return;
-    }
+  const logoMap = new Map(allLogos.map(l => [l.club_id, l.logo_url]));
+  const clubMap = new Map(allClubs.map(c => [c.club_id, c.name]));
+  allPlayers.forEach(p => playerMap.set(p.player_id, p));
 
-    const leftClub = gameLineup[0].club_id;
-    const rightClub = gameLineup.find(p => p.club_id !== leftClub)?.club_id;
+  leftTeamNameSpan.textContent = clubMap.get(leftClub);
+  rightTeamNameSpan.textContent = clubMap.get(rightClub);
+  leftLogoEl.src = logoMap.get(leftClub);
+  rightLogoEl.src = logoMap.get(rightClub);
+  leftTimelineLogo.src = logoMap.get(leftClub);
+  rightTimelineLogo.src = logoMap.get(rightClub);
+  leftManagerEl.textContent = thisGame.home_club_manager_name;
+  rightManagerEl.textContent = thisGame.away_club_manager_name;
+  leftFormationEl.textContent = thisGame.home_club_formation;
+  rightFormationEl.textContent = thisGame.away_club_formation;
 
-    gameLineup.forEach(player => {
-      const fullPlayer = allPlayers.find(p => p.player_id === player.player_id);
-      if (!fullPlayer || !fullPlayer.image_url) return;
+  currentEventIndex = -1;  // ✅ initialize BEFORE the first event
+  renderLineup(0);         // show minute 0 on page load
+  document.getElementById("event-minute").textContent = "0'";
+  setupTimeline();         // now it works cleanly
 
-      const isLeft = player.club_id === leftClub;
-      const side = isLeft ? "left" : "right";
-      const key = `${player.position}_${side}`;
-      const pos = positionCoordinates[key];
+})
+.catch(err => console.error("Failed to load data:", err));
 
-      if (!pos) return;
+function renderLineup(minute) {
+  d3.selectAll(".player-img").remove();
+  d3.selectAll(".event-icon").remove();
+  leftLineupList.innerHTML = "";
+  rightLineupList.innerHTML = "";
 
-      let x, y;
+  const eventsUntilNow = allEvents.filter(e => e.game_id === gameId && parseInt(e.minute) <= minute);
 
-      if (Array.isArray(pos)) {
-        const index = positionCounts[key] || 0;
-        if (index >= pos.length) return;
-        x = pos[index].x;
-        y = pos[index].y;
-        positionCounts[key] = index + 1;
-      } else {
-        x = pos.x;
-        y = pos.y;
+  const activePlayers = new Set(
+    allLineups.filter(p => p.game_id === gameId && p.type === "starting_lineup").map(p => p.player_id)
+  );
+
+  // Substitutions
+  eventsUntilNow.forEach(e => {
+    if (e.type === "Substitutions") {
+      const subOut = e.player_id;
+      const subIn = e.player_assist_id?.trim();
+      activePlayers.delete(subOut);
+      if (subIn && subIn !== "") {
+        const incomingPlayer = allPlayers.find(p => p.player_id === subIn);
+        const outgoing = allLineups.find(p => p.player_id === subOut && p.game_id === gameId);
+        const subbedIn = allLineups.find(p => p.player_id === subIn && p.game_id === gameId);
+        if (incomingPlayer && outgoing && subbedIn) {
+          subbedIn.position = outgoing.position;
+          activePlayers.add(subIn);
+        }
       }
+    }
+  });
 
+  const visiblePlayers = allLineups.filter(p => p.game_id === gameId && activePlayers.has(p.player_id));
+
+  const leftFormation = thisGame.home_club_formation;
+  const rightFormation = thisGame.away_club_formation;
+
+  const orderedPositions = [
+    "Goalkeeper", "Right-Back", "Centre-Back", "Left-Back", "Right Midfield",
+    "Defensive Midfield", "Central Midfield", "Attacking Midfield", "Left Midfield",
+    "Right Winger","Centre-Forward", "Left Winger"
+  ];
+
+  const positionOrderMap = Object.fromEntries(orderedPositions.map((p, i) => [p, i]));
+
+  const leftPlayers = visiblePlayers.filter(p => p.club_id === leftClub).sort((a, b) =>
+    (positionOrderMap[a.position] ?? 999) - (positionOrderMap[b.position] ?? 999)
+  );
+
+  const rightPlayers = visiblePlayers.filter(p => p.club_id === rightClub).sort((a, b) =>
+    (positionOrderMap[a.position] ?? 999) - (positionOrderMap[b.position] ?? 999)
+  );
+
+  const leftPositions = computeDynamicPositionMap(leftFormation, "left");
+  const rightPositions = computeDynamicPositionMap(rightFormation, "right");
+
+  const layoutPlayers = (players, positions, side) => {
+    const list = side === "left" ? leftLineupList : rightLineupList;
+    const teamArray = [];
+
+    players.forEach((player, idx) => {
+      const fullPlayer = playerMap.get(player.player_id);
+      if (!fullPlayer || !fullPlayer.image_url) return;
+      if (idx >= positions.length) return;
+
+      let { x, y } = positions[idx];
+      if (side === "left") {
+        y = 100 - y; // 🪞 Mirror horizontally for left team
+      }
       const absX = (x / 100) * svgWidth;
+      
       const absY = (y / 100) * svgHeight;
 
-      d3.select("#pitch")
-        .append("img")
+      // 👤 Image
+      d3.select("#pitch").append("img")
         .attr("src", fullPlayer.image_url)
         .attr("alt", fullPlayer.name)
         .attr("title", fullPlayer.name)
         .attr("class", "player-img")
+        .attr("data-player-id", player.player_id)
         .style("left", `${absX}px`)
         .style("top", `${absY}px`);
+
+      // 🎯 Events
+      const events = eventsUntilNow.filter(e => e.player_id === player.player_id);
+      const yellowCards = events.filter(ev => ev.description?.includes("Yellow"));
+      const redCards = events.filter(ev => ev.description?.includes("Red"));
+      const goals = events.filter(ev => ev.type === "Goals");
+      const subs = events.filter(ev => ev.type === "Substitutions");
+
+      const icons = [];
+      if (yellowCards.length >= 2 && redCards.length === 0) {
+        icons.push("🟥");
+      } else {
+        icons.push(...yellowCards.map(() => "🟨"));
+        icons.push(...redCards.map(() => "🟥"));
+      }
+      icons.push(...goals.map(() => "⚽"));
+
+      const playerLineup = allLineups.find(l => l.player_id === player.player_id && l.game_id === gameId);
+
+      if (playerLineup?.team_captain === "1") {
+        d3.select("#pitch")
+          .append("img")
+          .attr("src", "/ressources/Captain.png")
+          .attr("class", "event-icon")
+          .style("width", "20px")
+          .style("height", "20px")
+          .style("left", `${absX + 15}px`)
+          .style("top", `${absY + 20}px`);
+      }
+
+      // Icons
+      let iconOffset = 0;
+      icons.forEach(icon => {
+        d3.select("#pitch")
+          .append("div")
+          .attr("class", "event-icon")
+          .style("left", `${absX + 15 + iconOffset}px`)
+          .style("top", `${absY - 20}px`)
+          .text(icon);
+        iconOffset += 18;
+      });
+
+      // Substitutions
+      subs.forEach(() => {
+        d3.select("#pitch")
+          .append("img")
+          .attr("src", "/ressources/Substitution.png")
+          .attr("class", "event-icon")
+          .style("width", "18px")
+          .style("height", "18px")
+          .style("left", `${absX + 15 + iconOffset}px`)
+          .style("top", `${absY - 20}px`);
+        iconOffset += 20;
+      });
+
+      // 📋 Lineup list
+      const number = playerLineup?.number || "";
+      const li = document.createElement("li");
+      li.textContent = number ? `${number} ${fullPlayer.name}` : fullPlayer.name;
+      li.setAttribute("data-player-id", player.player_id);
+      list.appendChild(li);
+
+      teamArray.push({ id: player.player_id, name: fullPlayer.name, position: player.position });
     });
-  })
-  .catch(err => {
-    console.error("Failed to load lineups or players:", err);
+  };
+
+  layoutPlayers(leftPlayers, leftPositions, "left");
+  layoutPlayers(rightPlayers, rightPositions, "right");
+
+  // ✨ Highlight on hover
+  document.querySelectorAll("li[data-player-id]").forEach(li => {
+    li.addEventListener("mouseenter", () => {
+      const id = li.getAttribute("data-player-id");
+      const img = document.querySelector(`.player-img[data-player-id="${id}"]`);
+      if (img) img.classList.add("highlighted");
+    });
+    li.addEventListener("mouseleave", () => {
+      const id = li.getAttribute("data-player-id");
+      const img = document.querySelector(`.player-img[data-player-id="${id}"]`);
+      if (img) img.classList.remove("highlighted");
+    });
   });
+}
+
+function setupTimeline() {
+  const timelineBar = document.getElementById("timeline-bar");
+  timelineBar.innerHTML = ""; // Clear old icons
+
+  const relevantEvents = allEvents
+    .filter(e => e.game_id === gameId)
+    .sort((a, b) => parseInt(a.minute) - parseInt(b.minute));
+
+  eventMinutes = [...new Set(relevantEvents.map(e => parseInt(e.minute)))];
+
+  relevantEvents.forEach(e => {
+    const icon = e.description?.includes("Yellow") ? "🟨" :
+                 e.description?.includes("Red") ? "🟥" :
+                 e.type === "Goals" ? "⚽" : "";
+  
+    const isHomeTeam = e.club_id === leftClub;
+    const leftPercent = (parseInt(e.minute) / 90) * 100;
+    const verticalOffset = isHomeTeam ? "-25px" : "25px";
+  
+    // 🟨🟥⚽ as emoji
+    if (icon) {
+      const div = document.createElement("div");
+      div.className = "timeline-event-marker";
+      div.textContent = icon;
+      div.title = `${e.minute}'`;
+      div.style.left = `${leftPercent}%`;
+      div.style.position = "absolute";
+      div.style.transform = "translateX(-50%)";
+      div.style.top = verticalOffset;
+      timelineBar.appendChild(div);
+    }
+  
+    // 🔁 Substitution as image
+    if (e.type === "Substitutions") {
+      const img = document.createElement("img");
+      img.src = "/ressources/Substitution.png";
+      img.className = "timeline-event-marker";
+      img.title = `${e.minute}'`;
+      img.style.left = `${leftPercent}%`;
+      img.style.width = "20px";
+      img.style.height = "20px";
+      img.style.position = "absolute";
+      img.style.transform = "translateX(-50%)";
+      img.style.top = verticalOffset;
+      timelineBar.appendChild(img);
+    }
+  });  
+
+  renderLineup(0);
+  document.getElementById("event-minute").textContent = "0'";
+  
+}
+
+function updateTimeline() {
+  const minute = eventMinutes[currentEventIndex] || 0;
+  document.getElementById("event-minute").textContent = `${minute}'`;
+
+  // Highlight correct marker
+  document.querySelectorAll(".timeline-event-marker").forEach(marker => {
+    const markerMinute = parseInt(marker.title.replace("'", ""));
+    marker.classList.toggle("active", markerMinute === minute);
+  });
+
+  renderLineup(minute);
+}
+
+document.addEventListener("click", (e) => {
+  if (e.target.id === "prev-button" && currentEventIndex > 0) {
+    currentEventIndex--;
+    updateTimeline();
+  } else if (e.target.id === "next-button" && currentEventIndex < eventMinutes.length - 1) {
+    currentEventIndex++;
+    updateTimeline();
+  }
+});
+
