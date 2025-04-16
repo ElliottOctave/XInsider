@@ -67,8 +67,6 @@ async function showGamesCalendar() {
     date: new Date(d.date)
   }));
 
-  console.log(games);
-
   // Step 2: Group by day and count the number of games for each day
   const data = d3.rollups(
     games,
@@ -161,6 +159,80 @@ async function showGamesCalendar() {
   return svg.node();
 }
 
+async function showPlayerCountries() {
+  // Specify the chart’s dimensions.
+  const width = 800;
+  const marginTop = 46;
+  const height = width / 2 + marginTop;
+
+  // Fit the projection.
+  const projection = d3.geoEqualEarth().fitExtent([[2, marginTop + 2], [width - 2, height]], {type: "Sphere"});
+  const path = d3.geoPath(projection);
+
+  // Load the player data (CSV).
+  const players = await d3.csv("../../processed_data/player_summary.csv");
+
+  // Count the number of players per country of birth.
+  const countryCounts = players.reduce((acc, player) => {
+    const country = player.country_of_birth;
+    acc[country] = (acc[country] || 0) + 1;
+    return acc;
+  }, {});
+
+  // Load the GeoJSON data for countries.
+  const world = await d3.json("https://unpkg.com/world-atlas@2/countries-110m.json");
+  const countries = topojson.feature(world, world.objects.countries);
+  const countrymesh = topojson.mesh(world, world.objects.countries, (a, b) => a !== b);
+
+  // Map the number of players to each country in the GeoJSON data.
+  countries.features.forEach(country => {
+    const countryName = country.properties.name;
+    country.properties.playerCount = countryCounts[countryName] || 0;  // Default to 0 if no players from this country
+  });
+
+  // Create the color scale based on player count
+  const maxPlayers = d3.max(countries.features, d => d.properties.playerCount);
+  const color = d3.scaleSequential(d3.interpolateYlGnBu).domain([0, maxPlayers]);
+
+  // Create the SVG container.
+  const svg = d3.select("#countries")
+  .append("svg")
+  .attr("width", width)
+  .attr("height", height)
+  .attr("viewBox", [0, 0, width, height])
+  .attr("style", "max-width: 100%; height: auto;");
+
+  // Add a white sphere with a black border.
+  svg.append("path")
+    .datum({type: "Sphere"})
+    .attr("fill", "white")
+    .attr("stroke", "black")
+    .attr("d", path);
+
+  // Add a path for each country and color it based on the number of players.
+  svg.append("g")
+    .selectAll("path")
+    .data(countries.features)
+    .join("path")
+    .attr("fill", d => color(d.properties.playerCount))
+    .attr("d", path)
+    .append("title")
+    .text(d => `${d.properties.name}\n${d.properties.playerCount} players`);
+
+  // Add a white mesh (country borders).
+  svg.append("path")
+    .datum(countrymesh)
+    .attr("fill", "none")
+    .attr("stroke", "white")
+    .attr("d", path);
+
+console.log('Loaded players:', players);
+console.log('Loaded countries:', countries);
+console.log('Max Players:', maxPlayers);
+
+}
+
+
 
 
 
@@ -177,3 +249,4 @@ document.getElementById("compare-form").addEventListener("submit", e => {
 // Init
 setMode("player");
 showGamesCalendar();
+showPlayerCountries();
