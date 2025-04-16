@@ -342,7 +342,7 @@ function drawNationalityBarChart(clubId, players) {
           `;
           row.addEventListener("click", () => {
             // Replace this with your real link later
-            window.location.href = `/Home/templates/player_info.html?playerId=${player.player_id}`;
+            window.location.href = `/Home/pages/player_info.html?playerId=${player.player_id}`;
           });
           tbody.appendChild(row);
         });

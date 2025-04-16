@@ -59,7 +59,7 @@ Promise.all([
         clubImage.classList.add('club-image');
 
         const clubLink = document.createElement('a');
-        clubLink.href = `/Home/templates/club_info.html?club_id=${club.club_id}`;
+        clubLink.href = `/Home/pages/club_info.html?club_id=${club.club_id}`;
         clubLink.textContent = `${club.name}`;
 
         const clubDetails = document.createElement('p');

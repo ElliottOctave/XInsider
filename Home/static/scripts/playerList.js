@@ -43,7 +43,7 @@ fetch(playersCsvUrl)
         playerImage.classList.add('player-image');
 
         const playerLink = document.createElement('a');
-        playerLink.href = `/Home/templates/player_info.html?playerId=${player.player_id}`;
+        playerLink.href = `/Home/pages/player_info.html?playerId=${player.player_id}`;
         playerLink.textContent = `${player.first_name} ${player.last_name}`;
 
         const playerDetails = document.createElement('p');
