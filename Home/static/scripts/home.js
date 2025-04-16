@@ -44,11 +44,22 @@ function loadSuggestions() {
 // Handle form
 document.getElementById("compare-form").addEventListener("submit", e => {
   e.preventDefault();
-  const entity1 = encodeURIComponent(compare1.value.trim());
-  const entity2 = encodeURIComponent(compare2.value.trim());
-  const type = mode === "player" ? "players" : "clubs";
-  window.location.href = `/Home/templates/compare_${type}.html?first=${entity1}&second=${entity2}`;
+  const val1 = compare1.value.trim();
+  const val2 = compare2.value.trim();
+
+  if (val1.toLowerCase() === val2.toLowerCase()) {
+    alert("Please select two different players or clubs.");
+    return;
+  }
+
+  const type = document.querySelector('input[name="mode"]:checked').value === "player" ? "players" : "clubs";
+  const query = new URLSearchParams({
+    type: type,
+    first: val1,
+    second: val2
+  }).toString();
+
+  window.location.href = `/Home/pages/compare.html?${query}`;
 });
 
-// Init
-setMode("player");
+setMode("player"); // Set default mode to player
