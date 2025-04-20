@@ -24,18 +24,45 @@ fetch('../../processed_data/player_summary.csv')
 
     // Find the selected player by playerId
     const player = players.find(p => p.player_id === playerId);
-
     if (player) {
-      // Populate the player's profile details
+      const birthDate = new Date(player.date_of_birth);
+      const formattedDate = birthDate.toLocaleDateString("en-GB", {
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      });
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
       document.getElementById('player-info').innerHTML = `
-        <h1>${player.name}</h1>
-        <p><strong>Current Club:</strong> ${player.current_club_name}</p>
-        <p><strong>Position:</strong> ${player.position}</p>
-        <p><strong>Market Value:</strong> €${player.market_value_in_eur}</p>
-        <p><strong>Country of Birth:</strong> ${player.country_of_birth}</p>
-        <p><strong>Date of Birth:</strong> ${player.date_of_birth}</p>
-        <img src="${player.image_url}" alt="${player.first_name} ${player.last_name}" class="player-image" />
+        <div class="player-card">
+          <div class="player-card-left">
+            <img src="${player.image_url}" alt="${player.name}" class="player-card-image" />
+          </div>
+      
+          <div class="player-card-middle">
+            <h2>${player.name}</h2>
+            <p><strong>Date of Birth</strong> ${formattedDate}</p>
+            <p><strong>Age</strong> ${age}</p>
+            <p><strong>Country of Birth</strong> ${player.country_of_birth}</p>
+            <p><strong>Country of Citizenship</strong> ${player.country_of_citizenship}</p>
+            <p><strong>Height</strong> ${player.height_in_cm} cm</p> 
+            <p><strong>Highest Market Value</strong> € ${(player.highest_market_value_in_eur/1000000 || "0")}M</p>
+          </div>
+      
+          <div class="player-card-right">
+            <div class="info-box"><h4>Club</h4><img src="${player.club_logo_url}" alt="Club Logo" class="club-logo" /></div>
+            <div class="info-box"><h4>Position</h4><p>${player.position}</p></div>
+            <div class="info-box"><h4>Market Value</h4><p>€ ${(player.market_value_in_eur/1000000 || "0")}M</p></div>
+            <div class="info-box"><h4>Foot</h4><p>${player.foot}</p></div>
+          </div>
+        </div>
       `;
+    
+    
       
             // Example transfer data
       const transfers = [

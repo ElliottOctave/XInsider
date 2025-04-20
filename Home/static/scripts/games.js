@@ -73,7 +73,7 @@ function renderCards() {
   paginatedGames.forEach(game => {
     const score = `${game.home_club_goals} - ${game.away_club_goals}`;
     const link = document.createElement("a");
-    link.href = `/Home/templates/game_details.html?gameId=${game.game_id}`;
+    link.href = `/Home/pages/game_details.html?gameId=${game.game_id}`;
     link.className = "match-card";
     link.innerHTML = `
       <div class="teams">

@@ -1,0 +1,77 @@
+/* compare.css */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f9f9fb;
+    margin: 0;
+    padding: 0;
+    color: #333;
+  }
+  
+  .compare-page {
+    padding: 40px;
+    max-width: 1200px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+  }
+  
+  #comparison-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+
+  #compare-title {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: #003366;
+  }
+  
+  #radarChart {
+    max-width: 600px;
+    width: 100%;
+    height: auto;
+  }
+
+  .compare-flex {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+    width: 100%;
+    max-width: 1200px;
+  }
+  
+  .radar-wrapper {
+    flex-grow: 1;
+    max-width: 600px;
+  }
+  
+  .side-by-side {
+    text-align: center;
+    width: 180px;
+  }
+  
+  .compare-logo {
+    width: 200px;
+    height: auto;
+    object-fit: contain;
+    margin-bottom: 10px;
+  }
+  
+  
+  #additional-stats {
+    width: 100%;
+    max-width: 800px;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    margin-top: 20px;
+  }
+  

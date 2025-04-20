@@ -90,12 +90,11 @@
     max-width: 900px;
   }
   
-  .player-image img {
+  .player-image {
     width: 150px;
     height: 150px;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid #ddd;
   }
   
   .player-info {
@@ -127,3 +126,86 @@
     gap: 40px; /* Optional spacing between the charts */
     align-items: center;
   }
+  
+  .player-card {
+    display: flex;
+    justify-content: space-between;
+    max-width: 1000px;
+    width: 100%;
+    gap: 20px;
+  }
+  .player-card-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 150px;
+  }
+  
+  .player-card-image {
+    width: 200px;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 2px solid #003366;
+  }
+  
+  .player-club {
+    font-size: 14px;
+    color: #ccc;
+    text-align: center;
+  }
+  
+  .player-card-middle {
+    flex: 1;
+  }
+  
+  .player-card-middle h2 {
+    font-size: 30px;
+    margin: 0 20px 10px;
+  }
+  
+  .player-card-middle p {
+    display: flex;
+    justify-content: space-between;
+    font-size: 15px;
+    margin: 0 20px 10px;
+  }
+  
+  .player-card-right {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    width: 300px;
+  }
+  
+  .info-box {
+    background-color: #003366;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  }
+  
+  .info-box h4 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    color: #00b4d8;
+  }
+  
+  .info-box p {
+    font-size: 25px;
+    color: #f1f1f1;
+  }
+
+  .club-logo {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+  }
+  
+  
+
+
+
