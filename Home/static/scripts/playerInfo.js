@@ -1,5 +1,16 @@
 import * as d3Soccer from 'd3-soccer';
 
+function formatValue(num) {
+  if (num >= 1_000_000) {
+    return (num / 1_000_000).toFixed(1).replace(/\.0$/, '') + "M";
+  } else if (num >= 1_000) {
+    return (num / 1_000).toFixed(0) + "k";
+  } else {
+    return num.toString();
+  }
+}
+
+
 // Get playerId from the URL (e.g., ?playerId=123)
 const urlParams = new URLSearchParams(window.location.search);
 const playerId = urlParams.get('playerId');
@@ -50,26 +61,17 @@ fetch('../../processed_data/player_summary.csv')
             <p><strong>Country of Birth</strong> ${player.country_of_birth}</p>
             <p><strong>Country of Citizenship</strong> ${player.country_of_citizenship}</p>
             <p><strong>Height</strong> ${player.height_in_cm} cm</p> 
-            <p><strong>Highest Market Value</strong> € ${(player.highest_market_value_in_eur/1000000 || "0")}M</p>
+            <p><strong>Highest Market Value</strong> € ${(formatValue(player.highest_market_value_in_eur)|| "0")}</p>
           </div>
       
           <div class="player-card-right">
             <div class="info-box"><h4>Club</h4><img src="${player.club_logo_url}" alt="Club Logo" class="club-logo" /></div>
             <div class="info-box"><h4>Position</h4><p>${player.position}</p></div>
-            <div class="info-box"><h4>Market Value</h4><p>€ ${(player.market_value_in_eur/1000000 || "0")}M</p></div>
+            <div class="info-box"><h4>Market Value</h4><p>€ ${(formatValue(player.market_value_in_eur)|| "0")}</p></div>
             <div class="info-box"><h4>Foot</h4><p>${player.foot}</p></div>
           </div>
         </div>
       `;
-    
-    
-      
-            // Example transfer data
-      const transfers = [
-        { origin: "Germany", destination: "Germany" },
-        { origin: "Germany", destination: "Spain" },
-        { origin: "Spain", destination: "Japan" }
-      ];
 
       // Call the function to start the world tour animation with transfers
       renderTransfersWorldTour(playerId);
@@ -221,7 +223,7 @@ function drawCardsChart(player) {
   // Set the dimensions and margins of the graph
   const width = +svg.attr("width");
   const height = +svg.attr("height");
-  const margin = 40;
+  const margin = 60;
 
   // The radius of the pie plot is half the width or half the height (smallest one). I subtract a bit of margin.
   const radius = Math.min(width, height) / 2 - margin;
@@ -286,7 +288,7 @@ function drawCardsChart(player) {
   g.append("text")
     .attr("text-anchor", "middle")
     .attr("dominant-baseline", "central")
-    .attr("font-size", "14px")  // Smaller font for "Total Number of Cards"
+    .attr("font-size", "12px")  // Smaller font for "Total Number of Cards"
     .attr("fill", "#000")    // Color for the smaller text (you can change this)
     .attr("dy", "-30px")
     .text("Total Number of Cards");
@@ -295,73 +297,116 @@ function drawCardsChart(player) {
   g.append("text")
     .attr("text-anchor", "middle")
     .attr("dominant-baseline", "central")
-    .attr("font-size", "24px")  // Larger font for the total number
+    .attr("font-size", "28px")  // Larger font for the total number
     .attr("fill", "#000")    // Color for the larger text (you can change this)
     .text(totalCards);
 }
 
-
-
 function drawGoalsAndAssistsChart(player) {
   const svg = d3.select("#goalsChart");
+
+  // Data for the pie chart (goals and assists)
   const data = [
     { category: "Goals", value: +player.goals },
     { category: "Assists", value: +player.assists }
   ];
 
+  // Set the dimensions and margins of the graph
   const width = +svg.attr("width");
   const height = +svg.attr("height");
-  const margin = { top: 20, right: 30, bottom: 40, left: 60 };
+  const margin = 60;
 
-  const x = d3.scaleBand()
-    .domain(data.map(d => d.category))
-    .range([margin.left, width - margin.right])
-    .padding(0.4);
+  // The radius of the pie plot is half the width or half the height (smallest one). I subtract a bit of margin.
+  const radius = Math.min(width, height) / 2 - margin;
 
-  const y = d3.scaleLinear()
-    .domain([0, d3.max(data, d => d.value) || 1])
-    .nice()
-    .range([height - margin.bottom, margin.top]);
+  svg.selectAll("*").remove(); // Clear previous content
 
+  const g = svg.append("g")
+    .attr("transform", `translate(${width / 2}, ${height / 2})`);
+
+  // Set up the color scale for the pie slices
   const color = d3.scaleOrdinal()
     .domain(data.map(d => d.category))
-    .range(["#4CAF50", "#2196F3", "#FFC107"]);
+    .range(["#4CAF50", "#2196F3"]);
 
-  svg.selectAll("*").remove();
+  // Compute the position of each group on the pie (pie chart setup)
+  const pie = d3.pie().value(d => d.value);
+  const data_ready = pie(data);
 
-  svg.append("g")
-    .selectAll("rect")
-    .data(data)
-    .join("rect")
-    .attr("x", d => x(d.category))
-    .attr("y", d => y(d.value))
-    .attr("height", d => y(0) - y(d.value))
-    .attr("width", x.bandwidth())
-    .attr("fill", d => color(d.category));
+  // Build the donut chart (draw slices)
+  const slices = g.selectAll('path')
+    .data(data_ready)
+    .enter()
+    .append('path')
+    .attr('d', d3.arc()
+      .innerRadius(100)         // This is the size of the donut hole
+      .outerRadius(radius)      // Outer radius of the pie
+    )
+    .attr('fill', d => color(d.data.category)) // Fill color based on category
+    .attr("stroke", "white")
+    .style("stroke-width", "2px")
+    .style("opacity", 0.7);
 
-  svg.append("g")
-    .attr("transform", `translate(0,${height - margin.bottom})`)
-    .call(d3.axisBottom(x));
+  // Create a tooltip div and make it invisible by default
+  const tooltip = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("position", "absolute")
+    .style("visibility", "hidden")
+    .style("background-color", "rgba(0, 0, 0, 0.7)")
+    .style("color", "#fff")
+    .style("padding", "6px 10px")
+    .style("border-radius", "4px")
+    .style("font-size", "12px");
 
-  svg.append("g")
-    .attr("transform", `translate(${margin.left},0)`)
-    .call(d3.axisLeft(y));
+  // Add interaction: Show tooltip on hover
+  slices.on("mouseover", function(event, d) {
+    tooltip.style("visibility", "visible")
+      .html(`${d.data.category}: ${d.data.value}`);
+  })
+  .on("mousemove", function(event) {
+    tooltip.style("top", (event.pageY + 5) + "px")
+      .style("left", (event.pageX + 5) + "px");
+  })
+  .on("mouseout", function() {
+    tooltip.style("visibility", "hidden");
+  });
+
+  // Calculate the total number of goals and assists for the center label
+  const totalGoalsAndAssists = +player.goals + +player.assists;
+
+  // Add a label in the center to show the total number of goals and assists
+  g.append("text")
+    .attr("text-anchor", "middle")
+    .attr("dominant-baseline", "central")
+    .attr("font-size", "12px")  // Smaller font for "Total Goals & Assists"
+    .attr("fill", "#000")    // Color for the smaller text
+    .attr("dy", "-30px")
+    .text("Total Goals & Assists");
+
+  // Add the larger number for total goals and assists
+  g.append("text")
+    .attr("text-anchor", "middle")
+    .attr("dominant-baseline", "central")
+    .attr("font-size", "28px")  // Larger font for the total number
+    .attr("fill", "#000")    // Color for the larger text
+    .text(totalGoalsAndAssists);
 }
+
 
   
 function renderFieldPositions(playerId) {
   d3.csv('../../processed_data/position_count.csv').then(function(data) {
 
     const pitch = d3Soccer.pitch()
-      .height(300)
+      .height(200)
       .showDirOfPlay(true)
       .shadeMiddleThird(false)
       .pitchStrokeWidth(.5)
       .goals("line");
 
     const svg = d3.select("#halfField")
-      .attr("width", 500)
-      .attr("height", 300)
+      .attr("width", 305)
+      .attr("height", 200)
       .call(pitch);
 
     // Tooltip
@@ -384,20 +429,20 @@ function renderFieldPositions(playerId) {
     }
 
     const positionCoords = {
-      "Goalkeeper": [40, 150],
-      "Right-Back": [90, 260],
-      "Centre-Back": [100, 150],
-      "Left-Back": [90, 40],
-      "Defensive Midfield": [180, 150],
-      "Central Midfield": [240, 150],
-      "Attacking Midfield": [280, 150],
-      "Right Midfield": [240, 260],
-      "Left Midfield": [240, 40],
-      "Right Winger": [350, 260],
-      "Left Winger": [350, 40],
-      "Centre-Forward": [390, 150],
-      "Second Striker": [350, 150]
-    };
+      "Goalkeeper": [0.08, 0.5],
+      "Right-Back": [0.18, 0.87],
+      "Centre-Back": [0.2, 0.5],
+      "Left-Back": [0.18, 0.13],
+      "Defensive Midfield": [0.36, 0.5],
+      "Central Midfield": [0.48, 0.5],
+      "Attacking Midfield": [0.56, 0.5],
+      "Right Midfield": [0.48, 0.87],
+      "Left Midfield": [0.48, 0.13],
+      "Right Winger": [0.7, 0.87],
+      "Left Winger": [0.7, 0.13],
+      "Centre-Forward": [0.78, 0.5],
+      "Second Striker": [0.7, 0.5]
+    };    
 
     const positionInitials = {
       "Goalkeeper": "GK",
@@ -419,7 +464,12 @@ function renderFieldPositions(playerId) {
       for (let position in player) {
         if (position !== "player_id" && position !== "player_name" && player[position] > 0) {
           const matches = +player[position];
-          const [x, y] = positionCoords[position];
+          const [xPercent, yPercent] = positionCoords[position];
+          const width = +svg.attr("width");
+          const height = +svg.attr("height");
+          const x = xPercent * width;
+          const y = yPercent * height;
+
           const radius = Math.sqrt(matches) * 2;
 
           // Draw circle
@@ -427,7 +477,7 @@ function renderFieldPositions(playerId) {
             .attr("cx", x)
             .attr("cy", y)
             .attr("r", radius)
-            .style("fill", "blue")
+            .style("fill", "#003366")
             .style("opacity", 0.6);
 
           // Draw initials **above** the circle
@@ -463,13 +513,6 @@ function renderFieldPositions(playerId) {
     console.error('Error loading the CSV data: ', error);
   });
 }
-
-
-
-
-
-  
-  
 
 function renderMarketValueChart(playerValuations) {
     // Map the player valuations to get the date and market value (in million EUR)

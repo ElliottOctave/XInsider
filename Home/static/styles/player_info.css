@@ -1,9 +1,9 @@
 /* Player Profile Section */
+
 .player-profile {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 20px;
   }
   
     
@@ -75,7 +75,7 @@
   
   .chart-section h2 {
     font-size: 24px;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
   }
 
   .player-details {
@@ -123,8 +123,9 @@
   .performance-charts {
     display: flex;
     justify-content: center;
-    gap: 40px; /* Optional spacing between the charts */
+    gap: 20px; 
     align-items: center;
+    margin: 0 20px 20px 0;
   }
   
   .player-card {
@@ -160,7 +161,7 @@
   }
   
   .player-card-middle h2 {
-    font-size: 30px;
+    font-size: 25px;
     margin: 0 20px 10px;
   }
   
@@ -198,8 +199,8 @@
   }
 
   .club-logo {
-    width: 60px;
-    height: 60px;
+    width: 55px;
+    height: 55px;
     object-fit: contain;
     display: block;
     margin: 0 auto;
