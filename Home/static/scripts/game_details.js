@@ -130,7 +130,8 @@ Promise.all([
   rightManagerEl.textContent = thisGame.away_club_manager_name;
   leftFormationEl.textContent = thisGame.home_club_formation;
   rightFormationEl.textContent = thisGame.away_club_formation;
-
+  renderRecentMatches(leftClub, gameId, "left");
+  renderRecentMatches(rightClub, gameId, "right");  
   currentEventIndex = -1;  // ✅ initialize BEFORE the first event
   renderLineup(0);         // show minute 0 on page load
   document.getElementById("event-minute").textContent = "0'";
@@ -355,6 +356,44 @@ function setupTimeline() {
   document.getElementById("event-minute").textContent = "0'";
   
 }
+
+function renderRecentMatches(clubId, excludeGameId, side) {
+  const title = document.getElementById(`recent-matches-title-${side}`);
+  const container = document.getElementById(`recent-matches-list-${side}`);
+
+  const clubName = allClubs.find(c => c.club_id === clubId)?.name || "Unknown Club";
+  title.textContent = `Five last games of ${clubName}`;
+  container.innerHTML = "";
+
+  const recentGames = allGames
+    .filter(g => (g.home_club_id === clubId || g.away_club_id === clubId) && g.game_id !== excludeGameId)
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, 5);
+
+  recentGames.forEach(game => {
+    const home = allClubs.find(c => c.club_id === game.home_club_id);
+    const away = allClubs.find(c => c.club_id === game.away_club_id);
+    const homeLogo = allLogos.find(l => l.club_id === game.home_club_id)?.logo_url || "/fallback.png";
+    const awayLogo = allLogos.find(l => l.club_id === game.away_club_id)?.logo_url || "/fallback.png";
+
+    const div = document.createElement("div");
+    div.className = "match-card";
+    div.onclick = () => window.location.href = `/Home/pages/game_details.html?gameId=${game.game_id}`;
+
+    div.innerHTML = `
+      <div class="logos">
+        <img src="${homeLogo}" alt="${home.name}">
+        <img src="${awayLogo}" alt="${away.name}">
+      </div>
+      <div class="score">${game.home_club_goals} - ${game.away_club_goals}</div>
+      <div class="venue">${game.stadium}</div>
+      <div class="date">${game.date}</div>
+    `;
+
+    container.appendChild(div);
+  });
+}
+
 
 function updateTimeline() {
   const minute = eventMinutes[currentEventIndex] || 0;

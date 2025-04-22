@@ -172,7 +172,8 @@ body {
   justify-content: center;
   align-items: center;
   gap: 1.5rem;
-  margin-top: 1.25rem;
+  margin-top: 1.5rem;
+  margin-bottom: 4rem; /* ⬅️ Add more space BELOW green buttons */
 }
 
 #timeline-controls button {
@@ -238,3 +239,105 @@ body {
   object-fit: contain;
 }
 
+.back-button {
+  position: absolute;
+  top: 150px; /* More space above the button */
+  left: 40px;
+  background-color: #f3f4f6;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  border: 1px solid #ccc;
+  text-decoration: none;
+  color: #1a1a1a;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+.back-button:hover {
+  background-color: #e2e8f0;
+  transform: translateY(-2px);
+}
+
+/* 🔄 Recent Games Section */
+.recent-matches-container {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 4rem; /* ⬅️ More space between team sections */
+  padding: 6rem 0 7rem 0; /* ⬆️ More top and bottom spacing overall */
+  max-width: 100%;
+}
+
+.recent-matches-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 2.5rem;
+  flex-wrap: wrap;
+  width: 100%;
+  padding: 0 2rem;
+}
+
+.recent-matches-block + .recent-matches-block {
+  margin-top: 3rem; /* Increase to your liking */
+}
+
+.recent-matches-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #003c22;
+  text-align: center;
+}
+
+.recent-matches-list {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.match-card {
+  background: white;
+  border-radius: 20px;
+  padding: 1.4rem;
+  width: 270px;
+  min-height: 230px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+.match-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15);
+}
+.match-card .logos {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.match-card .logos img {
+  width: 52px;    /* ⬆️ Increased size */
+  height: 52px;
+  object-fit: contain;
+}
+.match-card .score {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin: 1rem 0;
+  text-align: center;
+}
+.match-card .venue {
+  font-size: 1rem;
+  color: #555;
+  text-align: center;
+}
+.match-card .date {
+  font-size: 0.9rem;
+  margin-top: 0.4rem;
+  color: #777;
+  text-align: center;
+}
