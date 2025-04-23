@@ -61,13 +61,14 @@ fetch('../../processed_data/player_summary.csv')
             <p><strong>Country of Birth</strong> ${player.country_of_birth}</p>
             <p><strong>Country of Citizenship</strong> ${player.country_of_citizenship}</p>
             <p><strong>Height</strong> ${player.height_in_cm} cm</p> 
+            <p><strong>Market Value</strong> € ${(formatValue(player.market_value_in_eur)|| "0")}</p>
             <p><strong>Highest Market Value</strong> € ${(formatValue(player.highest_market_value_in_eur)|| "0")}</p>
           </div>
       
           <div class="player-card-right">
             <div class="info-box"><h4>Club</h4><img src="${player.club_logo_url}" alt="Club Logo" class="club-logo" /></div>
+            <div class="info-box"><h4>Competition</h4><img src="${player.competition_logo_url}" alt="Competition Logo" class="club-logo" /></div>
             <div class="info-box"><h4>Position</h4><p>${player.position}</p></div>
-            <div class="info-box"><h4>Market Value</h4><p>€ ${(formatValue(player.market_value_in_eur)|| "0")}</p></div>
             <div class="info-box foot-box">
               <h4>Foot</h4>
               <div class="foot-icons">
@@ -420,7 +421,7 @@ function drawGoalsAndAssistsChart(player) {
 function drawAppearances(player) {
   const svg = d3.select("#minutesChart");
 
-  const appearances = +player.total_appearances;
+  const appearances = +player.appearances;
   const minutes = +player.minutes_played;
   const maxMinutes = +player.total_minutes;
   const percentage = maxMinutes > 0 ? minutes / maxMinutes : 0;
