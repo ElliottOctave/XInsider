@@ -96,7 +96,7 @@ fetch('../../processed_data/player_summary.csv')
 
 
       // Call the function to start the world tour animation with transfers
-      renderTransfersWorldTour(playerId);
+      /*renderTransfersWorldTour(playerId);*/
       renderMap(player);
       drawGoalsAndAssistsChart(player);
       drawCardsChart(player);
@@ -919,6 +919,7 @@ class Versor {
   }
 }
 
+/*
 async function renderTransfersWorldTour(playerId) {
   const width = 400;
   const height = Math.min(width, 400);
@@ -1040,6 +1041,7 @@ async function renderTransfersWorldTour(playerId) {
     }
   }
 }
+  */
 
 
 
