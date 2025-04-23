@@ -205,6 +205,35 @@
     display: block;
     margin: 0 auto;
   }
+
+  .foot-icons {
+    display: flex;
+    gap: 8px;
+    margin: 0 0 0 18px;
+  }
+  
+  .foot-icon {
+    width: 30px;
+    height: 50px;
+    border-radius: 10px;
+    background-color: #e0e0e0; /* Default grey foot */
+    border: 2px solid #ccc;
+  }
+  
+  .left-foot {
+    transform: rotate(-10deg);
+  }
+  
+  .right-foot {
+    transform: rotate(10deg);
+  }
+  
+  /* Highlighted foot */
+  .foot-icon.active {
+    background-color: #007bff; /* Highlight color (blue) */
+    border-color: #0056b3;
+  }
+  
   
   
 

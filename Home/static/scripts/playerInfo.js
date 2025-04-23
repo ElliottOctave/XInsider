@@ -68,19 +68,43 @@ fetch('../../processed_data/player_summary.csv')
             <div class="info-box"><h4>Club</h4><img src="${player.club_logo_url}" alt="Club Logo" class="club-logo" /></div>
             <div class="info-box"><h4>Position</h4><p>${player.position}</p></div>
             <div class="info-box"><h4>Market Value</h4><p>€ ${(formatValue(player.market_value_in_eur)|| "0")}</p></div>
-            <div class="info-box"><h4>Foot</h4><p>${player.foot}</p></div>
+            <div class="info-box foot-box">
+              <h4>Foot</h4>
+              <div class="foot-icons">
+                <div class="foot-icon left-foot"></div>
+                <div class="foot-icon right-foot"></div>
+              </div>
+            </div>
           </div>
         </div>
       `;
+
+      const foot = player.foot.toLowerCase();
+      const leftFoot = document.querySelector('.left-foot');
+      const rightFoot = document.querySelector('.right-foot');
+
+      if (foot.includes("both")) {
+        leftFoot.classList.add('active');
+        rightFoot.classList.add('active');
+      }
+      if (foot.includes("left")) {
+        leftFoot.classList.add('active');
+      }
+      if (foot.includes("right")) {
+        rightFoot.classList.add('active');
+      }
+
 
       // Call the function to start the world tour animation with transfers
       renderTransfersWorldTour(playerId);
       renderMap(player);
       drawGoalsAndAssistsChart(player);
       drawCardsChart(player);
+      drawAppearances(player)
       renderFieldPositions(playerId);
       renderPlayerStatsCarousel(playerId);
       renderTimeline(playerId);
+
 
       // Fetch market value history
       fetch('../../processed_data/player_valuations.csv')
@@ -286,20 +310,21 @@ function drawCardsChart(player) {
 
   // Add a label in the center to show the total number of cards with more detailed information
   g.append("text")
-    .attr("text-anchor", "middle")
-    .attr("dominant-baseline", "central")
-    .attr("font-size", "12px")  // Smaller font for "Total Number of Cards"
-    .attr("fill", "#000")    // Color for the smaller text (you can change this)
-    .attr("dy", "-30px")
-    .text("Total Number of Cards");
+  .attr("text-anchor", "middle")
+  .attr("dominant-baseline", "central")
+  .attr("font-size", "12px")  // Smaller font for "Total Appearances"
+  .attr("fill", "#555")       // Color for the smaller text
+  .attr("dy", "-20px")        // Adjust vertical positioning
+  .text("Total Number of Cards");
 
-  // Add the larger number for total cards
   g.append("text")
-    .attr("text-anchor", "middle")
-    .attr("dominant-baseline", "central")
-    .attr("font-size", "28px")  // Larger font for the total number
-    .attr("fill", "#000")    // Color for the larger text (you can change this)
-    .text(totalCards);
+  .attr("text-anchor", "middle")
+  .attr("dominant-baseline", "central")
+  .attr("font-size", "30px")      // Larger font for the appearance number
+  .attr("font-weight", "bold")    // Bold font
+  .attr("fill", "#333")           // Color for the text
+  .attr("dy", "0px")             // Adjust vertical positioning to match your original code
+  .text(totalCards);             // Set the text to the appearances value
 }
 
 function drawGoalsAndAssistsChart(player) {
@@ -374,23 +399,121 @@ function drawGoalsAndAssistsChart(player) {
   // Calculate the total number of goals and assists for the center label
   const totalGoalsAndAssists = +player.goals + +player.assists;
 
-  // Add a label in the center to show the total number of goals and assists
   g.append("text")
-    .attr("text-anchor", "middle")
-    .attr("dominant-baseline", "central")
-    .attr("font-size", "12px")  // Smaller font for "Total Goals & Assists"
-    .attr("fill", "#000")    // Color for the smaller text
-    .attr("dy", "-30px")
-    .text("Total Goals & Assists");
+  .attr("text-anchor", "middle")
+  .attr("dominant-baseline", "central")
+  .attr("font-size", "12px")  // Smaller font for "Total Appearances"
+  .attr("fill", "#555")       // Color for the smaller text
+  .attr("dy", "-20px")        // Adjust vertical positioning
+  .text("Total Goals & Assists");
 
-  // Add the larger number for total goals and assists
+  g.append("text")
+  .attr("text-anchor", "middle")
+  .attr("dominant-baseline", "central")
+  .attr("font-size", "30px")      // Larger font for the appearance number
+  .attr("font-weight", "bold")    // Bold font
+  .attr("fill", "#333")           // Color for the text
+  .attr("dy", "0px")             // Adjust vertical positioning to match your original code
+  .text(totalGoalsAndAssists);             // Set the text to the appearances value
+}
+
+function drawAppearances(player) {
+  const svg = d3.select("#minutesChart");
+
+  const appearances = +player.total_appearances;
+  const minutes = +player.minutes_played;
+  const maxMinutes = +player.total_minutes;
+  const percentage = maxMinutes > 0 ? minutes / maxMinutes : 0;
+  const percentageText = `${Math.round(percentage * 100)}%`;
+
+  const width = +svg.attr("width");
+  const height = +svg.attr("height");
+  const margin = 60;
+  const radius = Math.min(width, height) / 2 - margin;
+
+  svg.selectAll("*").remove();
+
+  const g = svg.append("g")
+    .attr("transform", `translate(${width / 2}, ${height / 2})`);
+
+  const data = [
+    { label: "Played", value: percentage },
+    { label: "Remaining", value: 1 - percentage }
+  ];
+
+  const color = d3.scaleOrdinal()
+    .domain(data.map(d => d.label))
+    .range(["#3498db", "#ecf0f1"]); // Blue and light grey
+
+  const pie = d3.pie()
+    .value(d => d.value)
+    .sort(null);
+
+  const data_ready = pie(data);
+
+  const arc = d3.arc()
+    .innerRadius(100)
+    .outerRadius(radius);
+
+  const slices = g.selectAll('path')
+    .data(data_ready)
+    .enter()
+    .append('path')
+    .attr('d', arc)
+    .attr('fill', d => color(d.data.label))
+    .attr("stroke", "white")
+    .style("stroke-width", "2px")
+    .style("opacity", 0.9);
+
+  const tooltip = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("position", "absolute")
+    .style("visibility", "hidden")
+    .style("background-color", "rgba(0, 0, 0, 0.7)")
+    .style("color", "#fff")
+    .style("padding", "6px 10px")
+    .style("border-radius", "4px")
+    .style("font-size", "12px");
+
+  slices.on("mouseover", function(event, d) {
+    tooltip.style("visibility", "visible")
+      .html(`Played ${minutes} minutes on ${maxMinutes}.`);
+  })
+  .on("mousemove", function(event) {
+    tooltip.style("top", (event.pageY + 5) + "px")
+      .style("left", (event.pageX + 5) + "px");
+  })
+  .on("mouseout", function() {
+    tooltip.style("visibility", "hidden");
+  });
+
   g.append("text")
     .attr("text-anchor", "middle")
     .attr("dominant-baseline", "central")
-    .attr("font-size", "28px")  // Larger font for the total number
-    .attr("fill", "#000")    // Color for the larger text
-    .text(totalGoalsAndAssists);
+    .attr("font-size", "12px")
+    .attr("fill", "#555")
+    .attr("dy", "-20px")
+    .text("Total Appearances");
+
+  g.append("text")
+    .attr("text-anchor", "middle")
+    .attr("dominant-baseline", "central")
+    .attr("font-size", "30px")
+    .attr("font-weight", "bold")
+    .attr("fill", "#333")
+    .attr("dy", "0px")
+    .text(appearances);
+
+      // Center label - third line: minutes percentage
+  g.append("text")
+  .attr("text-anchor", "middle")
+  .attr("dominant-baseline", "central")
+  .attr("font-size", "16px")
+  .attr("fill", "#3498db")
+  .attr("dy", "40px")
+  .text(percentageText);
 }
+
 
 
   
@@ -481,13 +604,16 @@ function renderFieldPositions(playerId) {
             .style("opacity", 0.6);
 
           // Draw initials **above** the circle
+          const leftSidePositions = ["Left-Back", "Left Midfield", "Left Winger"];
+
           svg.append("text")
             .attr("x", x)
-            .attr("y", y - radius - 5)
+            .attr("y", leftSidePositions.includes(position) ? y + radius + 12 : y - radius - 5)
             .text(positionInitials[position])
             .attr("text-anchor", "middle")
             .style("font-size", "10px")
             .style("fill", "black");
+          
 
           // Transparent hover zone (better for tiny circles)
           svg.append("rect")
@@ -1089,3 +1215,4 @@ function renderPlayerStatsCarousel(playerId) {
     }, 4000);
   });
 }
+
