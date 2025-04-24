@@ -1,7 +1,7 @@
 const urlParams = new URLSearchParams(window.location.search);
 const gameId = urlParams.get("gameId");
 
-const lineupsCsvPath = "../../data/game_lineups.csv";
+const lineupsCsvPath = "../../processed_data/processed_game_lineups.csv";
 const playersCsvPath = "../../data/players.csv";
 const clubsCsvPath = "../../data/clubs.csv";
 const gamesCsvPath = "../../data/games.csv";
