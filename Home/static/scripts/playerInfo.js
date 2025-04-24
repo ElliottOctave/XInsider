@@ -646,7 +646,7 @@ function renderMarketValueChart(playerValuations) {
     // Map the player valuations to get the date and market value (in million EUR)
     const marketValues = playerValuations.map(valuation => ({
         date: new Date(valuation.date),  // Ensure the date is in JavaScript Date object format
-        value: parseFloat(valuation.market_value_in_eur / 1000000) || 0  // Convert the market value to millions of euros
+        value: parseFloat(valuation.market_value_in_eur) || 0  // Convert the market value to millions of euros
     }));
 
     // Set up margins and dimensions for the chart (increased left margin for y-axis labels)
@@ -681,7 +681,7 @@ function renderMarketValueChart(playerValuations) {
 
     // Create the y-axis
     svg.append("g")
-        .call(d3.axisLeft(y).ticks(5).tickFormat(d => `€${d.toFixed(2)}M`))  // Format y axis to show currency
+        .call(d3.axisLeft(y).ticks(5).tickFormat(d => `€ ${formatValue(d)}`))  // Format y axis to show currency
         .selectAll("text")
         .style("font-size", "12px");
 
@@ -736,7 +736,7 @@ function renderMarketValueChart(playerValuations) {
     svg.selectAll(".dot")
         .on("mouseover", function(event, d) {
             tooltip.transition().duration(200).style("opacity", 1);
-            tooltip.html(`Date: ${d3.timeFormat("%Y-%m-%d")(d.date)}<br>Value: €${d.value.toFixed(2)}M`)
+            tooltip.html(`Date: ${d3.timeFormat("%Y-%m-%d")(d.date)}<br>Value: € ${(formatValue(d.value))}`)
                 .style("left", `${event.pageX + 5}px`)
                 .style("top", `${event.pageY - 28}px`);
         })
