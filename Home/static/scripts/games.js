@@ -1,4 +1,4 @@
-const gamesCsvUrl = "../../data/games.csv";
+const gamesCsvUrl = "../../processed_data/processed_games.csv";
 const clubsCsvUrl = "../../data/clubs.csv";
 const logosCsvUrl = "../../data/club_logos.csv";
 
@@ -31,6 +31,15 @@ Promise.all([
     const clubs = parseCsv(clubsCsv);
     const logos = parseCsv(logosCsv);
 
+    console.log("✅ Games loaded:", games.length);
+    console.log("🧾 Sample game:", games[0]);
+    
+    console.log("✅ Clubs loaded:", clubs.length);
+    console.log("🧾 Sample club:", clubs[0]);
+
+    console.log("✅ Logos loaded:", logos.length);
+    console.log("🧾 Sample logo:", logos[0]);
+
     clubs.forEach(club => {
       clubMap[club.club_id] = club.name;
     });
@@ -40,13 +49,16 @@ Promise.all([
     });
 
     games.forEach(game => {
-      game.home_team = clubMap[game.home_club_id] || game.home_club_name || "Unknown";
-      game.away_team = clubMap[game.away_club_id] || game.away_club_name || "Unknown";
-      game.home_logo = logoMap[game.home_club_id] || "";
-      game.away_logo = logoMap[game.away_club_id] || "";
+      const homeId = String(parseInt(game.home_club_id));
+      const awayId = String(parseInt(game.away_club_id));
+    
+      game.home_team = clubMap[homeId] || game.home_club_name || "Unknown";
+      game.away_team = clubMap[awayId] || game.away_club_name || "Unknown";
+      game.home_logo = logoMap[homeId] || "";
+      game.away_logo = logoMap[awayId] || "";
     });
+    
 
-    // ✅ Sort most recent matches first
     games.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     filteredGames = games;
@@ -65,6 +77,8 @@ function renderCards() {
     game.home_club_goals !== undefined && game.away_club_goals !== undefined &&
     game.stadium && game.date
   );
+
+  console.log("🎯 Valid games for rendering:", validGames.length);
 
   const start = (currentPage - 1) * rowsPerPage;
   const end = start + rowsPerPage;
@@ -96,8 +110,8 @@ function renderCards() {
         <p>${game.date}</p>
       </div>
     `;
-    
-    container.appendChild(link);    
+
+    container.appendChild(link);
   });
 
   document.getElementById("pageInfo").textContent =
@@ -147,6 +161,7 @@ function applyFilters(allGames) {
     return matchesYear && matchesTeam;
   });
 
+  console.log(`🔎 Filtered down to ${filteredGames.length} games`);
   renderCards();
 }
 
