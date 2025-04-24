@@ -2,9 +2,9 @@ const urlParams = new URLSearchParams(window.location.search);
 const gameId = urlParams.get("gameId");
 
 const lineupsCsvPath = "../../processed_data/processed_game_lineups.csv";
-const playersCsvPath = "../../data/players.csv";
+const playersCsvPath = "../../processed_data/player_summary.csv";
 const clubsCsvPath = "../../data/clubs.csv";
-const gamesCsvPath = "../../data/games.csv";
+const gamesCsvPath = "../../processed_data/processed_games.csv";
 const logosCsvPath = "../../data/club_logos.csv";
 const eventsCsvPath = "../../data/game_events.csv";
 const svgWidth = 800;
@@ -361,20 +361,35 @@ function renderRecentMatches(clubId, excludeGameId, side) {
   const title = document.getElementById(`recent-matches-title-${side}`);
   const container = document.getElementById(`recent-matches-list-${side}`);
 
-  const clubName = allClubs.find(c => c.club_id === clubId)?.name || "Unknown Club";
+  console.log("📌 Rendering recent matches for clubId:", clubId, "excluding game:", excludeGameId);
+
+  const clubName = allClubs.find(c => String(c.club_id) === String(clubId))?.name || "Unknown Club";
   title.textContent = `Five last games of ${clubName}`;
   container.innerHTML = "";
 
   const recentGames = allGames
-    .filter(g => (g.home_club_id === clubId || g.away_club_id === clubId) && g.game_id !== excludeGameId)
+    .filter(g => (String(g.home_club_id) === String(clubId) || String(g.away_club_id) === String(clubId)) && g.game_id !== excludeGameId)
     .sort((a, b) => new Date(b.date) - new Date(a.date))
     .slice(0, 5);
 
+  console.log("🔍 Found recent games:", recentGames.map(g => g.game_id));
+
   recentGames.forEach(game => {
-    const home = allClubs.find(c => c.club_id === game.home_club_id);
-    const away = allClubs.find(c => c.club_id === game.away_club_id);
-    const homeLogo = allLogos.find(l => l.club_id === game.home_club_id)?.logo_url || "/fallback.png";
-    const awayLogo = allLogos.find(l => l.club_id === game.away_club_id)?.logo_url || "/fallback.png";
+    const home = allClubs.find(c => String(c.club_id) === String(game.home_club_id));
+    const away = allClubs.find(c => String(c.club_id) === String(game.away_club_id));
+
+    const homeLogo = allLogos.find(l => String(l.club_id) === String(game.home_club_id))?.logo_url || "/fallback.png";
+    const awayLogo = allLogos.find(l => String(l.club_id) === String(game.away_club_id))?.logo_url || "/fallback.png";
+
+    if (!home || !away) {
+      console.warn("⚠️ Club not found in allClubs:", {
+        game_id: game.game_id,
+        home_club_id: game.home_club_id,
+        away_club_id: game.away_club_id,
+        home_found: !!home,
+        away_found: !!away
+      });
+    }
 
     const div = document.createElement("div");
     div.className = "match-card";
@@ -382,8 +397,8 @@ function renderRecentMatches(clubId, excludeGameId, side) {
 
     div.innerHTML = `
       <div class="logos">
-        <img src="${homeLogo}" alt="${home.name}">
-        <img src="${awayLogo}" alt="${away.name}">
+        <img src="${homeLogo}" alt="${home?.name || 'Unknown'}">
+        <img src="${awayLogo}" alt="${away?.name || 'Unknown'}">
       </div>
       <div class="score">${game.home_club_goals} - ${game.away_club_goals}</div>
       <div class="venue">${game.stadium}</div>
@@ -393,6 +408,7 @@ function renderRecentMatches(clubId, excludeGameId, side) {
     container.appendChild(div);
   });
 }
+
 
 
 function updateTimeline() {
