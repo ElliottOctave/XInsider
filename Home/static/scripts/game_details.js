@@ -409,8 +409,6 @@ function renderRecentMatches(clubId, excludeGameId, side) {
   });
 }
 
-
-
 function updateTimeline() {
   const minute = eventMinutes[currentEventIndex] || 0;
   document.getElementById("event-minute").textContent = `${minute}'`;
