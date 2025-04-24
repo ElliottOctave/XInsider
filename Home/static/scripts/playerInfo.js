@@ -786,7 +786,8 @@ function renderTimeline(playerId) {
           tenures.push({
             club: current.to_club_name,
             start: current.transfer_date,
-            end: next ? next.transfer_date : new Date() // assume still at last club if no next
+            end: next ? next.transfer_date : new Date(), // assume still at last club if no next
+            fee: current.transfer_fee
           });
         }
       }
@@ -813,6 +814,12 @@ function renderTimeline(playerId) {
         .range([margin.top, height - margin.bottom])
         .padding(0.3);
 
+      // ✅ Color scale: Light blue (low fee) → Dark blue (high fee)
+      const maxFee = d3.max(tenures, d => d.fee);
+      const colorScale = d3.scaleLinear()
+        .domain([0, maxFee])
+        .range(["#a2d0fc", "#01264a"]);      
+
       // Draw axes
       svg.append("g")
         .attr("transform", `translate(0, ${height - margin.bottom})`)
@@ -832,8 +839,8 @@ function renderTimeline(playerId) {
         .attr("y", d => yScale(d.club))
         .attr("width", d => xScale(d.end) - xScale(d.start))
         .attr("height", yScale.bandwidth())
-        .attr("fill", "#007bff");
-
+        .attr("fill", d => colorScale(d.fee));
+        
       // Add tooltips
       const tooltip = d3.select("body").append("div")
         .attr("class", "tooltip")
@@ -851,7 +858,8 @@ function renderTimeline(playerId) {
           tooltip.html(`
             <strong>${d.club}</strong><br>
             From: ${d3.timeFormat("%d-%m-%Y")(d.start)}<br>
-            To: ${d3.timeFormat("%d-%m-%Y")(d.end)}
+            To: ${d3.timeFormat("%d-%m-%Y")(d.end)}<br>
+            Fee: ${d.fee == 0 ? "Free" : formatValue(d.fee)}
           `)
           .style("left", (event.pageX + 10) + "px")
           .style("top", (event.pageY - 28) + "px");
