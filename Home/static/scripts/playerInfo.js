@@ -67,7 +67,7 @@ fetch('../../processed_data/player_summary.csv')
       
           <div class="player-card-right">
             <div class="info-box"><h4>Club</h4><img src="${player.club_logo_url}" alt="Club Logo" class="club-logo" /></div>
-            <div class="info-box"><h4>Competition</h4><img src="${player.competition_logo_url}" alt="Competition Logo" class="club-logo" /></div>
+            <div class="info-box"><h4>Competition</h4><img src="${player.competition_logo_url}" alt="Competition Logo" class="club-logo"/></div>
             <div class="info-box"><h4>Position</h4><p>${player.position}</p></div>
             <div class="info-box foot-box">
               <h4>Foot</h4>
@@ -95,6 +95,7 @@ fetch('../../processed_data/player_summary.csv')
         rightFoot.classList.add('active');
       }
 
+      console.log(playerId);
 
       // Call the function to start the world tour animation with transfers
       /*renderTransfersWorldTour(playerId);*/

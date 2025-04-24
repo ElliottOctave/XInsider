@@ -1,4 +1,4 @@
-const playersCsvUrl = '../../data/players.csv';
+const playersCsvUrl = '../../processed_data/player_summary.csv';
 
 fetch(playersCsvUrl)
   .then(response => response.text())
@@ -39,12 +39,12 @@ fetch(playersCsvUrl)
 
         const playerImage = document.createElement('img');
         playerImage.src = player.image_url;
-        playerImage.alt = `${player.first_name} ${player.last_name}`;
+        playerImage.alt = `${player.name}`;
         playerImage.classList.add('player-image');
 
         const playerLink = document.createElement('a');
         playerLink.href = `/Home/pages/player_info.html?playerId=${player.player_id}`;
-        playerLink.textContent = `${player.first_name} ${player.last_name}`;
+        playerLink.textContent = `${player.name}`;
 
         const playerDetails = document.createElement('p');
         playerDetails.textContent = `${player.current_club_name}`;
@@ -69,8 +69,6 @@ fetch(playersCsvUrl)
     function filterPlayers() {
       const query = searchBar.value.toLowerCase();
       filteredPlayers = players.filter(player =>
-        player.first_name.toLowerCase().includes(query) ||
-        player.last_name.toLowerCase().includes(query) ||
         player.name.toLowerCase().includes(query) ||
         player.current_club_name.toLowerCase().includes(query)
       );
