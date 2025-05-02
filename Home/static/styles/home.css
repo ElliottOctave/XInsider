@@ -32,34 +32,22 @@
 
 #compare-form {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  gap: 15px;
+  margin-top: 15px;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
-#compare-form input{
+.selectize-control.single {
+  width: 220px;
+}
+
+.selectize-input {
+  border-radius: 6px;
+  font-size: 1rem;
   padding: 10px;
-  font-size: 1rem;
-  width: 50%;
-  min-width: 10rem;
-  border-radius: 5px;
-  border: 1px solid #ccc;
 }
 
-#compare-form button {
-  background-color: #007bff;
-  color: #fff;
-  border: 1px solid #ccc;
-  cursor: pointer;
-  border-radius: 5px;
-  font-size: 1rem;
-  height: 2.5rem;
-  width: 7rem;
-  transition: background-color 0.3s ease;
-}
-
-#compare-form button:hover {
-  background-color: #0056b3;
-}
 
 .compare-mode {
   display: flex;

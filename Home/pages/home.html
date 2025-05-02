@@ -41,15 +41,11 @@
   </div>
 
         
-        <form id="compare-form">
-          <input list="compare1-list" id="compare1" placeholder="Player or Team 1" required />
-          <datalist id="compare1-list"></datalist>
-        
-          <input list="compare2-list" id="compare2" placeholder="Player or Team 2" required />
-          <datalist id="compare2-list"></datalist>
-        
-          <button type="submit">Compare</button>
-        </form>
+  <form id="compare-form">
+    <select id="compare1" required></select>
+    <select id="compare2" required></select>
+  </form>
+  
         
       </div>
       <div class="right-panel">
@@ -104,6 +100,16 @@
   </script>
 
   <script src="/node_modules/d3/dist/d3.min.js"></script>
+
+  <!-- jQuery (required for Selectize) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <!-- Selectize CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/selectize/dist/css/selectize.default.css" />
+  <!-- Selectize JS -->
+  <script src="https://cdn.jsdelivr.net/npm/selectize/dist/js/standalone/selectize.min.js"></script>
+
+
   <script src="/Home/static/scripts/playerChart.js"></script>
   <script src="/Home/static/scripts/topFifteen.js"></script>
   <script src="/Home/static/scripts/home.js"></script>

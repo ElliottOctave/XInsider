@@ -1,45 +1,89 @@
-let mode = "player";
-const playersCsv = "/data/players.csv";
-const clubsCsv = "/data/clubs.csv";
+document.addEventListener("DOMContentLoaded", () => {
+  let mode = "player";
+  let playersList = [];
+  let clubsList = [];
 
-const compare1 = document.getElementById("compare1");
-const compare2 = document.getElementById("compare2");
-const list1 = document.getElementById("compare1-list");
-const list2 = document.getElementById("compare2-list");
+  const playersCsv = "/data/players.csv";
+  const clubsCsv = "/data/clubs.csv";
 
-// Listen for radio button change
-document.querySelectorAll('input[name="mode"]').forEach(radio => {
-  radio.addEventListener("change", event => {
-    setMode(event.target.value);
+  function setMode(newMode) {
+    mode = newMode;
+
+    const compare1 = $('#compare1')[0].selectize;
+    const compare2 = $('#compare2')[0].selectize;
+
+    // Clear values
+    compare1.clear();
+    compare2.clear();
+
+    // Update placeholders
+    compare1.settings.placeholder = mode === "player" ? "Player 1" : "Team 1";
+    compare2.settings.placeholder = mode === "player" ? "Player 2" : "Team 2";
+    compare1.updatePlaceholder();
+    compare2.updatePlaceholder();
+
+    // Filter options based on mode
+    compare1.clearOptions();
+    compare2.clearOptions();
+
+    const source = mode === "player" ? playersList : clubsList;
+    source.forEach(entry => {
+      compare1.addOption({ value: entry.name, text: entry.name });
+      compare2.addOption({ value: entry.name, text: entry.name });
+    });
+
+    compare1.refreshOptions(false);
+    compare2.refreshOptions(false);
+  }
+
+  // Init radio buttons
+  document.querySelectorAll('input[name="mode"]').forEach(radio => {
+    radio.addEventListener("change", event => {
+      setMode(event.target.value);
+    });
   });
+
+  // Fetch players/clubs and init Selectize
+  Promise.all([
+    d3.csv(playersCsv),
+    d3.csv(clubsCsv)
+  ]).then(([players, clubs]) => {
+    playersList = players;
+    clubsList = clubs;
+
+    const compare1 = $('#compare1').selectize({
+      placeholder: "Player 1"
+    })[0].selectize;
+
+    const compare2 = $('#compare2').selectize({
+      placeholder: "Player 2"
+    })[0].selectize;
+
+    setMode("player");
+
+    const triggerCompare = () => {
+      const val1 = compare1.getValue();
+      const val2 = compare2.getValue();
+      if (val1 && val2 && val1.toLowerCase() !== val2.toLowerCase()) {
+        const type = mode === "player" ? "players" : "clubs";
+        const query = new URLSearchParams({
+          type: type,
+          first: val1,
+          second: val2
+        }).toString();
+        window.location.href = `/Home/pages/compare.html?${query}`;
+      }
+    };
+
+    compare1.on('change', triggerCompare);
+    compare2.on('change', triggerCompare);
+  });
+
+  showGamesCalendar();
+  showPlayerCountries();
 });
 
-// Mode switch logic
-function setMode(newMode) {
-  mode = newMode;
 
-  // Update placeholders
-  compare1.placeholder = mode === "player" ? "Player 1" : "Club 1";
-  compare2.placeholder = mode === "player" ? "Player 2" : "Club 2";
-
-  // Clear inputs
-  compare1.value = "";
-  compare2.value = "";
-
-  // Load suggestions
-  loadSuggestions();
-}
-
-// Load suggestions
-function loadSuggestions() {
-  const source = mode === "player" ? playersCsv : clubsCsv;
-  d3.csv(source).then(data => {
-    const names = data.map(d => d.name);
-    const optionsHtml = names.map(n => `<option value="${n}">`).join("");
-    list1.innerHTML = optionsHtml;
-    list2.innerHTML = optionsHtml;
-  });
-}
 /*
     const svg = d3.select("#calendar")
       .append("svg")
@@ -226,39 +270,7 @@ async function showPlayerCountries() {
     .attr("stroke", "white")
     .attr("d", path);
 
-console.log('Loaded players:', players);
 console.log('Loaded countries:', countries);
 console.log('Max Players:', maxPlayers);
 
 }
-
-
-
-
-
-
-// Handle form
-document.getElementById("compare-form").addEventListener("submit", e => {
-  e.preventDefault();
-  const val1 = compare1.value.trim();
-  const val2 = compare2.value.trim();
-
-  if (val1.toLowerCase() === val2.toLowerCase()) {
-    alert("Please select two different players or clubs.");
-    return;
-  }
-
-  const type = document.querySelector('input[name="mode"]:checked').value === "player" ? "players" : "clubs";
-  const query = new URLSearchParams({
-    type: type,
-    first: val1,
-    second: val2
-  }).toString();
-
-  window.location.href = `/Home/pages/compare.html?${query}`;
-});
-
-// Init
-setMode("player");
-showGamesCalendar();
-showPlayerCountries();
