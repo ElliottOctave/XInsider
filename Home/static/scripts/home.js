@@ -9,6 +9,10 @@ document.addEventListener("DOMContentLoaded", () => {
   function setMode(newMode) {
     mode = newMode;
 
+    // Update heading
+    const heading = document.getElementById("compare-heading");
+    heading.textContent = mode === "player" ? "Compare players" : "Compare teams";
+
     const compare1 = $('#compare1')[0].selectize;
     const compare2 = $('#compare2')[0].selectize;
 
