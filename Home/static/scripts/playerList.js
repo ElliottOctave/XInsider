@@ -111,7 +111,7 @@ fetch(playersCsvUrl)
           );
         }
         const positionMatch = selectedPosition === "" || player.position.toLowerCase() === selectedPosition;
-        const nationalityMatch = nationalityQuery === "" || player.country_of_birth.toLowerCase().includes(nationalityQuery);
+        const nationalityMatch = nationalityQuery === "" || player.country_of_citizenship.toLowerCase().includes(nationalityQuery);
 
         return (nameMatch || clubMatch) && yearMatch && positionMatch && nationalityMatch;
       });
