@@ -1,241 +1,245 @@
-/* Player Profile Section */
+/* ========== Base Layout ========== */
+body {
+  background: radial-gradient(circle, #fff, #003366);
+}
 
-.player-profile {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-    
-  .player-info {
-    flex-grow: 1;
-    padding: 0 20px;
-  }
-  
-  .player-info h1 {
-    margin-bottom: 10px;
-    color: #333;
-  }
-  
-  .player-info p {
-    font-size: 16px;
-    margin: 5px 0;
-    color: #555;
-  }
-  
-  .player-map {
-    width: 300px;
-    height: 200px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-  }
+.player-profile-wrapper {
+  display: flex;
+  width: 100%;
+}
 
+.player-profile-content {
+  flex: 1;
+  padding-left: 40px;
+}
 
-  .player-details {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    margin: 20px;
-    max-width: 900px;
-  }
-  
-  
-  .player-details h1 {
-    font-size: 28px;
-    margin-bottom: 15px;
-  }
-  
-  .player-details p {
-    font-size: 16px;
-    line-height: 1.6;
-    color: #555;
-  }
+#trophies-section {
+  flex: 1;
+  padding-right: 40px;
+}
 
-  .player-map {
-    width: 300px;
-    height: 200px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-  }
-  
-/* Market Value Chart Block */
+/* ========== Player Details ========== */
+.player-details {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  margin: 10px auto;
+  max-width: 900px;
+}
+
+.player-info {
+  flex-grow: 1;
+  padding: 0 20px;
+}
+
+.player-info h1 {
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.player-info p {
+  font-size: 16px;
+  margin: 5px 0;
+  color: #555;
+}
+
+.player-map {
+  width: 300px;
+  height: 200px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+/* ========== Charts and Stats ========== */
 .chart-section {
-    width: 100%;
-    max-width: 900px;
-    background-color: #fff;
-    padding: 20px;
-    margin-bottom: 40px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .chart-section h2 {
-    font-size: 24px;
-    margin-bottom: 20px;
-  }
+  width: 100%;
+  max-width: 870px;
+  background-color: #fff;
+  padding: 20px;
+  margin: 20px auto;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
 
-  .player-details {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    margin: 20px;
-    max-width: 900px;
-  }
-  
-  .player-image {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    object-fit: cover;
-  }
-  
-  .player-info {
-    flex-grow: 1;
-    padding: 0 20px;
-  }
-  
-  .player-info h1 {
-    margin-bottom: 10px;
-    color: #333;
-  }
-  
-  .player-info p {
-    font-size: 16px;
-    margin: 5px 0;
-    color: #555;
-  }
-  
-  .player-map {
-    width: 300px;
-    height: 200px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-  }
+.chart-section h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
 
-  .performance-charts {
-    display: flex;
-    justify-content: center;
-    gap: 20px; 
-    align-items: center;
-    margin: 0 20px 20px 0;
-  }
-  
-  .player-card {
-    display: flex;
-    justify-content: space-between;
-    max-width: 1000px;
-    width: 100%;
-    gap: 20px;
-  }
-  .player-card-left {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 150px;
-  }
-  
-  .player-card-image {
-    width: 200px;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 10px;
-    border: 2px solid #003366;
-  }
-  
-  .player-club {
-    font-size: 14px;
-    color: #ccc;
-    text-align: center;
-  }
-  
-  .player-card-middle {
-    flex: 1;
-  }
-  
-  .player-card-middle h2 {
-    font-size: 25px;
-    margin: 0 20px 10px;
-  }
-  
-  .player-card-middle p {
-    display: flex;
-    justify-content: space-between;
-    font-size: 15px;
-    margin: 0 20px 10px;
-  }
-  
-  .player-card-right {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-    width: 300px;
-  }
-  
-  .info-box {
-    background-color: #003366;
-    padding: 20px;
-    border-radius: 10px;
-    text-align: center;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  }
-  
-  .info-box h4 {
-    margin: 0 0 8px;
-    font-size: 14px;
-    color: #00b4d8;
-  }
-  
-  .info-box p {
-    font-size: 25px;
-    color: #f1f1f1;
-  }
+.performance-charts {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  align-items: center;
+  margin: 0 20px 20px 0;
+}
 
-  .club-logo {
-    width: 55px;
-    height: 55px;
-    object-fit: contain;
-    display: block;
-    margin: 0 auto;
-  }
+/* ========== Player Card ========== */
+.player-card {
+  display: flex;
+  justify-content: space-between;
+  max-width: 1000px;
+  width: 100%;
+  gap: 20px;
+}
 
-  .foot-icons {
-    display: flex;
-    gap: 8px;
-    margin: 0 0 0 18px;
-  }
-  
-  .foot-icon {
-    width: 30px;
-    height: 50px;
-    border-radius: 10px;
-    background-color: #e0e0e0; /* Default grey foot */
-    border: 2px solid #ccc;
-  }
-  
-  .left-foot {
-    transform: rotate(-10deg);
-  }
-  
-  .right-foot {
-    transform: rotate(10deg);
-  }
-  
-  /* Highlighted foot */
-  .foot-icon.active {
-    background-color: #007bff; /* Highlight color (blue) */
-    border-color: #0056b3;
-  }
-  
-  
-  
+.player-card-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 150px;
+}
 
+.player-card-image {
+  width: 200px;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 2px solid #003366;
+}
 
+.player-club {
+  font-size: 14px;
+  color: #ccc;
+  text-align: center;
+}
+
+.player-card-middle {
+  flex: 1;
+}
+
+.player-card-middle h2 {
+  font-size: 25px;
+  margin: 0 20px 10px;
+}
+
+.player-card-middle p {
+  display: flex;
+  justify-content: space-between;
+  font-size: 15px;
+  margin: 0 20px 10px;
+}
+
+.player-card-right {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  width: 300px;
+}
+
+.info-box {
+  background-color: #003366;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.info-box h4 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: #00b4d8;
+}
+
+.info-box p {
+  font-size: 25px;
+  color: #f1f1f1;
+}
+
+.info-box img {
+  filter: drop-shadow(2px 2px 5px #00b4d8);
+}
+
+.club-logo {
+  width: 55px;
+  height: 55px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+
+/* ========== Foot Icons ========== */
+.foot-icons {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 0 18px;
+}
+
+.foot-icon {
+  width: 30px;
+  height: 50px;
+  border-radius: 10px;
+  background-color: #e0e0e0;
+  border: 2px solid #ccc;
+}
+
+.left-foot {
+  transform: rotate(-10deg);
+}
+
+.right-foot {
+  transform: rotate(10deg);
+}
+
+.foot-icon.active {
+  background-color: #007bff;
+  border-color: #0056b3;
+}
+
+/* ========== Trophies ========== */
+#trophies {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);  /* Two equal-width columns */
+  gap: 30px;
+  justify-items: center;
+  padding: 5px;
+}
+#trophies-container img {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.5));
+  transition: transform 0.3s ease;
+}
+
+#trophies-container img:hover {
+  transform: scale(1.1);
+}
+
+#trophies-container {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  margin: 20px auto;
+}
+
+#trophies-section h2 {
+  margin-bottom: 20px;
+}
+
+.trophy-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 150px; /* fixed width ensures consistent layout */
+  text-align: center;
+}
+
+.trophy-caption {
+  margin-top: 8px;
+  font-size: 0.95em;
+  line-height: 1.4em;
+}
+
+.trophy-year {
+  display: block;
+  font-size: 0.85em;
+  color: #666;
+  margin-top: 2px;
+}
 

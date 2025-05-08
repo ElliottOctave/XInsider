@@ -4,10 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Player Profile - XInsider</title>
-  <link rel="stylesheet" href="/Home/static/styles/home.css" />
   <link rel="stylesheet" href="/Home/static/styles/player_info.css" />
   <link rel="stylesheet" href="/Home/static/styles/XInsider.css" />
-
 </head>
 <body>
 
@@ -19,61 +17,81 @@
   <!-- Navbar -->
   <div id="navbar-container"></div>
 
-  <!-- Player Profile Section -->
-  <main class="player-profile" id="main-content">
-    <div id="player-details" class="player-details chart-section">
-      <div id="player-info" class="player-info"></div>
-      <!-- Player info will be dynamically inserted here -->
-      <!--<div id="player-map" style="width: 400px; height: 300px;"></div> -->
-    </div>
+  <!-- Main Content -->
+  <main class="player-profile-wrapper">
 
-    <div id="performance" class="chart-section">
-      <h2>Performance Summary</h2>
-      <div class="performance-charts">
-        <svg id="goalsChart" width="250" height="250"></svg>
-        <svg id="cardsChart" width="250" height="250"></svg>
-        <svg id="minutesChart" width="250" height="250"></svg>
-      </div>
-      <div class="performance-charts bottom-row">
-        <svg id="halfField" width="500" height="500"></svg>
-      </div>
+    <!-- Left Spacer -->
+    <div class="left-spacer"></div>
+
+    <!-- Player Info and Charts -->
+    <section class="player-profile-content" id="main-content">
       
-    </div>
+      <!-- Player Details -->
+      <section id="player-details" class="player-details chart-section">
+        <div id="player-info" class="player-info"></div>
+      </section>
 
-    <!-- Player Transfer History Sankey Diagram -->
-    <div id="timeline" class="chart-section">
-      <h2>Transfer History</h2>
-      <svg id="timeChart" width="800" height="400"></svg>
-       <!-- <canvas id="transfer-map" width="800" height="800"></canvas>-->
-      <div id="carouselChart"></div>
-    </div>
+      <!-- Performance Summary -->
+      <section id="performance" class="chart-section">
+        <h2>Performance Summary</h2>
+        <div class="performance-charts">
+          <svg id="goalsChart" width="250" height="250"></svg>
+          <svg id="cardsChart" width="250" height="250"></svg>
+          <svg id="minutesChart" width="250" height="250"></svg>
+        </div>
+      </section>
 
-    
-    <!-- Market Value Evolution Chart -->
-    <div id="market-value-chart-container" class="chart-section">
-      <h2>Market Value Evolution</h2>
-      <svg id="marketValueChart" width="800" height="400"></svg> 
-    </div>
+            <!-- Transfer History -->
+      <section id="timeline" class="chart-section">
+        <h2>Transfer History</h2>
+        <svg id="timeChart" width="800" height="400"></svg>
+      </section>
+
+            <!-- Trophies -->
+      <section id="trophies-container" class="chart-section">
+        <h2 id="trophies-title">All Trophies</h2>
+        <div id="trophies"></div>
+      </section>
+    </section>
+
+    <!-- Trophies and Performance Section -->
+    <aside id="trophies-section">
+      <section id="performance" class="chart-section">
+        <h2>Field Positions</h2>
+        <div class="performance-charts bottom-row">
+          <svg id="halfField" width="500" height="500"></svg>
+        </div>
+      </section>
+
+      <!-- Performance History -->
+      <section class="chart-section">
+        <h2>Performance History</h2>
+        <div id="carouselChart"></div>
+      </section>
+
+      <!-- Market Value -->
+      <section id="market-value-chart-container" class="chart-section">
+        <h2>Market Value Evolution</h2>
+        <svg id="marketValueChart" width="800" height="400"></svg> 
+      </section>
+    </aside>
   </main>
 
   <!-- Footer -->
   <div id="footer-container"></div>
 
-  <!-- Include D3.js -->
+  <!-- Scripts -->
   <script src="/node_modules/d3/dist/d3.min.js"></script>
   <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
-  
-
-  <!-- Your custom JS logic -->
   <script src="https://unpkg.com/versor@0.4.2/versor.min.js"></script>
-
   <script src="https://unpkg.com/topojson@3"></script>
-
-  <script src="/Home/static/scripts/playerInfo.js" type="module"></script> 
-
+  
+  <!-- Custom Scripts -->
+  <script src="/Home/static/scripts/playerInfo.js" type="module"></script>
   <script src="/Home/static/components/navbarSearch.js"></script>
   <script src="/Home/static/components/navbar.js"></script>
   <script src="/Home/static/components/footer.js"></script>
   <script src="/Home/static/components/loader.js"></script>
+
 </body>
 </html>
