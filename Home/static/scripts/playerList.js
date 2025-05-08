@@ -110,7 +110,6 @@ fetch(playersCsvUrl)
             (playerLastYear >= fromYear && playerLastYear <= toYear)
           );
         }
-
         const positionMatch = selectedPosition === "" || player.position.toLowerCase() === selectedPosition;
         const nationalityMatch = nationalityQuery === "" || player.country_of_birth.toLowerCase().includes(nationalityQuery);
 
