@@ -19,43 +19,53 @@
   <!-- Navbar -->
   <div id="navbar-container"></div>
 
-  <!-- Player Profile Section -->
-  <main class="player-profile" id="main-content">
-    <div id="player-details" class="player-details chart-section">
-      <div id="player-info" class="player-info"></div>
-      <!-- Player info will be dynamically inserted here -->
-      <!--<div id="player-map" style="width: 400px; height: 300px;"></div> -->
-    </div>
-
-    <div id="performance" class="chart-section">
-      <h2>Performance Summary</h2>
-      <div class="performance-charts">
-        <svg id="goalsChart" width="250" height="250"></svg>
-        <svg id="cardsChart" width="250" height="250"></svg>
-        <svg id="minutesChart" width="250" height="250"></svg>
-      </div>
-      <div class="performance-charts bottom-row">
-        <svg id="halfField" width="500" height="500"></svg>
-      </div>
+  <main class="player-profile-wrapper">
+    <div class="left-spacer">
       
     </div>
 
-    <!-- Player Transfer History Sankey Diagram -->
-    <div id="timeline" class="chart-section">
-      <h2>Transfer History</h2>
-      <svg id="timeChart" width="800" height="400"></svg>
-       <!-- <canvas id="transfer-map" width="800" height="800"></canvas>-->
-      <div id="carouselChart"></div>
-    </div>
+    <div class="player-profile-content" id="main-content">
+      <div id="player-details" class="player-details chart-section">
+        <div id="player-info" class="player-info"></div>
+      </div>
+  
+      <div id="performance" class="chart-section">
+        <h2>Performance Summary</h2>
+        <div class="performance-charts">
+          <svg id="goalsChart" width="250" height="250"></svg>
+          <svg id="cardsChart" width="250" height="250"></svg>
+          <svg id="minutesChart" width="250" height="250"></svg>
+        </div>
+        <div class="performance-charts bottom-row">
+          <svg id="halfField" width="500" height="500"></svg>
+        </div>
+      </div>
+  
+      <div id="timeline" class="chart-section">
+        <h2>Transfer History</h2>
+        <svg id="timeChart" width="800" height="400"></svg>
+      </div>
 
-    
-    <!-- Market Value Evolution Chart -->
-    <div id="market-value-chart-container" class="chart-section">
-      <h2>Market Value Evolution</h2>
-      <svg id="marketValueChart" width="800" height="400"></svg> 
+      <div class="chart-section">
+        <h2>Performance History</h2>
+        <div id="carouselChart"></div>
+      </div>
+  
+      <div id="market-value-chart-container" class="chart-section">
+        <h2>Market Value Evolution</h2>
+        <svg id="marketValueChart" width="800" height="400"></svg> 
+      </div>
+    </div>
+  
+    <!-- Right side: trophies -->
+    <div id="trophies-section">
+      <div id="trophies-container">
+        <h2 id="trophies-title">All Trophies</h2>
+        <!-- Trophies will be dynamically inserted here -->
+        <div id="trophies"></div>
+      </div>
     </div>
   </main>
-
   <!-- Footer -->
   <div id="footer-container"></div>
 

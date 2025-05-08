@@ -20,6 +20,24 @@
   <div id="navbar-container"></div>
 
   <main class="dashboard" id="main-content">
+    <section class="filters">
+      <select id="from-year">
+        <option value="">From Year</option>
+      </select>
+      <select id="to-year">
+        <option value="">To Year</option>
+      </select>      
+      <select id="position-filter">
+        <option value="">All Positions</option>
+        <option value="Goalkeeper">Goalkeeper</option>
+        <option value="Defender">Defender</option>
+        <option value="Midfielder">Midfielder</option>
+        <option value="Forward">Forward</option>
+      </select>
+      <input type="text" id="nationality-filter" placeholder="Nationality (e.g. France)">
+      <button id="apply-filters">Apply Filters</button>
+    </section>
+    
     <input type="text" id="player-search-bar" placeholder="Search for a player..." class="search-bar" />
     <div id="players-list"></div> <!-- Container for the player list -->
         <!-- Pagination -->
