@@ -3,116 +3,87 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Football Dashboard</title>
+  <title>XInsider</title>
   <link rel="stylesheet" href="/Home/static/styles/home.css" />
-  <link rel="stylesheet" href="/Home/static/styles/XInsider.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  
-
 </head>
 <body>
 
-  <!-- Loading Overlay -->
-  <div id="loading-overlay">
-    <div class="spinner"></div>
-  </div>
-
-  <!-- Navbar -->
-  <div id="navbar-container"></div>
-
-  <!-- Main content -->
-  <main class="dashboard" id="main-content">
-    <h1>Football Dashboard</h1>
-    <p>Explore the world of football with our interactive dashboard.</p>
-    
-    <div id="top-section">
-      <div class="left-panel">
-        <h2>Compare teams or players</h2>
-
-        <div class="compare-mode">
-    <label>
-      <input type="radio" name="mode" value="player" checked />
-      <i class="fas fa-user"></i> Player
-    </label>
-    <label>
-      <input type="radio" name="mode" value="team" />
-      <i class="fas fa-shield-alt"></i> Team
-    </label>
-  </div>
-
-        
-        <form id="compare-form">
-          <input list="compare1-list" id="compare1" placeholder="Player or Team 1" required />
-          <datalist id="compare1-list"></datalist>
-        
-          <input list="compare2-list" id="compare2" placeholder="Player or Team 2" required />
-          <datalist id="compare2-list"></datalist>
-        
-          <button type="submit">Compare</button>
-        </form>
-        
+  <section class="hero">
+    <nav class="navbar">
+      <div class="navbar-container">
+        <a href="/Home/pages/home.html" class="logo">
+          <h2>XInsider</h2>
+        </a>
+        <ul class="nav-links">
+          <li><a href="players.html">Players</a></li>
+          <li><a href="clubs.html">Clubs</a></li>
+          <li><a href="games.html">Games</a></li>
+        </ul>
       </div>
-      <div class="right-panel">
-        <button id="prev-btn" class="nav-btn">❮</button>
-        <div id="top10-table"></div>
-        <button id="next-btn" class="nav-btn">❯</button>
+    </nav>
+    
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <h1>Welcome to XInsider</h1>
+      <p>Uncover football insights like never before. Compare players, analyze teams, and visualize stats all in one place.</p>
+      <a href="#compare-heading" class="btn-primary">Get Started</a>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features">
+    <div class="feature-box">
+      <i class="fas fa-chart-line"></i>
+      <h3>Interactive Stats</h3>
+      <p>Explore detailed metrics on players and clubs with elegant visualizations.</p>
+    </div>
+    <div class="feature-box">
+      <i class="fas fa-users"></i>
+      <h3>Compare Players & Teams</h3>
+      <p>Analyze strengths, weaknesses, and key differences side-by-side.</p>
+    </div>
+    <div class="feature-box">
+      <i class="fas fa-globe"></i>
+      <h3>Global Coverage</h3>
+      <p>Insights across top leagues, clubs, and international stars.</p>
+    </div>
+  </section>
+
+  <!-- Compare Section -->
+    <div class="compare-container">
+      <h2 id="compare-heading">Compare players</h2>
+      
+      <form>
+        <div class="compare-form">
+          <select id="compare1" required></select>
+          <span class="vs-label">vs</span>
+          <select id="compare2" required></select>
+        </div>
+      </form>
+      <div class="compare-mode">
+        <label>
+          <input type="radio" name="mode" value="player" checked />
+          <i class="fas fa-user"></i>
+        </label>
+        <label>
+          <input type="radio" name="mode" value="team" />
+          <i class="fas fa-shield-alt"></i>
+        </label>
       </div>
     </div>
-    
 
-    <!-- Year Range Selection -->
-    <section class="chart-section">
-      <h2>Most Decisive Players</h2>
-      <label>Start Year: <input type="number" id="startYear" value="2020" /></label>
-      <label>End Year: <input type="number" id="endYear" value="2025" /></label>
-      <div id="top-decisive-chart"></div>
-    </section>
-
-    
-    <div id="calendar">
-      <h2>Games</h2>
-    </div>
-    <div id="countries">
-      <h2>Countries</h2>
-    </div>
-
-  </main>
-
-  <!-- Footer -->
-  <div id="footer-container"></div>
+  <footer>
+    <p>&copy; 2025 XInsider</p>
+  </footer>
 
   <!-- Scripts -->
-  <script>
-    // Wait for DOM to load before rendering
-    window.addEventListener("DOMContentLoaded", function () {
-      const startInput = document.getElementById("startYear");
-      const endInput = document.getElementById("endYear");
-
-      function updateChart() {
-        const start = +startInput.value;
-        const end = +endInput.value;
-        renderRadialDecisivenessChart(start, end);
-      }
-
-      // Initial render
-      updateChart();
-
-      // Auto update when inputs change
-      startInput.addEventListener("input", updateChart);
-      endInput.addEventListener("input", updateChart);
-    });
-  </script>
-
   <script src="/node_modules/d3/dist/d3.min.js"></script>
-  <script src="/Home/static/scripts/playerChart.js"></script>
-  <script src="/Home/static/scripts/topFifteen.js"></script>
-  <script src="/Home/static/scripts/home.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/selectize/dist/css/selectize.default.css" />
+  <script src="https://cdn.jsdelivr.net/npm/selectize/dist/js/standalone/selectize.min.js"></script>
 
-  <script src="/Home/static/components/navbarSearch.js"></script>
-  <script src="/Home/static/components/navbar.js"></script>
-  <script src="/Home/static/components/footer.js"></script>
-  <script src="/Home/static/components/loader.js"></script>
-  <script src="https://unpkg.com/topojson@3"></script>
-  <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+  <script src="/Home/static/scripts/playerChart.js"></script>
+  <script src="/Home/static/scripts/home.js"></script>
 </body>
 </html>

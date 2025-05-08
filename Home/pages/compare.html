@@ -6,6 +6,8 @@
   <title>Compare</title>
   <link rel="stylesheet" href="/Home/static/styles/compare.css">
   <link rel="stylesheet" href="/Home/static/styles/XInsider.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/selectize/dist/css/selectize.default.css" />
+
 </head>
 <body>
 
@@ -20,23 +22,27 @@
   <main class="compare-page">
     <h1 id="compare-title">Comparison</h1>
     <div id="comparison-container">
-      <div id="comparison-logo-team1" class="comparison-container"></div>
+      <div id="comparison-logo-team1" class="side-by-side"></div>
       <canvas id="radarChart"></canvas>
-      <div id="comparison-logo-team2" class="comparison-container"></div>
+      <div id="comparison-logo-team2" class="side-by-side"></div>
     </div>
-    <div id="additional-stats"></div>
   </main>
 
   <!-- Footer -->
   <div id="footer-container"></div>
 
   <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <!-- Selectize JS -->
+  <script src="https://cdn.jsdelivr.net/npm/selectize/dist/js/standalone/selectize.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  
+  <script src="/Home/static/scripts/compare.js"></script>
+  
   <script src="/Home/static/components/navbarSearch.js"></script>
   <script src="/Home/static/components/navbar.js"></script>
   <script src="/Home/static/components/footer.js"></script>
-
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="/Home/static/scripts/compare.js"></script>
 </body>
 </html>

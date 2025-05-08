@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>XInsider</title>
+  <link rel="stylesheet" href="/Home/static/styles/homecopy.css" />
+  <link rel="stylesheet" href="/Home/static/styles/XInsider.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  
+
+</head>
+<body>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Navbar -->
+  <div id="navbar-container"></div>
+
+  <!-- Main content -->
+  <main class="dashboard" id="main-content">
+    <h1>XInsider</h1>
+    <p>Explore the world of football with our interactive dashboard.</p>
+    
+    <div id="top-section">
+      <div class="left-panel">
+        <h2 id="compare-heading">Compare players</h2>
+
+
+        <div class="compare-mode">
+    <label>
+      <input type="radio" name="mode" value="player" checked />
+      <i class="fas fa-user"></i> Player
+    </label>
+    <label>
+      <input type="radio" name="mode" value="team" />
+      <i class="fas fa-shield-alt"></i> Team
+    </label>
+  </div>
+
+        
+  <form id="compare-form">
+    <select id="compare1" required></select>
+    <select id="compare2" required></select>
+  </form>
+  
+        
+      </div>
+      <div class="right-panel">
+        <button id="prev-btn" class="nav-btn">❮</button>
+        <div id="top10-table"></div>
+        <button id="next-btn" class="nav-btn">❯</button>
+      </div>
+    </div>
+    
+
+    <!-- Year Range Selection -->
+    <section class="chart-section">
+      <h2>Most Decisive Players</h2>
+      <label>Start Year: <input type="number" id="startYear" value="2020" /></label>
+      <label>End Year: <input type="number" id="endYear" value="2025" /></label>
+      <div id="top-decisive-chart"></div>
+    </section>
+
+    
+    <div id="calendar">
+      <h2>Games</h2>
+    </div>
+    <div id="countries">
+      <h2>Countries</h2>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <div id="footer-container"></div>
+
+  <!-- Scripts -->
+  <script>
+    // Wait for DOM to load before rendering
+    window.addEventListener("DOMContentLoaded", function () {
+      const startInput = document.getElementById("startYear");
+      const endInput = document.getElementById("endYear");
+
+      function updateChart() {
+        const start = +startInput.value;
+        const end = +endInput.value;
+        renderRadialDecisivenessChart(start, end);
+      }
+
+      // Initial render
+      updateChart();
+
+      // Auto update when inputs change
+      startInput.addEventListener("input", updateChart);
+      endInput.addEventListener("input", updateChart);
+    });
+  </script>
+
+  <script src="/node_modules/d3/dist/d3.min.js"></script>
+
+  <!-- jQuery (required for Selectize) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <!-- Selectize CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/selectize/dist/css/selectize.default.css" />
+  <!-- Selectize JS -->
+  <script src="https://cdn.jsdelivr.net/npm/selectize/dist/js/standalone/selectize.min.js"></script>
+
+
+  <script src="/Home/static/scripts/playerChart.js"></script>
+  <script src="/Home/static/scripts/topFifteen.js"></script>
+  <script src="/Home/static/scripts/homecopy.js"></script>
+
+  <script src="/Home/static/components/navbarSearch.js"></script>
+  <script src="/Home/static/components/navbar.js"></script>
+  <script src="/Home/static/components/footer.js"></script>
+  <script src="/Home/static/components/loader.js"></script>
+  <script src="https://unpkg.com/topojson@3"></script>
+  <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+</body>
+</html>

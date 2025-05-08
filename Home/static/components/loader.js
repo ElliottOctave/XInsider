@@ -3,7 +3,11 @@
 
   function tryShowContent() {
     if (navbarLoaded && footerLoaded) {
-      document.getElementById('loading-overlay').style.display = 'none';
+      document.getElementById('loading-overlay').style.opacity = "0";
+      setTimeout(() => {
+        document.getElementById('loading-overlay').style.display = 'none';
+      }, 500); // makes a smooth transition
+      
     }
   }
 

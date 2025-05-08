@@ -4,7 +4,9 @@ body {
     background-color: #f9f9fb;
     margin: 0;
     padding: 0;
-    color: #333;
+    width: 100vw;
+    height: 100vh;
+    color: #003366;
   }
   
   .compare-page {
@@ -23,6 +25,9 @@ body {
     align-items: center;
     gap: 40px;
     flex-wrap: wrap;
+    min-width: 1400px;
+    width: 100%;
+    height: auto;
     margin-top: 20px;
   }
 
@@ -56,6 +61,28 @@ body {
     text-align: center;
     width: 180px;
   }
+
+  .side-by-side a {
+    color: inherit;
+    text-decoration: none;
+  }
+  
+  .side-by-side a:hover h3 {
+    color: #003366;
+    text-decoration: underline;
+  }  
+  
+  .selectize-input {
+    border-radius: 8px;
+    font-size: 0.95rem;
+    padding: 10px;
+    border: 1px solid #ccc;
+  }
+  
+  .selectize-dropdown {
+    max-height: 250px;
+    overflow-y: auto;
+  }
   
   .compare-logo {
     width: 200px;
@@ -64,6 +91,42 @@ body {
     margin-bottom: 10px;
   }
   
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 700px;
+  }
+
+  .swap-controls {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .swap-controls .vs-label {
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin: 0 5px;
+  }
+  
+  .swap-controls select {
+    min-width: 220px;
+  }
+
+  .selectize-control.single {
+    width: 220px;
+  }
+  
+  .selectize-input {
+    border-radius: 6px;
+    font-size: 1rem;
+    padding: 10px;
+  }
   
   #additional-stats {
     width: 100%;
