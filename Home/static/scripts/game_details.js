@@ -354,6 +354,10 @@ function setupTimeline() {
 
   renderLineup(0);
   document.getElementById("event-minute").textContent = "0'";
+  document.getElementById('loading-overlay').style.opacity = "0";
+      setTimeout(() => {
+        document.getElementById('loading-overlay').style.display = 'none';
+      }, 500); // makes a smooth transition
   
 }
 
