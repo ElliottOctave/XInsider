@@ -523,15 +523,15 @@ function renderFieldPositions(playerId) {
   d3.csv('../../processed_data/position_count.csv').then(function(data) {
 
     const pitch = d3Soccer.pitch()
-      .height(200)
+      .height(300)
       .showDirOfPlay(true)
       .shadeMiddleThird(false)
       .pitchStrokeWidth(.5)
       .goals("line");
 
     const svg = d3.select("#halfField")
-      .attr("width", 305)
-      .attr("height", 200)
+      .attr("width", 500)
+      .attr("height", 300)
       .call(pitch);
 
     // Tooltip
@@ -1007,30 +1007,38 @@ function displayPlayerTrophies(player) {
         clubYears.push({ club_id: current.to_club_id, year: year });
       }
     }
-    // Check if any of the clubs the player was at won a competition that year
+
+    // Filter competitions where player's club won
     const wonTrophies = competitions.filter(comp => {
       return clubYears.some(cy => cy.club_id == comp.club_id && cy.year == comp.year);
     }).sort((a, b) => a.year - b.year);
 
     function formatCompetitionName(name) {
       return name
-        .replace(/-/g, ' ')  // Replace hyphens with spaces
-        .replace(/\b\w/g, char => char.toUpperCase());  // Capitalize first letter of each word
+        .replace(/-/g, ' ')
+        .replace(/\b\w/g, char => char.toUpperCase());
     }
-    
 
-    // Add each trophy image to the container
+    // Display each trophy with image and competition name
     wonTrophies.forEach(trophy => {
-      console.log(trophy);
-      container.append("img")
+      const trophyContainer = container.append("div")
+        .attr("class", "trophy-item");
+
+      trophyContainer.append("img")
         .attr("src", trophy.cup_image_url)
         .attr("alt", `${formatCompetitionName(trophy.competition_name)} (${trophy.year})`)
-        .attr("title", `${formatCompetitionName(trophy.competition_name)} (${trophy.year})`)
+        .attr("title", `${formatCompetitionName(trophy.competition_name)} (${trophy.year})`);
+
+      trophyContainer.append("div")
+        .attr("class", "trophy-caption")
+        .html(`${formatCompetitionName(trophy.competition_name)}<br><span class="trophy-year">${trophy.year}</span>`);
+
     });
   }).catch(error => {
     console.error("Error loading data:", error);
   });
 }
+
 
 
 

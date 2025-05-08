@@ -7,25 +7,27 @@ body {
   display: flex;
   width: 100%;
 }
+
 .player-profile-content {
-  flex: 2;
+  flex: 1;
+  padding-left: 40px;
 }
 
 #trophies-section {
-  flex: 2;
+  flex: 1;
+  padding-right: 40px;
 }
 
 /* ========== Player Details ========== */
-
 .player-details {
   display: flex;
   align-items: center;
   justify-content: space-between;
   background: #fff;
-  padding: 20px;
+  padding: 10px;
   border-radius: 10px;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-  margin: 20px auto;
+  margin: 10px auto;
   max-width: 900px;
 }
 
@@ -53,10 +55,9 @@ body {
 }
 
 /* ========== Charts and Stats ========== */
-
 .chart-section {
   width: 100%;
-  max-width: 900px;
+  max-width: 870px;
   background-color: #fff;
   padding: 20px;
   margin: 20px auto;
@@ -78,7 +79,6 @@ body {
 }
 
 /* ========== Player Card ========== */
-
 .player-card {
   display: flex;
   justify-content: space-between;
@@ -163,7 +163,6 @@ body {
 }
 
 /* ========== Foot Icons ========== */
-
 .foot-icons {
   display: flex;
   gap: 8px;
@@ -191,29 +190,24 @@ body {
   border-color: #0056b3;
 }
 
-
 /* ========== Trophies ========== */
 #trophies {
   display: grid;
-  align-items: center;
-  grid-template-columns: repeat(auto-fill, 120px); 
-  justify-content: space-between;
-  padding: 5px;
+  grid-template-columns: repeat(4, 1fr);  /* Two equal-width columns */
+  gap: 30px;
   justify-items: center;
-  gap: 30px; 
+  padding: 5px;
 }
-
-
 #trophies-container img {
-  width: 120px;  
-  height: 120px; 
-  object-fit: contain; 
-  filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.5)); 
-  transition: transform 0.3s ease; 
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.5));
+  transition: transform 0.3s ease;
 }
 
 #trophies-container img:hover {
-  transform: scale(1.1); 
+  transform: scale(1.1);
 }
 
 #trophies-container {
@@ -225,5 +219,27 @@ body {
 }
 
 #trophies-section h2 {
-  margin-bottom: 20px;  /* Adds space between the title and the trophies */
+  margin-bottom: 20px;
 }
+
+.trophy-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 150px; /* fixed width ensures consistent layout */
+  text-align: center;
+}
+
+.trophy-caption {
+  margin-top: 8px;
+  font-size: 0.95em;
+  line-height: 1.4em;
+}
+
+.trophy-year {
+  display: block;
+  font-size: 0.85em;
+  color: #666;
+  margin-top: 2px;
+}
+
