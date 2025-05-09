@@ -1,7 +1,3 @@
-body {
-    background: radial-gradient(circle, #fff, #003366);
-  }
-  
 /* Centering the grid container */
 .dashboard {
     display: flex;
