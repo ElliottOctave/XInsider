@@ -65,17 +65,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setMode("player");
 
-    const triggerCompare = () => {
+    const triggerCompare = async () => {
       const val1 = compare1.getValue();
       const val2 = compare2.getValue();
+
       if (val1 && val2 && val1.toLowerCase() !== val2.toLowerCase()) {
         const type = mode === "player" ? "players" : "clubs";
-        const query = new URLSearchParams({
-          type: type,
-          first: val1,
-          second: val2
-        }).toString();
-        window.location.href = `/Home/pages/compare.html?${query}`;
+
+        // Show loading overlay
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) overlay.style.display = 'block';
+
+        // Load data and open modal
+        await loadComparison(type, val1, val2);
+        document.getElementById('compareModal').style.display = 'block';
       }
     };
 
@@ -83,4 +86,19 @@ document.addEventListener("DOMContentLoaded", () => {
     compare2.on('change', triggerCompare);
   });
 
+  // Modal close logic
+  const closeBtn = document.querySelector('.close-modal');
+  const modal = document.getElementById('compareModal');
+
+  if (closeBtn && modal) {
+    closeBtn.addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (event) => {
+      if (event.target === modal) {
+        modal.style.display = 'none';
+      }
+    });
+  }
 });

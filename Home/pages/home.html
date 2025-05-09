@@ -9,6 +9,11 @@
 </head>
 <body>
 
+  <!-- Loading Overlay -->
+  <div id="loading-overlay">
+    <div class="spinner"></div>
+  </div>
+  
   <section class="hero">
     <nav class="navbar">
       <div class="navbar-container">
@@ -50,6 +55,20 @@
     </div>
   </section>
 
+  <!-- Compare Modal -->
+<div id="compareModal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal">&times;</span>
+    <h1 id="compare-title">Comparison</h1>
+    <div id="comparison-container">
+      <div id="comparison-logo-team1" class="side-by-side"></div>
+      <canvas id="radarChart"></canvas>
+      <div id="comparison-logo-team2" class="side-by-side"></div>
+    </div>
+  </div>
+</div>
+
+
   <!-- Compare Section -->
     <div class="compare-container">
       <h2 id="compare-heading">Compare players</h2>
@@ -83,7 +102,11 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/selectize/dist/css/selectize.default.css" />
   <script src="https://cdn.jsdelivr.net/npm/selectize/dist/js/standalone/selectize.min.js"></script>
 
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="/Home/static/scripts/playerChart.js"></script>
+  <script src="/Home/static/scripts/compare.js"></script>
   <script src="/Home/static/scripts/home.js"></script>
+
 </body>
 </html>
