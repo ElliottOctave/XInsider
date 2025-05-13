@@ -72,12 +72,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (val1 && val2 && val1.toLowerCase() !== val2.toLowerCase()) {
         const type = mode === "player" ? "players" : "clubs";
 
-        // Show loading overlay
-        const overlay = document.getElementById('loading-overlay');
-        if (overlay) overlay.style.display = 'block';
+        const inlineLoader = document.getElementById('compare-loader');
+        if (inlineLoader) inlineLoader.style.display = 'inline-block';
 
         // Load data and open modal
         await loadComparison(type, val1, val2);
+        if (inlineLoader) inlineLoader.style.display = 'none';
         document.getElementById('compareModal').style.display = 'block';
       }
     };
