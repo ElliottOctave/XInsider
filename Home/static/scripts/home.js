@@ -65,22 +65,53 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setMode("player");
 
-    const triggerCompare = () => {
-      const val1 = compare1.getValue();
-      const val2 = compare2.getValue();
-      if (val1 && val2 && val1.toLowerCase() !== val2.toLowerCase()) {
-        const type = mode === "player" ? "players" : "clubs";
-        const query = new URLSearchParams({
-          type: type,
-          first: val1,
-          second: val2
-        }).toString();
-        window.location.href = `/Home/pages/compare.html?${query}`;
-      }
-    };
+  const triggerCompare = async () => {
+  const val1 = compare1.getValue();
+  const val2 = compare2.getValue();
+
+  if (val1 && val2 && val1.toLowerCase() !== val2.toLowerCase()) {
+    const type = mode === "player" ? "players" : "clubs";
+
+    // Show loaders
+    const overlay = document.getElementById('loading-overlay');
+    const inlineLoader = document.getElementById('compare-loader');
+    if (overlay) overlay.style.display = 'block';
+    if (inlineLoader) inlineLoader.style.display = 'inline-block';
+
+    // Load radar/chart
+    await loadComparison(type, val1, val2);
+
+    // Hide loaders
+    if (overlay) overlay.style.display = 'none';
+    if (inlineLoader) inlineLoader.style.display = 'none';
+
+    // Show comparison section
+    const compareResult = document.getElementById('compare-result');
+    compareResult.style.display = 'block';
+    document.getElementById('compare-title').textContent = `Comparison: ${val1} vs ${val2}`;
+
+    // 🔽 Smooth scroll into view
+    compareResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+};
 
     compare1.on('change', triggerCompare);
     compare2.on('change', triggerCompare);
   });
 
+  // Modal close logic
+  const closeBtn = document.querySelector('.close-modal');
+  const modal = document.getElementById('compareModal');
+
+  if (closeBtn && modal) {
+    closeBtn.addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (event) => {
+      if (event.target === modal) {
+        modal.style.display = 'none';
+      }
+    });
+  }
 });

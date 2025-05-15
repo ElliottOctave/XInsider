@@ -6,8 +6,9 @@
   <title>Club Info - XInsider</title>
 
   <!-- Stijlen -->
+   <link rel="stylesheet" href="/Home/static/styles/XInsider.css" />
   <link rel="stylesheet" href="/Home/static/styles/club_info.css" />
-  <link rel="stylesheet" href="/Home/static/styles/XInsider.css" />
+  
 </head>
 <body>
 
@@ -21,15 +22,32 @@
 
   <!-- Hero Section -->
   <main>
-    <section id="hero-section">
-      <img id="club-logo" alt="Club Logo" />
-      <h1 id="club-name"></h1>
+    <!-- Hero Section: Logo, Name, League, Coach, Stadium -->
+    <section id="hero-section"></section>
+
+    <!-- Quick Stats: Age, Squad Size, Transfers, etc. -->
+    <section id="quick-stats"></section>
+
+    <!-- Layout for charts: Left and Right columns -->
+    <section id="viz-top-row">
+      <div id="viz-left"></div>
+      <div id="viz-right"></div>
     </section>
 
-    <!-- Club Details Section -->
-    <section id="club-details">
-      <!-- JS zal hier extra data & grafieken injecteren -->
+    <section id="game-info-row">
+      <div id="game-left"></div>
+      <div id="game-right"></div>
     </section>
+
+    <section id="viz-bottom-row"></section>
+
+  
+
+    <!-- Full width row for comparisons or stacked visuals -->
+    <section id="full-width-row"></section>
+
+    <!-- Squad by Position Tabs -->
+    <section id="squad-section"></section>
   </main>
 
   

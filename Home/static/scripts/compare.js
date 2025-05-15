@@ -1,55 +1,38 @@
-// compare.js – radar chart scaled using precomputed max values with different axis labels and tooltip descriptions
-const urlParams = new URLSearchParams(window.location.search);
-const type = urlParams.get("type");
-const first = urlParams.get("first");
-const second = urlParams.get("second");
+let radarChartInstance = null;
 
-const maxValues = [
-  100,        // Win%
-  57,         // Max age (oldest player)
-  type === "players" ? 200000000 : 1500000000,  // Max Wealth (latest player valuation)
-  type === "players" ? 29 : 5,         // Max Aggressivity
-  type === "players" ? 34 : 5,         // Max Assists
-  type === "players" ? 50 : 5,         // Max Goals
-];
-
-const axisLabels = ["Win%", "Age", "Valuation", "Aggression", "Assists", "Goals"];
-const tooltipDescriptions = [
-  type === "players" ?  " Win percentage over games played" : " Win percentage over games played",
-  type === "players" ? "Player age or average age of team" : "Average age of team",
-  type === "players" ? "Latest market valuation (€)" : "Total market valuation (€)",
-  type === "players" ? "Aggressivity score (number of Red cards 2x + Yellow cards)" : "Aggressivity score (number of Red cards 2x + Yellow cards)",
-  type === "players" ? "Average number of assists" : "Average number of assists",
-  type === "players" ? "Average number of goals" :  "Average number of goals",
-];
-
-Promise.all([
-  d3.csv("/data/player_stats.csv"),
-  d3.csv("/data/players.csv"),
-  d3.csv("/data/clubs.csv"),
-  d3.csv("/data/player_valuations.csv"),
-  d3.csv("/data/games.csv"),
-  d3.csv("/data/appearances.csv"),
-  d3.csv("/data/club_logos.csv")
-]).then(([stats, players, clubs, valuations, games, appearances, logos]) => {
-
-  const calculateScore = raw => raw.map((v, i) => (v / maxValues[i]) * 100).reduce((a, b) => a + b, 0) / raw.length;
-
-  /*
-  const calculateScore2 = raw => {
-    const weights = [1.5, -0.2, 1.0, -0.5, 1.25, 1.4]; // Win%, Age, Wealth, Aggression, Assists, Goals
-    const total = raw.reduce((sum, val, i) => sum + ((val / maxValues[i]) * 100 * weights[i]), 0);
-    const weightSum = weights.reduce((a, b) => a + Math.abs(b), 0);
-    return total / weightSum;
-  };
-  */
+async function loadComparison(type, first, second) {
   
+  const maxValues = [
+    100,        // Win%
+    57,         // Max age
+    type === "players" ? 200000000 : 1500000000,  // Max Wealth
+    type === "players" ? 29 : 5,         // Max Aggressivity
+    type === "players" ? 34 : 5,         // Max Assists
+    type === "players" ? 50 : 5,         // Max Goals
+  ];
+
+  console.log(type);
+  const [
+    stats, players, clubs, valuations, games, appearances, logos
+  ] = await Promise.all([
+    d3.csv("/data/player_stats.csv"),
+    d3.csv("/data/players.csv"),
+    d3.csv("/data/clubs.csv"),
+    d3.csv("/data/player_valuations.csv"),
+    d3.csv("/data/games.csv"),
+    d3.csv("/data/appearances.csv"),
+    d3.csv("/data/club_logos.csv")
+  ]);
+
+  const calculateScore = raw =>
+    raw.map((v, i) => (v / maxValues[i]) * 100)
+       .reduce((a, b) => a + b, 0) / raw.length;
+
   const getPlayerData = (name) => {
     const playerStats = stats.filter(s => s.player_name === name);
     const playerId = playerStats[0]?.player_id;
     const profile = players.find(p => p.player_id === playerId);
     const wealthVals = valuations.filter(v => v.player_id === playerId);
-
     const avg = arr => d3.mean(arr.map(Number)) || 0;
     const scoring = avg(playerStats.map(d => d.nr_of_goals));
     const assists = avg(playerStats.map(d => d.assists));
@@ -57,7 +40,7 @@ Promise.all([
     const yellows = avg(playerStats.map(d => d.yellow_cards));
     const aggressivity = reds * 2 + yellows;
     const latest = d3.max(wealthVals, v => new Date(v.date));
-    const wealth = +wealthVals.find(v => new Date(v.date).getTime() === latest.getTime())?.market_value_in_eur || 0;
+    const wealth = +wealthVals.find(v => new Date(v.date).getTime() === latest?.getTime())?.market_value_in_eur || 0;
 
     const birthDate = new Date(profile?.date_of_birth);
     const today = new Date();
@@ -80,12 +63,11 @@ Promise.all([
     })();
 
     const raw = [winPercent, age, wealth, aggressivity, assists, scoring];
-    const score = calculateScore(raw);
     return {
       name,
       raw,
       logo: profile?.image_url,
-      score
+      score: calculateScore(raw)
     };
   };
 
@@ -154,70 +136,31 @@ Promise.all([
 
   const getData = type === "players" ? getPlayerData : getClubData;
   const entities = [getData(first), getData(second)];
+  renderRadar(entities, players, clubs, type);
 
-  injectSwitcher(entities, players, clubs);
-  renderRadar(entities, players, clubs);
-
-});
-
-function injectSwitcher(entities, players, clubs) {
-  const container = document.getElementById("comparison-container");
-  const swapForm = document.createElement("form");
-
-  const isPlayer = type === "players";
-
-  const playerOptions = players.map(p =>
-    `<option value="${p.name}" ${p.name === entities[0].name ? 'selected' : ''}>${p.name}</option>`
-  ).join('');
-
-  const playerOptions2 = players.map(p =>
-    `<option value="${p.name}" ${p.name === entities[1].name ? 'selected' : ''}>${p.name}</option>`
-  ).join('');
-
-  const clubOptions = clubs.map(c =>
-    `<option value="${c.name}" ${c.name === entities[0].name ? 'selected' : ''}>${c.name}</option>`
-  ).join('');
-
-  const clubOptions2 = clubs.map(c =>
-    `<option value="${c.name}" ${c.name === entities[1].name ? 'selected' : ''}>${c.name}</option>`
-  ).join('');
-
-  swapForm.innerHTML = `
-    <div class="swap-controls">
-      <select id="swapFirst">${isPlayer ? playerOptions : clubOptions}</select>
-      <span class="vs-label">vs</span>
-      <select id="swapSecond">${isPlayer ? playerOptions2 : clubOptions2}</select>
-    </div>
-  `;
-
-  container.parentElement.insertBefore(swapForm, container);
-
-  // Initialize Selectize
-  const firstSelect = $('#swapFirst').selectize({ placeholder: 'Search...', maxOptions: 1000 })[0].selectize;
-  const secondSelect = $('#swapSecond').selectize({ placeholder: 'Search...', maxOptions: 1000 })[0].selectize;
-
-  // Handle automatic comparison on change
-  const triggerCompare = () => {
-    const newFirst = firstSelect.getValue();
-    const newSecond = secondSelect.getValue();
-    if (newFirst && newSecond) {
-      window.location.href = `/Home/pages/compare.html?type=${type}&first=${encodeURIComponent(newFirst)}&second=${encodeURIComponent(newSecond)}`;
-    }
-  };
-
-  firstSelect.on('change', triggerCompare);
-  secondSelect.on('change', triggerCompare);
+  if (document.getElementById("loading-overlay"))
+    document.getElementById("loading-overlay").style.display = "none";
 }
 
-
-
-
-
-function renderRadar(entities, players, clubs) {
-  const loadingOverlay = document.getElementById("loading-overlay");
+function renderRadar(entities, players, clubs, type) {
   const canvas = document.getElementById("radarChart");
   canvas.style.maxHeight = "700px";
   const ctx = canvas.getContext("2d");
+
+   // Destroy previous chart instance if exists
+  if (radarChartInstance) {
+    radarChartInstance.destroy();
+  }
+
+  const maxValues = [
+    100,        // Win%
+    57,         // Max age
+    type === "players" ? 200000000 : 1500000000,  // Max Wealth
+    type === "players" ? 29 : 5,         // Max Aggressivity
+    type === "players" ? 34 : 5,         // Max Assists
+    type === "players" ? 50 : 5,         // Max Goals
+  ];
+
 
   const normalized = entities.map(e => ({
     name: e.name,
@@ -229,7 +172,6 @@ function renderRadar(entities, players, clubs) {
 
   document.getElementById("comparison-logo-team1").innerHTML = `
     <div class="side-by-side">
-      <a href="/Home/pages/${type === 'players' ? 'player_info.html?playerId=' + players.find(p => p.name === entities[0].name)?.player_id : 'club_info.html?club_id=' + clubs.find(c => c.name === entities[0].name)?.club_id}">
       <img src="${normalized[0].logo}" alt="${normalized[0].name}" class="compare-logo" />
       <h3>${normalized[0].name}</h3>
       <p>Score: ${Math.round(normalized[0].score)} / 100</p>
@@ -237,22 +179,15 @@ function renderRadar(entities, players, clubs) {
 
   document.getElementById("comparison-logo-team2").innerHTML = `
     <div class="side-by-side">
-      <a href="/Home/pages/${type === 'players' ? 'player_info.html?playerId=' + players.find(p => p.name === entities[1].name)?.player_id : 'club_info.html?club_id=' + clubs.find(c => c.name === entities[1].name)?.club_id}">
       <img src="${normalized[1].logo}" alt="${normalized[1].name}" class="compare-logo" />
       <h3>${normalized[1].name}</h3>
       <p>Score: ${Math.round(normalized[1].score)} / 100</p>
     </div>`;
 
-  new Chart(ctx, {
-    plugins: [{
-      id: 'onCompleteLoaderHide',
-      afterRender: () => {
-        if (loadingOverlay) loadingOverlay.style.display = "none";
-      }
-    }],
+  radarChartInstance = new Chart(ctx, {
     type: 'radar',
     data: {
-      labels: axisLabels,
+      labels: ["Win%", "Age", "Valuation", "Aggression", "Assists", "Goals"],
       datasets: normalized.map((e, i) => ({
         label: e.name,
         data: e.data,
@@ -269,12 +204,19 @@ function renderRadar(entities, players, clubs) {
       plugins: {
         tooltip: {
           callbacks: {
-            label: function(context) {
+            label: function (context) {
               const index = context.dataIndex;
               const dataset = context.dataset;
-              const description = tooltipDescriptions[index];
+              const descriptions = [
+                "Win percentage over games played",
+                "Average age",
+                "Market valuation (€)",
+                "Aggressivity score",
+                "Average assists",
+                "Average goals"
+              ];
               const value = dataset.raw[index];
-              return `${dataset.label} – ${description}: ${Number(value).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+              return `${dataset.label} – ${descriptions[index]}: ${Number(value).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
             }
           }
         }
