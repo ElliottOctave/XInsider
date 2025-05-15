@@ -825,7 +825,8 @@ function renderTimeline(playerId) {
 
       svg.append("g")
         .attr("transform", `translate(${margin.left}, 0)`)
-        .call(d3.axisLeft(yScale));
+        .call(d3.axisLeft(yScale))
+        .attr("font-size", 14);
 
       // Add bars (Gantt chart style)
       svg.selectAll(".bar")
@@ -1203,11 +1204,33 @@ function renderPlayerStatsCarousel(playerId) {
 
     let currentChart = 0;
     const chartModes = ["goals_assists", "cards"];
+    let carouselRunning = true;
+    let interval;
+
+    const button = document.getElementById("pauseButton");
+    const icon = document.getElementById("pauseIcon");
+
+    function toggleCarousel() {
+      carouselRunning = !carouselRunning;
+      if (carouselRunning) {
+        icon.src = "https://www.svgrepo.com/show/532514/pause.svg"; // Pause icon
+      } else {
+        icon.src = "https://www.svgrepo.com/show/514197/play.svg"; // Play icon
+        clearInterval(interval);
+      }
+    }
+
+    button.addEventListener("click", toggleCarousel);
+
+
+    document.getElementById("pauseButton").addEventListener("click", toggleCarousel);
 
     drawStackedChart(chartModes[currentChart]);
     setInterval(() => {
-      currentChart = (currentChart + 1) % chartModes.length;
-      drawStackedChart(chartModes[currentChart]);
+      if (carouselRunning) {
+        currentChart = (currentChart + 1) % chartModes.length;
+        drawStackedChart(chartModes[currentChart]);
+      }
     }, 4000);
   });
 }
