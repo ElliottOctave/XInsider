@@ -10,12 +10,12 @@ body {
 
 .player-profile-content {
   flex: 1;
-  padding-left: 40px;
+  padding-left: 100px;
 }
 
 #trophies-section {
   flex: 1;
-  padding-right: 40px;
+  padding-right: 100px;
 }
 
 /* ========== Player Details ========== */
@@ -161,6 +161,24 @@ body {
   display: block;
   margin: 0 auto;
 }
+
+#pauseButton {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.3);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#pauseButton img {
+  width: 27px;
+  height: 27px;
+}
+
 
 /* ========== Foot Icons ========== */
 .foot-icons {

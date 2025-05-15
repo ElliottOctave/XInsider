@@ -65,22 +65,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setMode("player");
 
-    const triggerCompare = async () => {
-      const val1 = compare1.getValue();
-      const val2 = compare2.getValue();
+  const triggerCompare = async () => {
+  const val1 = compare1.getValue();
+  const val2 = compare2.getValue();
 
-      if (val1 && val2 && val1.toLowerCase() !== val2.toLowerCase()) {
-        const type = mode === "player" ? "players" : "clubs";
+  if (val1 && val2 && val1.toLowerCase() !== val2.toLowerCase()) {
+    const type = mode === "player" ? "players" : "clubs";
 
-        // Show loading overlay
-        const overlay = document.getElementById('loading-overlay');
-        if (overlay) overlay.style.display = 'block';
+    // Show loaders
+    const overlay = document.getElementById('loading-overlay');
+    const inlineLoader = document.getElementById('compare-loader');
+    if (overlay) overlay.style.display = 'block';
+    if (inlineLoader) inlineLoader.style.display = 'inline-block';
 
-        // Load data and open modal
-        await loadComparison(type, val1, val2);
-        document.getElementById('compareModal').style.display = 'block';
-      }
-    };
+    // Load radar/chart
+    await loadComparison(type, val1, val2);
+
+    // Hide loaders
+    if (overlay) overlay.style.display = 'none';
+    if (inlineLoader) inlineLoader.style.display = 'none';
+
+    // Show comparison section
+    const compareResult = document.getElementById('compare-result');
+    compareResult.style.display = 'block';
+    document.getElementById('compare-title').textContent = `Comparison: ${val1} vs ${val2}`;
+
+    // 🔽 Smooth scroll into view
+    compareResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+};
 
     compare1.on('change', triggerCompare);
     compare2.on('change', triggerCompare);

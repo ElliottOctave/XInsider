@@ -32,7 +32,6 @@
     <div class="hero-content">
       <h1>Welcome to XInsider</h1>
       <p>Uncover football insights like never before. Compare players, analyze teams, and visualize stats all in one place.</p>
-      <a href="#compare-heading" class="btn-primary">Get Started</a>
     </div>
   </section>
 
@@ -55,24 +54,13 @@
     </div>
   </section>
 
-  <!-- Compare Modal -->
-<div id="compareModal" class="modal">
-  <div class="modal-content">
-    <span class="close-modal">&times;</span>
-    <h1 id="compare-title">Comparison</h1>
-    <div id="comparison-container">
-      <div id="comparison-logo-team1" class="side-by-side"></div>
-      <canvas id="radarChart"></canvas>
-      <div id="comparison-logo-team2" class="side-by-side"></div>
-    </div>
-  </div>
-</div>
-
 
   <!-- Compare Section -->
     <div class="compare-container">
       <h2 id="compare-heading">Compare players</h2>
       
+      <div id="compare-loader" class="inline-loader" style="display: none;"></div> <!-- 🔄 Inline loader -->
+
       <form>
         <div class="compare-form">
           <select id="compare1" required></select>
@@ -91,6 +79,15 @@
         </label>
       </div>
     </div>
+
+    <div id="compare-result" class="compare-result-section" style="display: none;">
+  <h1 id="compare-title">Comparison</h1>
+  <div id="comparison-container">
+    <div id="comparison-logo-team1" class="side-by-side"></div>
+    <canvas id="radarChart"></canvas>
+    <div id="comparison-logo-team2" class="side-by-side"></div>
+  </div>
+</div>
 
   <footer>
     <p>&copy; 2025 XInsider</p>
