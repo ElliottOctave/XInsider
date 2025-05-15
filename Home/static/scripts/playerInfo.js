@@ -1,5 +1,6 @@
 import * as d3Soccer from 'd3-soccer';
 
+// Function to format big numbers (e.g. 3.000.000 gives 3M)
 function formatValue(num) {
   if (num >= 1_000_000) {
     return (num / 1_000_000).toFixed(1).replace(/\.0$/, '') + "M";
@@ -10,234 +11,124 @@ function formatValue(num) {
   }
 }
 
-
-// Get playerId from the URL (e.g., ?playerId=123)
-const urlParams = new URLSearchParams(window.location.search);
-const playerId = urlParams.get('playerId');
-
-// Fetch player data
-fetch('../../processed_data/player_summary.csv')
-  .then(response => response.text())
-  .then(csvText => {
-    const rows = csvText.split('\n');
-    var headers = rows[0].split(',');
-    headers = headers.map(header => header.trim().replace(/\r$/, ''));
-
-    // Map through the rows and create an array of player objects
-    let players = rows.slice(1).map(row => {
-      const columns = row.split(',');
-      let player = {};
-      columns.forEach((column, index) => {
-        player[headers[index]] = column.trim(); // Map columns to headers
-      });
-      return player;
-    });
-
-    // Find the selected player by playerId
-    const player = players.find(p => p.player_id === playerId);
-    if (player) {
-      const birthDate = new Date(player.date_of_birth);
-      const formattedDate = birthDate.toLocaleDateString("en-GB", {
-        year: "numeric",
-        month: "long",
-        day: "numeric"
-      });
-      const today = new Date();
-      let age = today.getFullYear() - birthDate.getFullYear();
-      const m = today.getMonth() - birthDate.getMonth();
-      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
-      }
-      document.getElementById('player-info').innerHTML = `
-        <div class="player-card">
-          <div class="player-card-left">
-            <img src="${player.image_url}" alt="${player.name}" class="player-card-image" />
-          </div>
-      
-          <div class="player-card-middle">
-            <h2>${player.name}</h2>
-            <p><strong>Date of Birth</strong> ${formattedDate}</p>
-            <p><strong>Age</strong> ${age}</p>
-            <p><strong>Country of Birth</strong> ${player.country_of_birth}</p>
-            <p><strong>Country of Citizenship</strong> ${player.country_of_citizenship}</p>
-            <p><strong>Height</strong> ${player.height_in_cm} cm</p> 
-            <p><strong>Market Value</strong> € ${(formatValue(player.market_value_in_eur)|| "0")}</p>
-            <p><strong>Highest Market Value</strong> € ${(formatValue(player.highest_market_value_in_eur)|| "0")}</p>
-          </div>
-      
-          <div class="player-card-right">
-            <div class="info-box"><h4>Club</h4><img src="${player.club_logo_url}" alt="Club Logo" class="club-logo" /></div>
-            <div class="info-box"><h4>Competition</h4><img src="${player.competition_logo_url}" alt="Competition Logo" class="club-logo"/></div>
-            <div class="info-box"><h4>Position</h4><p>${player.position}</p></div>
-            <div class="info-box foot-box">
-              <h4>Foot</h4>
-              <div class="foot-icons">
-                <div class="foot-icon left-foot"></div>
-                <div class="foot-icon right-foot"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-
-      const foot = player.foot.toLowerCase();
-      const leftFoot = document.querySelector('.left-foot');
-      const rightFoot = document.querySelector('.right-foot');
-
-      if (foot.includes("both")) {
-        leftFoot.classList.add('active');
-        rightFoot.classList.add('active');
-      }
-      if (foot.includes("left")) {
-        leftFoot.classList.add('active');
-      }
-      if (foot.includes("right")) {
-        rightFoot.classList.add('active');
-      }
-
-      console.log(playerId);
-
-      // Call the function to start the world tour animation with transfers
-      /*renderTransfersWorldTour(playerId);*/
-      renderMap(player);
-      drawGoalsAndAssistsChart(player);
-      drawCardsChart(player);
-      drawAppearances(player)
-      renderFieldPositions(playerId);
-      renderPlayerStatsCarousel(playerId);
-      renderTimeline(playerId);
-      displayPlayerTrophies(player);
-
-
-      // Fetch market value history
-      fetch('../../processed_data/player_valuations.csv')
-        .then(response => response.text())
-        .then(valuationsCsvText => {
-          const valuationRows = valuationsCsvText.split('\n');
-          const valuationHeaders = valuationRows[0].split(',');
-
-          // Map through the rows and create an array of valuation objects
-          let valuations = valuationRows.slice(1).map(row => {
-            const columns = row.split(',');
-            let valuation = {};
-            columns.forEach((column, index) => {
-              valuation[valuationHeaders[index]] = column.trim(); // Map columns to headers
-            });
-            return valuation;
-          });
-
-          // Filter the valuations for the selected player
-          const playerValuations = valuations.filter(v => v.player_id === playerId);
-
-          // Render the market value chart
-          renderMarketValueChart(playerValuations);
-        })
-        .catch(error => {
-          console.error("Error fetching or parsing player_valuations.csv:", error);
-        });
-    } else {
-      console.error("Player not found.");
-    }
-  })
-  .catch(error => {
-    console.error("Error fetching or parsing players.csv:", error);
-  });
-
-  function renderMap(player) {
-    // The svg container
-    const width = 400, height = 300;
-    const svg = d3.select("#player-map")
-      .append("svg")
-      .attr("width", width)
-      .attr("height", height);
-
-    // Create a tooltip div
-    const tooltip = d3.select("#player-map")
-      .append("div")
-      .attr("class", "tooltip")
-      .style("opacity", 0)
-      .style("position", "absolute")
-      .style("background", "rgba(0, 0, 0, 0.7)")
-      .style("color", "#fff")
-      .style("padding", "5px 10px")
-      .style("border-radius", "5px")
-      .style("font-size", "12px")
-      .style("pointer-events", "none");
-
-    // Default projection setup
-    const projection = d3.geoAitoff()
-      .scale(width / 1.3 / Math.PI)
-      .center([0, 20]) // Default center
-      .translate([width / 2, height / 2]);
-
-    const path = d3.geoPath().projection(projection);
-
-    // Load the world map GeoJSON
-    d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson").then(function(worldData) {
-      
-      // Draw the world map
-      svg.append("g")
-        .selectAll("path")
-        .data(worldData.features)
-        .join("path")
-        .attr("d", path)
-        .attr("fill", "#ddd")
-        .attr("stroke", "#fff")
-        .on("mouseover", function(event, d) {
-            d3.select(this).attr("fill", "#0077b6"); // Highlight country on hover
-            tooltip.transition().duration(200).style("opacity", 1);
-            tooltip.html(d.properties.name)
-                .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY - 20) + "px");
-        })
-        .on("mousemove", function(event) {
-            tooltip.style("left", (event.pageX + 10) + "px")
-                   .style("top", (event.pageY - 20) + "px");
-        })
-        .on("mouseout", function() {
-            d3.select(this).attr("fill", d => d.properties.name === player.country_of_birth ? "#003366" : "#ddd"); // Restore color
-            tooltip.transition().duration(200).style("opacity", 0);
-        });
-
-      if (player && player.country_of_birth) {
-        const countryName = player.country_of_birth;
-
-        // Find the country in the GeoJSON
-        const country = worldData.features.find(d => d.properties.name === countryName);
-
-        if (country) {
-          // Get country bounds and calculate scaling
-          let bounds = d3.geoBounds(country);
-          let center = d3.geoCentroid(country);
-          let [[x0, y0], [x1, y1]] = bounds;
-            
-          // Calculate a zoom factor based on country size
-          let scaleFactor = Math.min(
-              width / (x1 - x0),
-              height / (y1 - y0)
-          ) * 10; // Adjust the zoom level
-
-          // Update projection with new center and scale
-          projection
-          .scale(scaleFactor)
-          .center(center)
-          .translate([width / 2, height / 2]);
-
-          // Redraw the map with the new projection
-          svg.selectAll("path")
-            .attr("d", path)
-            .attr("fill", d => d.properties.name === player.country_of_birth ? "#003366" : "#ddd"); // Highlight the country
-        } else {
-          console.error("Country not found in GeoJSON.");
-        }
-      } else {
-        console.error("Player's country is missing.");
-      }
-    }).catch(function(error) {
-      console.error("Error loading GeoJSON data:", error);
-    });
+function calculateAge(dateOfBirth) {
+  const birthDate = new Date(dateOfBirth);
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
 }
 
+// Render player card
+function createPlayerCard(player) {
+  const birthDate = new Date(player.date_of_birth);
+  const formattedDate = birthDate.toLocaleDateString("en-GB", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  const age = calculateAge(player.date_of_birth);
+
+  return `
+    <div class="player-card">
+      <div class="player-card-left">
+        <img src="${player.image_url}" alt="${player.name}" class="player-card-image" />
+      </div>
+      <div class="player-card-middle">
+        <h2>${player.name}</h2>
+        <p><strong>Date of Birth</strong> ${formattedDate}</p>
+        <p><strong>Age</strong> ${age}</p>
+        <p><strong>Country of Birth</strong> ${player.country_of_birth}</p>
+        <p><strong>Country of Citizenship</strong> ${player.country_of_citizenship}</p>
+        <p><strong>Height</strong> ${player.height_in_cm} cm</p> 
+        <p><strong>Market Value</strong> €${formatValue(Number(player.market_value_in_eur) || 0)}</p>
+        <p><strong>Highest Market Value</strong> €${formatValue(Number(player.highest_market_value_in_eur) || 0)}</p>
+      </div>
+      <div class="player-card-right">
+        <div class="info-box">
+          <h4>Club</h4>
+          <img src="${player.club_logo_url}" alt="Club Logo" class="club-logo" />
+        </div>
+        <div class="info-box">
+          <h4>Competition</h4>
+          <img src="${player.competition_logo_url}" alt="Competition Logo" class="club-logo" />
+        </div>
+        <div class="info-box">
+          <h4>Position</h4>
+          <p>${player.position}</p>
+        </div>
+        <div class="info-box foot-box">
+          <h4>Foot</h4>
+          <div class="foot-icons">
+            <div class="foot-icon left-foot"></div>
+            <div class="foot-icon right-foot"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function showFoot(foot) {
+  const leftFoot = document.querySelector('.left-foot');
+  const rightFoot = document.querySelector('.right-foot');
+  const lowerFoot = foot.toLowerCase();
+  leftFoot.classList.toggle('active', lowerFoot.includes('both') || lowerFoot.includes('left'));
+  rightFoot.classList.toggle('active', lowerFoot.includes('both') || lowerFoot.includes('right'));
+}
+
+// Parse players from csv
+async function parsePlayers(playersCsv) {
+  const response = await fetch(playersCsv);
+  const csvText = await response.text();
+
+  const rows = csvText.split('\n');
+  let headers = rows[0].split(',').map(header => header.trim().replace(/\r$/, ''));
+
+  const players = rows.slice(1).map(row => {
+    const columns = row.split(',');
+    let player = {};
+    columns.forEach((column, index) => {
+      player[headers[index]] = column.trim();
+    });
+    return player;
+  });
+
+  return players;
+}
+
+// Show the market evolution
+async function showPlayerValuations(player) {
+  try {
+    const response = await fetch('../../processed_data/player_valuations.csv');
+    if (!response.ok) {
+      throw new Error(`Failed to fetch player valuations CSV, status: ${response.status}`);
+    }
+
+    const csvText = await response.text();
+    const [headerLine, ...rows] = csvText.trim().split('\n');
+    const headers = headerLine.split(',').map(h => h.trim());
+
+    const valuations = rows.map(row => {
+      const cols = row.split(',');
+      return headers.reduce((obj, header, idx) => {
+        obj[header] = cols[idx]?.trim() || '';
+        return obj;
+      }, {});
+    });
+
+    const playerValuations = valuations.filter(v => v.player_id === player.player_id);
+    renderMarketValueChart(playerValuations);
+
+  } catch (error) {
+    console.error("Error fetching or processing player valuations CSV:", error);
+  }
+}
+
+// Show cards pie
 function drawCardsChart(player) {
   const svg = d3.select("#cardsChart");
 
@@ -247,44 +138,39 @@ function drawCardsChart(player) {
     { category: "Red Cards", value: +player.red_cards }
   ];
 
-  // Set the dimensions and margins of the graph
   const width = +svg.attr("width");
   const height = +svg.attr("height");
   const margin = 60;
-
-  // The radius of the pie plot is half the width or half the height (smallest one). I subtract a bit of margin.
   const radius = Math.min(width, height) / 2 - margin;
 
   // Append the svg object to the div called 'cardsChart' and set the group element for pie chart positioning
-  svg.selectAll("*").remove(); // Clear previous content
-
+  svg.selectAll("*").remove(); 
   const g = svg.append("g")
     .attr("transform", `translate(${width / 2}, ${height / 2})`);
 
-  // Set up the color scale for the pie slices
+  // Choose color scale for the pie slices
   const color = d3.scaleOrdinal()
     .domain(data.map(d => d.category))
     .range(["#f1c40f", "#e74c3c"]);
 
-  // Compute the position of each group on the pie (pie chart setup)
+  // Compute the position of each group on the pie
   const pie = d3.pie().value(d => d.value);
   const data_ready = pie(data);
 
-  // Build the pie chart (draw slices)
+  // Draw slices
   const slices = g.selectAll('path')
     .data(data_ready)
     .enter()
     .append('path')
     .attr('d', d3.arc()
-      .innerRadius(100)         // This is the size of the donut hole
-      .outerRadius(radius)      // Outer radius of the pie
+      .innerRadius(100)         
+      .outerRadius(radius)
     )
-    .attr('fill', d => color(d.data.category)) // Fill color based on category
+    .attr('fill', d => color(d.data.category))
     .attr("stroke", "white")
     .style("stroke-width", "2px")
     .style("opacity", 0.7);
 
-  // Create a tooltip div and make it invisible by default
   const tooltip = d3.select("body").append("div")
     .attr("class", "tooltip")
     .style("position", "absolute")
@@ -295,7 +181,7 @@ function drawCardsChart(player) {
     .style("border-radius", "4px")
     .style("font-size", "12px");
 
-  // Add interaction: Show tooltip on hover
+  // Show tooltip on hover
   slices.on("mouseover", function(event, d) {
     tooltip.style("visibility", "visible")
       .html(`${d.data.category}: ${d.data.value} cards`);
@@ -308,73 +194,68 @@ function drawCardsChart(player) {
     tooltip.style("visibility", "hidden");
   });
 
-  // Calculate the total number of cards for the center label
+  // Calculate the total number of cards
   const totalCards = +player.yellow_cards + +player.red_cards;
 
   // Add a label in the center to show the total number of cards with more detailed information
   g.append("text")
   .attr("text-anchor", "middle")
   .attr("dominant-baseline", "central")
-  .attr("font-size", "12px")  // Smaller font for "Total Appearances"
-  .attr("fill", "#003366")       // Color for the smaller text
-  .attr("dy", "-20px")        // Adjust vertical positioning
+  .attr("font-size", "12px")
+  .attr("fill", "#003366")      
+  .attr("dy", "-20px")   
   .text("Total Number of Cards");
 
   g.append("text")
   .attr("text-anchor", "middle")
   .attr("dominant-baseline", "central")
-  .attr("font-size", "30px")      // Larger font for the appearance number
-  .attr("font-weight", "bold")    // Bold font
-  .attr("fill", "#333")           // Color for the text
-  .attr("dy", "0px")             // Adjust vertical positioning to match your original code
-  .text(totalCards);             // Set the text to the appearances value
+  .attr("font-size", "30px")     
+  .attr("font-weight", "bold") 
+  .attr("fill", "#333")         
+  .attr("dy", "0px")          
+  .text(totalCards);   
 }
 
+// Draw goals and assist pie
 function drawGoalsAndAssistsChart(player) {
   const svg = d3.select("#goalsChart");
 
-  // Data for the pie chart (goals and assists)
+  // Data for the pie (goals and assists)
   const data = [
     { category: "Goals", value: +player.goals },
     { category: "Assists", value: +player.assists }
   ];
 
-  // Set the dimensions and margins of the graph
   const width = +svg.attr("width");
   const height = +svg.attr("height");
   const margin = 60;
-
-  // The radius of the pie plot is half the width or half the height (smallest one). I subtract a bit of margin.
   const radius = Math.min(width, height) / 2 - margin;
 
-  svg.selectAll("*").remove(); // Clear previous content
-
+  svg.selectAll("*").remove();
   const g = svg.append("g")
     .attr("transform", `translate(${width / 2}, ${height / 2})`);
 
-  // Set up the color scale for the pie slices
   const color = d3.scaleOrdinal()
     .domain(data.map(d => d.category))
     .range(["#4CAF50", "#2196F3"]);
-  // Compute the position of each group on the pie (pie chart setup)
   const pie = d3.pie().value(d => d.value);
   const data_ready = pie(data);
 
-  // Build the donut chart (draw slices)
+  // Draw slices
   const slices = g.selectAll('path')
     .data(data_ready)
     .enter()
     .append('path')
     .attr('d', d3.arc()
-      .innerRadius(100)         // This is the size of the donut hole
-      .outerRadius(radius)      // Outer radius of the pie
+      .innerRadius(100)         
+      .outerRadius(radius)      
     )
-    .attr('fill', d => color(d.data.category)) // Fill color based on category
+    .attr('fill', d => color(d.data.category))
     .attr("stroke", "white")
     .style("stroke-width", "2px")
     .style("opacity", 0.7);
 
-  // Create a tooltip div and make it invisible by default
+  // Create a tooltip
   const tooltip = d3.select("body").append("div")
     .attr("class", "tooltip")
     .style("position", "absolute")
@@ -385,7 +266,6 @@ function drawGoalsAndAssistsChart(player) {
     .style("border-radius", "4px")
     .style("font-size", "12px");
 
-  // Add interaction: Show tooltip on hover
   slices.on("mouseover", function(event, d) {
     tooltip.style("visibility", "visible")
       .html(`${d.data.category}: ${d.data.value}`);
@@ -404,30 +284,29 @@ function drawGoalsAndAssistsChart(player) {
   g.append("text")
   .attr("text-anchor", "middle")
   .attr("dominant-baseline", "central")
-  .attr("font-size", "12px")  // Smaller font for "Total Appearances"
-  .attr("fill", "#555")       // Color for the smaller text
-  .attr("dy", "-20px")        // Adjust vertical positioning
+  .attr("font-size", "12px") 
+  .attr("fill", "#555")    
+  .attr("dy", "-20px")    
   .text("Total Goals & Assists");
 
   g.append("text")
   .attr("text-anchor", "middle")
   .attr("dominant-baseline", "central")
-  .attr("font-size", "30px")      // Larger font for the appearance number
-  .attr("font-weight", "bold")    // Bold font
-  .attr("fill", "#333")           // Color for the text
-  .attr("dy", "0px")             // Adjust vertical positioning to match your original code
-  .text(totalGoalsAndAssists);             // Set the text to the appearances value
+  .attr("font-size", "30px")   
+  .attr("font-weight", "bold")   
+  .attr("fill", "#333")   
+  .attr("dy", "0px")   
+  .text(totalGoalsAndAssists);    
 }
 
+// Draw the appearances pie
 function drawAppearances(player) {
   const svg = d3.select("#minutesChart");
-
   const appearances = +player.appearances;
   const minutes = +player.minutes_played;
   const maxMinutes = +player.total_minutes;
   const percentage = maxMinutes > 0 ? minutes / maxMinutes : 0;
   const percentageText = `${Math.round(percentage * 100)}%`;
-
   const width = +svg.attr("width");
   const height = +svg.attr("height");
   const margin = 60;
@@ -438,6 +317,7 @@ function drawAppearances(player) {
   const g = svg.append("g")
     .attr("transform", `translate(${width / 2}, ${height / 2})`);
 
+  // Percentage of time played
   const data = [
     { label: "Played", value: percentage },
     { label: "Remaining", value: 1 - percentage }
@@ -445,7 +325,7 @@ function drawAppearances(player) {
 
   const color = d3.scaleOrdinal()
     .domain(data.map(d => d.label))
-    .range(["#003366", "#ecf0f1"]); // Blue and light grey
+    .range(["#003366", "#ecf0f1"]); 
 
   const pie = d3.pie()
     .value(d => d.value)
@@ -506,7 +386,6 @@ function drawAppearances(player) {
     .attr("dy", "0px")
     .text(appearances);
 
-      // Center label - third line: minutes percentage
   g.append("text")
   .attr("text-anchor", "middle")
   .attr("dominant-baseline", "central")
@@ -516,12 +395,11 @@ function drawAppearances(player) {
   .text(percentageText);
 }
 
-
-
-  
-function renderFieldPositions(playerId) {
+// Show the player positions of the field
+function renderFieldPositions(player) {
   d3.csv('../../processed_data/position_count.csv').then(function(data) {
 
+    // Use d3soccer to render the pitch
     const pitch = d3Soccer.pitch()
       .height(300)
       .showDirOfPlay(true)
@@ -534,7 +412,6 @@ function renderFieldPositions(playerId) {
       .attr("height", 300)
       .call(pitch);
 
-    // Tooltip
     const tooltip = d3.select("body").append("div")
       .attr("class", "tooltip")
       .style("position", "absolute")
@@ -545,12 +422,9 @@ function renderFieldPositions(playerId) {
       .style("font-size", "12px")
       .style("pointer-events", "none")
 
-    const playerData = data.filter(player => player.player_id == playerId);
-    if (playerData.length === 0) {
-      console.log('No data found for player with id ' + playerId);
-      return;
-    }
+    const playerData = data.filter(p => p.player_id == player.player_id);
 
+    // Position as ratios to adapt to the size of the field
     const positionCoords = {
       "Goalkeeper": [0.08, 0.5],
       "Right-Back": [0.18, 0.87],
@@ -567,6 +441,7 @@ function renderFieldPositions(playerId) {
       "Second Striker": [0.7, 0.5]
     };    
 
+    // Show positions as initials
     const positionInitials = {
       "Goalkeeper": "GK",
       "Right-Back": "RB",
@@ -592,7 +467,6 @@ function renderFieldPositions(playerId) {
           const height = +svg.attr("height");
           const x = xPercent * width;
           const y = yPercent * height;
-
           const radius = Math.sqrt(matches) * 2;
 
           // Draw circle
@@ -603,7 +477,7 @@ function renderFieldPositions(playerId) {
             .style("fill", "#003366")
             .style("opacity", 0.6);
 
-          // Draw initials **above** the circle
+          // For these ones put the label below the circle
           const leftSidePositions = ["Left-Back", "Left Midfield", "Left Winger"];
 
           svg.append("text")
@@ -614,8 +488,6 @@ function renderFieldPositions(playerId) {
             .style("font-size", "10px")
             .style("fill", "black");
           
-
-          // Transparent hover zone (better for tiny circles)
           svg.append("rect")
             .attr("x", x - 15)
             .attr("y", y - 15)
@@ -623,7 +495,6 @@ function renderFieldPositions(playerId) {
             .attr("height", 30)
             .style("fill", "transparent")
             .on("mouseover", function(event) {
-              const [mouseX, mouseY] = d3.pointer(event);
               tooltip.transition().duration(200).style("opacity", 0.9);
               tooltip.html(`<strong>${position}</strong><br>Games played: ${matches}`)
                 .style("left", (event.pageX + 10) + "px")
@@ -641,27 +512,24 @@ function renderFieldPositions(playerId) {
 }
 
 function renderMarketValueChart(playerValuations) {
-    // Map the player valuations to get the date and market value (in million EUR)
+    // Map the player valuations to get the date and market value
     const marketValues = playerValuations.map(valuation => ({
-        date: new Date(valuation.date),  // Ensure the date is in JavaScript Date object format
-        value: parseFloat(valuation.market_value_in_eur) || 0  // Convert the market value to millions of euros
+        date: new Date(valuation.date), 
+        value: parseFloat(valuation.market_value_in_eur) || 0 
     }));
 
-    // Set up margins and dimensions for the chart (increased left margin for y-axis labels)
     const margin = { top: 20, right: 30, bottom: 60, left: 80 };
     const width = 800 - margin.left - margin.right;
     const height = 400 - margin.top - margin.bottom;
 
-    // Create SVG container
     const svg = d3.select("#marketValueChart")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    // Set up scales for the x and y axes
     const x = d3.scaleTime()
-        .domain([d3.min(marketValues, d => d.date), d3.max(marketValues, d => d.date)])  // Time scale for dates
+        .domain([d3.min(marketValues, d => d.date), d3.max(marketValues, d => d.date)]) 
         .range([0, width]);
 
     const y = d3.scaleLinear()
@@ -669,21 +537,18 @@ function renderMarketValueChart(playerValuations) {
         .nice()
         .range([height, 0]);
 
-    // Create the x-axis
     svg.append("g")
         .attr("transform", `translate(0,${height})`)
-        .call(d3.axisBottom(x).ticks(d3.timeYear.every(1)).tickFormat(d3.timeFormat("%Y"))) // Format to full date
+        .call(d3.axisBottom(x).ticks(d3.timeYear.every(1)).tickFormat(d3.timeFormat("%Y")))
         .selectAll("text")
         .style("font-size", "12px")
         .style("text-anchor", "middle")
 
-    // Create the y-axis
     svg.append("g")
-        .call(d3.axisLeft(y).ticks(5).tickFormat(d => `€ ${formatValue(d)}`))  // Format y axis to show currency
+        .call(d3.axisLeft(y).ticks(5).tickFormat(d => `€ ${formatValue(d)}`))
         .selectAll("text")
         .style("font-size", "12px");
 
-    // Add gridlines
     svg.selectAll(".grid")
         .data(y.ticks(5))
         .enter()
@@ -696,31 +561,27 @@ function renderMarketValueChart(playerValuations) {
         .attr("stroke", "#ddd")
         .attr("stroke-dasharray", "5,5");
 
-    // Create the line for market value (without smoothing)
     const line = d3.line()
-        .x(d => x(d.date))  // Use the date for the x position
-        .y(d => y(d.value));  // Use market value for the y position
+        .x(d => x(d.date))
+        .y(d => y(d.value));  
 
-    // Append the line path to the SVG
     svg.append("path")
         .data([marketValues])
         .attr("class", "line")
-        .attr("d", line)  // Use the line generator to create the path
+        .attr("d", line)  
         .style("fill", "none")
         .style("stroke", "#003366")
-        .style("stroke-width", 2);  // Line width
+        .style("stroke-width", 2); 
 
-    // Optionally, add circles at each data point for better visibility
     svg.selectAll(".dot")
         .data(marketValues)
         .enter().append("circle")
         .attr("class", "dot")
-        .attr("cx", d => x(d.date))  // Position circles at the x position of the line
-        .attr("cy", d => y(d.value))  // Position circles at the y value of the line
-        .attr("r", 5)  // Radius of the circle
+        .attr("cx", d => x(d.date))  
+        .attr("cy", d => y(d.value)) 
+        .attr("r", 5) 
         .style("fill", "#003366");
 
-    // Add hover tooltip
     const tooltip = d3.select("body").append("div")
         .attr("class", "tooltip")
         .style("position", "absolute")
@@ -743,14 +604,12 @@ function renderMarketValueChart(playerValuations) {
         });
 }
 
-function renderTimeline(playerId) {
+function renderTimeline(player) {
   fetch('../../processed_data/transfers_preprocessed.csv')
     .then(response => response.text())
     .then(csvText => {
       const rows = csvText.split('\n');
       const headers = rows[0].split(',');
-
-      // Parse CSV to JSON format
       let transfers = rows.slice(1).map(row => {
         const columns = row.split(',');
         let transfer = {};
@@ -760,22 +619,14 @@ function renderTimeline(playerId) {
         return transfer;
       });
 
-      // Filter transfers for the selected player
-      const playerTransfers = transfers.filter(t => t.player_id === playerId);
+      const playerTransfers = transfers.filter(t => t.player_id === player.player_id);
 
-      if (playerTransfers.length === 0) {
-        console.warn("No transfer history found for this player.");
-        return;
-      }
-
-      // Sort by date to maintain correct order
       const parseDate = d3.timeParse("%Y-%m-%d");
       playerTransfers.forEach(t => {
         t.transfer_date = parseDate(t.transfer_date);
       });
       playerTransfers.sort((a, b) => a.transfer_date - b.transfer_date);
 
-      // Build a club tenure dataset: start = transfer to club, end = next transfer date
       let tenures = [];
       for (let i = 0; i < playerTransfers.length; i++) {
         const current = playerTransfers[i];
@@ -784,22 +635,19 @@ function renderTimeline(playerId) {
           tenures.push({
             club: current.to_club_name,
             start: current.transfer_date,
-            end: next ? next.transfer_date : new Date(), // assume still at last club if no next
+            end: next ? next.transfer_date : new Date(), 
             fee: current.transfer_fee
           });
         }
       }
 
-      // Set dimensions
       const width = 850, height = 400;
       const margin = { top: 40, right: 20, bottom: 40, left: 120 };
-
       const svg = d3.select("#timeChart")
         .attr("width", width)
         .attr("height", height)
-        .html(""); // Clear previous content if any
+        .html(""); 
 
-      // Set scales
       const xScale = d3.scaleTime()
         .domain([
           d3.min(tenures, d => d.start),
@@ -812,13 +660,11 @@ function renderTimeline(playerId) {
         .range([margin.top, height - margin.bottom])
         .padding(0.3);
 
-      // Color scale: Light blue (low fee) → Dark blue (high fee)
       const maxFee = Math.max(...tenures.map(d => d.fee));
       const colorScale = d3.scaleLinear()
         .domain([0, maxFee])
         .range(["#a2d0fc", "#01264a"]);      
 
-      // Draw axes
       svg.append("g")
         .attr("transform", `translate(0, ${height - margin.bottom})`)
         .call(d3.axisBottom(xScale).tickFormat(d3.timeFormat("%Y")));
@@ -828,7 +674,6 @@ function renderTimeline(playerId) {
         .call(d3.axisLeft(yScale))
         .attr("font-size", 14);
 
-      // Add bars (Gantt chart style)
       svg.selectAll(".bar")
         .data(tenures)
         .enter()
@@ -840,7 +685,6 @@ function renderTimeline(playerId) {
         .attr("height", yScale.bandwidth())
         .attr("fill", d => colorScale(d.fee));
         
-      // Add tooltips
       const tooltip = d3.select("body").append("div")
         .attr("class", "tooltip")
         .style("position", "absolute")
@@ -867,14 +711,10 @@ function renderTimeline(playerId) {
           tooltip.transition().duration(200).style("opacity", 0);
         });
 
-        // Legend positioning
         const legendWidth = 200, legendHeight = 10;
         const legendMargin = { top: 25, right: 30 };
-
         const legendX = width - margin.right - legendWidth;
         const legendY = margin.top - legendMargin.top;
-
-        // Append defs for gradient
         const defs = svg.append("defs");
 
         const linearGradient = defs.append("linearGradient")
@@ -890,7 +730,6 @@ function renderTimeline(playerId) {
           .attr("offset", d => d.offset)
           .attr("stop-color", d => d.color);
 
-        // Draw legend rectangle
         svg.append("rect")
           .attr("x", legendX)
           .attr("y", legendY)
@@ -898,7 +737,6 @@ function renderTimeline(playerId) {
           .attr("height", legendHeight)
           .style("fill", "url(#legend-gradient)");
 
-        // Legend scale and axis
         const legendScale = d3.scaleLinear()
           .domain([0, maxFee])
           .range([legendX, legendX + legendWidth]);
@@ -910,83 +748,21 @@ function renderTimeline(playerId) {
             .tickFormat(d => d === 0 ? "Free" : formatValue(d)))
           .attr("font-size", "10px");
         
-
-        // Legend label
         svg.append("text")
           .attr("x", legendX + legendWidth / 2)
           .attr("y", legendY - 5)
           .attr("text-anchor", "middle")
           .attr("font-size", "12px")
           .text("Transfer Fee");
-
-
     })
     .catch(error => {
       console.error("Error fetching or parsing transfers_preprocessed.csv:", error);
     });
 }
 
-class Versor {
-  static fromAngles([l, p, g]) {
-    l *= Math.PI / 360;
-    p *= Math.PI / 360;
-    g *= Math.PI / 360;
-    const sl = Math.sin(l), cl = Math.cos(l);
-    const sp = Math.sin(p), cp = Math.cos(p);
-    const sg = Math.sin(g), cg = Math.cos(g);
-    return [
-      cl * cp * cg + sl * sp * sg,
-      sl * cp * cg - cl * sp * sg,
-      cl * sp * cg + sl * cp * sg,
-      cl * cp * sg - sl * sp * cg
-    ];
-  }
-  static toAngles([a, b, c, d]) {
-    return [
-      Math.atan2(2 * (a * b + c * d), 1 - 2 * (b * b + c * c)) * 180 / Math.PI,
-      Math.asin(Math.max(-1, Math.min(1, 2 * (a * c - d * b)))) * 180 / Math.PI,
-      Math.atan2(2 * (a * d + b * c), 1 - 2 * (c * c + d * d)) * 180 / Math.PI
-    ];
-  }
-  static interpolateAngles(a, b) {
-    const i = Versor.interpolate(Versor.fromAngles(a), Versor.fromAngles(b));
-    return t => Versor.toAngles(i(t));
-  }
-  static interpolateLinear([a1, b1, c1, d1], [a2, b2, c2, d2]) {
-    a2 -= a1, b2 -= b1, c2 -= c1, d2 -= d1;
-    const x = new Array(4);
-    return t => {
-      const l = Math.hypot(x[0] = a1 + a2 * t, x[1] = b1 + b2 * t, x[2] = c1 + c2 * t, x[3] = d1 + d2 * t);
-      x[0] /= l, x[1] /= l, x[2] /= l, x[3] /= l;
-      return x;
-    };
-  }
-  static interpolate([a1, b1, c1, d1], [a2, b2, c2, d2]) {
-    let dot = a1 * a2 + b1 * b2 + c1 * c2 + d1 * d2;
-    if (dot < 0) a2 = -a2, b2 = -b2, c2 = -c2, d2 = -d2, dot = -dot;
-    if (dot > 0.9995) return Versor.interpolateLinear([a1, b1, c1, d1], [a2, b2, c2, d2]); 
-    const theta0 = Math.acos(Math.max(-1, Math.min(1, dot)));
-    const x = new Array(4);
-    const l = Math.hypot(a2 -= a1 * dot, b2 -= b1 * dot, c2 -= c1 * dot, d2 -= d1 * dot);
-    a2 /= l, b2 /= l, c2 /= l, d2 /= l;
-    return t => {
-      const theta = theta0 * t;
-      const s = Math.sin(theta);
-      const c = Math.cos(theta);
-      x[0] = a1 * c + a2 * s;
-      x[1] = b1 * c + b2 * s;
-      x[2] = c1 * c + c2 * s;
-      x[3] = d1 * c + d2 * s;
-      return x;
-    };
-  }
-}
-
 function displayPlayerTrophies(player) {
   const container = d3.select("#trophies");
-  container.html(""); // Clear previous trophies
 
-  // Load both CSV files
   Promise.all([
     d3.csv("../../processed_data/transfers_preprocessed.csv"),
     d3.csv("../../processed_data/club_competitions.csv")
@@ -996,7 +772,6 @@ function displayPlayerTrophies(player) {
       .filter(d => d.player_id === player.player_id)
       .sort((a, b) => new Date(a.transfer_date) - new Date(b.transfer_date));
 
-    // Build a timeline of clubs and years
     const clubYears = [];
     for (let i = 0; i < playerTransfers.length; i++) {
       const current = playerTransfers[i];
@@ -1009,7 +784,6 @@ function displayPlayerTrophies(player) {
       }
     }
 
-    // Filter competitions where player's club won
     const wonTrophies = competitions.filter(comp => {
       return clubYears.some(cy => cy.club_id == comp.club_id && cy.year == comp.year);
     }).sort((a, b) => a.year - b.year);
@@ -1020,7 +794,6 @@ function displayPlayerTrophies(player) {
         .replace(/\b\w/g, char => char.toUpperCase());
     }
 
-    // Display each trophy with image and competition name
     wonTrophies.forEach(trophy => {
       const trophyContainer = container.append("div")
         .attr("class", "trophy-item");
@@ -1033,23 +806,15 @@ function displayPlayerTrophies(player) {
       trophyContainer.append("div")
         .attr("class", "trophy-caption")
         .html(`${formatCompetitionName(trophy.competition_name)}<br><span class="trophy-year">${trophy.year}</span>`);
-
     });
   }).catch(error => {
     console.error("Error loading data:", error);
   });
 }
 
-
-
-
-   
-
-
-
-function renderPlayerStatsCarousel(playerId) {
+function renderPlayerStatsCarousel(player) {
   d3.csv("../../data/player_stats.csv").then(data => {
-    const playerStats = data.filter(d => d.player_id === playerId);
+    const playerStats = data.filter(d => d.player_id === player.player_id);
 
     if (playerStats.length === 0) {
       console.warn("No stats found for this player.");
@@ -1065,8 +830,6 @@ function renderPlayerStatsCarousel(playerId) {
     });
 
     playerStats.sort((a, b) => a.year - b.year); // sort years ascending
-
-    const playerName = playerStats[0].player_name;
     const container = d3.select("#carouselChart");
     const width = 980;
     const height = 400;
@@ -1206,7 +969,6 @@ function renderPlayerStatsCarousel(playerId) {
     const chartModes = ["goals_assists", "cards"];
     let carouselRunning = true;
     let interval;
-
     const button = document.getElementById("pauseButton");
     const icon = document.getElementById("pauseIcon");
 
@@ -1221,8 +983,6 @@ function renderPlayerStatsCarousel(playerId) {
     }
 
     button.addEventListener("click", toggleCarousel);
-
-
     document.getElementById("pauseButton").addEventListener("click", toggleCarousel);
 
     drawStackedChart(chartModes[currentChart]);
@@ -1235,3 +995,37 @@ function renderPlayerStatsCarousel(playerId) {
   });
 }
 
+
+async function renderPlayerVisuals(playerId) {
+  try {
+    const players = await parsePlayers('../../processed_data/player_summary.csv');
+    const player = players.find(p => p.player_id === playerId);
+    const container = document.getElementById('player-details');
+    container.innerHTML = createPlayerCard(player);
+
+    showFoot(player.foot);
+
+    renderFieldPositions(player);
+
+    await showPlayerValuations(player);
+
+    drawCardsChart(player);
+
+    drawGoalsAndAssistsChart(player);
+
+    drawAppearances(player);
+
+    renderTimeline(player);
+
+    displayPlayerTrophies(player);
+
+    renderPlayerStatsCarousel(player);
+
+  } catch (error) {
+    console.error("Error rendering player visuals:", error);
+  }
+}
+
+const urlParams = new URLSearchParams(window.location.search);
+const playerId = urlParams.get("playerId");
+renderPlayerVisuals(playerId)

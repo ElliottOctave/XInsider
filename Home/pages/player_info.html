@@ -9,7 +9,7 @@
 </head>
 <body>
 
-  <!-- Loading Overlay -->
+  <!-- Loading overlay -->
   <div id="loading-overlay">
     <div class="spinner"></div>
   </div>
@@ -17,21 +17,18 @@
   <!-- Navbar -->
   <div id="navbar-container"></div>
 
-  <!-- Main Content -->
+  <!-- Main content -->
   <main class="player-profile-wrapper">
 
-    <!-- Left Spacer -->
-    <div class="left-spacer"></div>
-
-    <!-- Player Info and Charts -->
+    <!-- Player info and charts -->
     <section class="player-profile-content" id="main-content">
       
-      <!-- Player Details -->
+      <!-- Player details -->
       <section id="player-details" class="player-details chart-section">
         <div id="player-info" class="player-info"></div>
       </section>
 
-      <!-- Performance Summary -->
+      <!-- Performance summary -->
       <section id="performance" class="chart-section">
         <h2>Performance Summary</h2>
         <div class="performance-charts">
@@ -41,20 +38,20 @@
         </div>
       </section>
 
-            <!-- Transfer History -->
+      <!-- Transfer history -->
       <section id="timeline" class="chart-section">
         <h2>Transfer History</h2>
         <svg id="timeChart" width="800" height="400"></svg>
       </section>
 
-            <!-- Trophies -->
+      <!-- Trophies -->
       <section id="trophies-container" class="chart-section">
         <h2 id="trophies-title">All Trophies</h2>
         <div id="trophies"></div>
       </section>
     </section>
 
-    <!-- Trophies and Performance Section -->
+    <!-- Field positions -->
     <aside id="trophies-section">
       <section id="performance" class="chart-section">
         <h2>Field Positions</h2>
@@ -63,7 +60,7 @@
         </div>
       </section>
 
-      <!-- Performance History -->
+      <!-- Performance history -->
       <section id="performance-history" class="chart-section">
         <h2>Performance History</h2>
         <div id="carouselChart"></div>
@@ -72,7 +69,7 @@
         </button>
       </section>
 
-      <!-- Market Value -->
+      <!-- Market value -->
       <section id="market-value-chart-container" class="chart-section">
         <h2>Market Value Evolution</h2>
         <svg id="marketValueChart" width="800" height="400"></svg> 
@@ -85,11 +82,6 @@
 
   <!-- Scripts -->
   <script src="/node_modules/d3/dist/d3.min.js"></script>
-  <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
-  <script src="https://unpkg.com/versor@0.4.2/versor.min.js"></script>
-  <script src="https://unpkg.com/topojson@3"></script>
-  
-  <!-- Custom Scripts -->
   <script src="/Home/static/scripts/playerInfo.js" type="module"></script>
   <script src="/Home/static/components/navbarSearch.js"></script>
   <script src="/Home/static/components/navbar.js"></script>

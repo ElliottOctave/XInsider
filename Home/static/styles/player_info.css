@@ -1,7 +1,4 @@
-/* ========== Base Layout ========== */
-body {
-  background: radial-gradient(circle, #fff, #003366);
-}
+/* Base layout */
 
 .player-profile-wrapper {
   display: flex;
@@ -18,7 +15,7 @@ body {
   padding-right: 100px;
 }
 
-/* ========== Player Details ========== */
+/* Player details */
 .player-details {
   display: flex;
   align-items: center;
@@ -54,7 +51,7 @@ body {
   border-radius: 5px;
 }
 
-/* ========== Charts and Stats ========== */
+/*Charts and stats */
 .chart-section {
   width: 100%;
   max-width: 870px;
@@ -78,7 +75,24 @@ body {
   margin: 0 20px 20px 0;
 }
 
-/* ========== Player Card ========== */
+#pauseButton {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.3);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#pauseButton img {
+  width: 27px;
+  height: 27px;
+}
+
+/* Player card */
 .player-card {
   display: flex;
   justify-content: space-between;
@@ -99,6 +113,7 @@ body {
   height: 100%;
   object-fit: cover;
   border-radius: 10px;
+  margin-left: 40px;
   border: 2px solid #003366;
 }
 
@@ -115,13 +130,15 @@ body {
 .player-card-middle h2 {
   font-size: 25px;
   margin: 0 20px 10px;
+  padding-left: 15px;
 }
 
 .player-card-middle p {
   display: flex;
   justify-content: space-between;
   font-size: 15px;
-  margin: 0 20px 10px;
+  padding-left: 40px;
+  margin: 0 5px 10px 0;
 }
 
 .player-card-right {
@@ -162,25 +179,8 @@ body {
   margin: 0 auto;
 }
 
-#pauseButton {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: rgba(0, 0, 0, 0.3);
-  border: none;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
 
-#pauseButton img {
-  width: 27px;
-  height: 27px;
-}
-
-
-/* ========== Foot Icons ========== */
+/* Foot icons */
 .foot-icons {
   display: flex;
   gap: 8px;
@@ -208,14 +208,15 @@ body {
   border-color: #0056b3;
 }
 
-/* ========== Trophies ========== */
+/* Trophies */
 #trophies {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);  /* Two equal-width columns */
+  grid-template-columns: repeat(4, 1fr); 
   gap: 30px;
   justify-items: center;
   padding: 5px;
 }
+
 #trophies-container img {
   width: 100px;
   height: 100px;
@@ -244,7 +245,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 150px; /* fixed width ensures consistent layout */
+  width: 150px;
   text-align: center;
 }
 
