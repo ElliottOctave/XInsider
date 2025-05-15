@@ -314,4 +314,41 @@ body {
   }
 }
 
+.search-wrapper {
+  position: relative;
+}
+
+#search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  z-index: 9999;
+  background: white;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.selectize-dropdown-content {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+
+.search-wrapper {
+  position: relative;
+  width: 250px;
+  margin-left: auto;
+}
+
+#search-bar {
+  width: 100%;
+  padding: 6px 10px;
+  font-size: 0.95rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+
 

@@ -17,15 +17,22 @@
   <section class="hero">
     <nav class="navbar">
       <div class="navbar-container">
-        <a href="/Home/pages/home.html" class="logo">
-          <h2>XInsider</h2>
-        </a>
-        <ul class="nav-links">
-          <li><a href="players.html">Players</a></li>
-          <li><a href="clubs.html">Clubs</a></li>
-          <li><a href="games.html">Games</a></li>
-        </ul>
-      </div>
+  <a href="/Home/pages/home.html" class="logo">
+    <h2>XInsider</h2>
+  </a>
+  <ul class="nav-links">
+    <li><a href="players.html">Players</a></li>
+    <li><a href="clubs.html">Clubs</a></li>
+    <li><a href="games.html">Games</a></li>
+  </ul>
+
+
+  <div class="search-wrapper">
+    <input type="text" id="search-bar" placeholder="Search players or clubs..." />
+    <div id="search-results" class="search-results"></div>
+  </div>
+</div>
+
     </nav>
     
     <div class="hero-bg"></div>
@@ -80,7 +87,7 @@
       </div>
     </div>
 
-    <div id="compare-result" class="compare-result-section" style="display: none;">
+  <div id="compare-result" class="compare-result-section" style="display: none;">
   <h1 id="compare-title">Comparison</h1>
   <div id="comparison-container">
     <div id="comparison-logo-team1" class="side-by-side"></div>
@@ -99,6 +106,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/selectize/dist/css/selectize.default.css" />
   <script src="https://cdn.jsdelivr.net/npm/selectize/dist/js/standalone/selectize.min.js"></script>
 
+  <script src="/Home/static/components/navbarSearch.js"></script>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="/Home/static/scripts/playerChart.js"></script>
