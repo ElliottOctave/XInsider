@@ -1,19 +1,89 @@
 const playersCsvUrl = '../../processed_data/player_summary.csv';
 
-fetch(playersCsvUrl)
-  .then(response => response.text())
-  .then(csvText => {
-    const rows = csvText.trim().split('\n');
-    const headers = rows[0].split(',');
-    let players = rows.slice(1).map(row => {
-      const columns = row.split(',');
-      let player = {};
-      columns.forEach((column, index) => {
-        player[headers[index]] = column.trim();
-      });
-      return player;
-    });
+async function fetchCsv(url) {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Failed to fetch CSV: ${response.statusText}`);
+  return response.text();
+}
 
+function parseCsv(csvText) {
+  const [headerLine, ...lines] = csvText.trim().split('\n');
+  const headers = headerLine.split(',').map(h => h.trim());
+  return lines.map(line => {
+    const columns = line.split(',').map(c => c.trim());
+    return headers.reduce((obj, header, i) => {
+      obj[header] = columns[i];
+      return obj;
+    }, {});
+  });
+}
+
+function populateYearSelect(select, start, end) {
+  select.innerHTML = '';
+  for (let year = start; year <= end; year++) {
+    const option = document.createElement('option');
+    option.value = year;
+    option.textContent = year;
+    select.appendChild(option);
+  }
+}
+
+function createPlayerElement(player) {
+  const playerItem = document.createElement('div');
+  playerItem.classList.add('player-item');
+
+  const playerImage = document.createElement('img');
+  playerImage.src = player.image_url;
+  playerImage.alt = player.name;
+  playerImage.classList.add('player-image');
+
+  const playerLink = document.createElement('a');
+  playerLink.href = `/Home/pages/player_info.html?playerId=${player.player_id}`;
+  playerLink.textContent = player.name;
+
+  const playerDetails = document.createElement('p');
+  playerDetails.textContent = player.current_club_name;
+
+  playerItem.append(playerImage, playerLink, playerDetails);
+
+  return playerItem;
+}
+
+function filterPlayers(players, filters) {
+  const query = filters.query;
+  const fromYear = filters.fromYear;
+  const toYear = filters.toYear;
+  const position = filters.position;
+  const nationality = filters.nationality;
+  const filteredPlayers = players.filter(player => {
+    const nameMatch = player.name.toLowerCase().includes(query);
+    const clubMatch = player.current_club_name.toLowerCase().includes(query);
+    const playerFirstYear = parseInt(player.first_match_year);
+    const playerLastYear = parseInt(player.last_match_year);
+    const yearMatch = (playerFirstYear >= fromYear && playerFirstYear <= toYear) || (playerLastYear >= fromYear && playerLastYear <= toYear);
+    const positionMatch = !position || player.position.toLowerCase() == position;
+    const nationalityMatch = !nationality || player.country_of_citizenship.toLowerCase().includes(nationality);
+    return (nameMatch || clubMatch) && yearMatch && positionMatch && nationalityMatch;
+  });
+  return filteredPlayers
+}
+
+function renderPlayers(container, players, page, perPage, pageInfoEl, prevBtn, nextBtn) {
+  container.innerHTML = '';
+  const totalPages = Math.ceil(players.length / perPage);
+  const startIdx = (page - 1) * perPage;
+  const endIdx = startIdx + perPage;
+  const playersToShow = players.slice(startIdx, endIdx);
+  playersToShow.forEach(player => container.appendChild(createPlayerElement(player)));
+  pageInfoEl.textContent = `Page ${page} of ${totalPages}`;
+  prevBtn.disabled = page <= 1;
+  nextBtn.disabled = page >= totalPages;
+}
+
+async function showPlayers(dataUrl) {
+  try {
+    const csvText = await fetchCsv(dataUrl);
+    const players = parseCsv(csvText);
     const playersListContainer = document.getElementById('players-list');
     const searchBar = document.getElementById('player-search-bar');
     const prevBtn = document.getElementById('prevPage');
@@ -24,22 +94,11 @@ fetch(playersCsvUrl)
     const positionFilter = document.getElementById('position-filter');
     const nationalityFilter = document.getElementById('nationality-filter');
     const applyFiltersBtn = document.getElementById('apply-filters');
-
-    // Populate From Year and To Year selects
     const minYear = 2013;
     const maxYear = 2025;
 
-    function populateYearSelect(select, start, end) {
-      for (let year = start; year <= end; year++) {
-        const option = document.createElement('option');
-        option.value = year;
-        option.textContent = year;
-        select.appendChild(option);
-      }
-    }
-
     populateYearSelect(fromYearSelect, minYear, maxYear);
-
+    populateYearSelect(toYearSelect, minYear, maxYear);
     fromYearSelect.addEventListener('change', () => {
       const selectedFrom = parseInt(fromYearSelect.value);
       if (!isNaN(selectedFrom)) {
@@ -49,84 +108,31 @@ fetch(playersCsvUrl)
       }
     });
 
-    // Pagination state
     let currentPage = 1;
     const playersPerPage = 20;
     let filteredPlayers = [...players];
+    const getFilters = () => ({
+      query: searchBar.value.trim().toLowerCase(),
+      fromYear: parseInt(fromYearSelect.value),
+      toYear: parseInt(toYearSelect.value),
+      position: positionFilter.value.trim().toLowerCase(),
+      nationality: nationalityFilter.value.trim().toLowerCase()
+    });
 
-    function renderPlayers(playerList) {
-      playersListContainer.innerHTML = '';
-      const startIndex = (currentPage - 1) * playersPerPage;
-      const endIndex = startIndex + playersPerPage;
-      const playersToShow = playerList.slice(startIndex, endIndex);
-
-      playersToShow.forEach(player => {
-        const playerItem = document.createElement('div');
-        playerItem.classList.add('player-item');
-
-        const playerImage = document.createElement('img');
-        playerImage.src = player.image_url;
-        playerImage.alt = `${player.name}`;
-        playerImage.classList.add('player-image');
-
-        const playerLink = document.createElement('a');
-        playerLink.href = `/Home/pages/player_info.html?playerId=${player.player_id}`;
-        playerLink.textContent = `${player.name}`;
-
-        const playerDetails = document.createElement('p');
-        playerDetails.textContent = `${player.current_club_name}`;
-
-        playerItem.appendChild(playerImage);
-        playerItem.appendChild(playerLink);
-        playerItem.appendChild(playerDetails);
-
-        playersListContainer.appendChild(playerItem);
-      });
-
-      const totalPages = Math.ceil(playerList.length / playersPerPage);
-      pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
-      prevBtn.disabled = currentPage === 1;
-      nextBtn.disabled = currentPage === totalPages;
-    }
-
-    function filterPlayers() {
-      const query = searchBar.value.toLowerCase();
-      const fromYear = parseInt(fromYearSelect.value);
-      const toYear = parseInt(toYearSelect.value);
-      const selectedPosition = positionFilter.value.toLowerCase();
-      const nationalityQuery = nationalityFilter.value.toLowerCase();
-
-      filteredPlayers = players.filter(player => {
-        const nameMatch = player.name.toLowerCase().includes(query);
-        const clubMatch = player.current_club_name.toLowerCase().includes(query);
-
-        let yearMatch = true;
-        const playerFirstYear = parseInt(player.first_match_year);
-        const playerLastYear = parseInt(player.last_match_year);
-
-        if (!isNaN(fromYear) && !isNaN(toYear)) {
-          yearMatch = (
-            (playerFirstYear >= fromYear && playerFirstYear <= toYear) ||
-            (playerLastYear >= fromYear && playerLastYear <= toYear)
-          );
-        }
-        const positionMatch = selectedPosition === "" || player.position.toLowerCase() === selectedPosition;
-        const nationalityMatch = nationalityQuery === "" || player.country_of_citizenship.toLowerCase().includes(nationalityQuery);
-
-        return (nameMatch || clubMatch) && yearMatch && positionMatch && nationalityMatch;
-      });
-
+    function updatePlayers() {
+      filteredPlayers = filterPlayers(players, getFilters());
       currentPage = 1;
-      renderPlayers(filteredPlayers);
+      renderPlayers(playersListContainer, filteredPlayers, currentPage, playersPerPage, pageInfo, prevBtn, nextBtn);
     }
 
-    searchBar.addEventListener('input', filterPlayers);
-    applyFiltersBtn.addEventListener('click', filterPlayers);
+    searchBar.addEventListener('input', updatePlayers);
+    applyFiltersBtn.addEventListener('click', updatePlayers);
 
+    // Pagination
     prevBtn.addEventListener('click', () => {
       if (currentPage > 1) {
         currentPage--;
-        renderPlayers(filteredPlayers);
+        renderPlayers(playersListContainer, filteredPlayers, currentPage, playersPerPage, pageInfo, prevBtn, nextBtn);
       }
     });
 
@@ -134,12 +140,15 @@ fetch(playersCsvUrl)
       const totalPages = Math.ceil(filteredPlayers.length / playersPerPage);
       if (currentPage < totalPages) {
         currentPage++;
-        renderPlayers(filteredPlayers);
+        renderPlayers(playersListContainer, filteredPlayers, currentPage, playersPerPage, pageInfo, prevBtn, nextBtn);
       }
     });
 
-    renderPlayers(filteredPlayers);
-  })
-  .catch(error => {
-    console.error("Error fetching or parsing CSV:", error);
-  });
+    // Initial render
+    renderPlayers(playersListContainer, filteredPlayers, currentPage, playersPerPage, pageInfo, prevBtn, nextBtn);
+  } catch (error) {
+    console.error('Error fetching or processing players data:', error);
+  }
+}
+
+showPlayers(playersCsvUrl);

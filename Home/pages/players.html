@@ -11,7 +11,7 @@
 </head>
 <body>
 
-  <!-- Loading Overlay -->
+  <!-- Loading overlay -->
   <div id="loading-overlay">
     <div class="spinner"></div>
   </div>
@@ -19,6 +19,7 @@
   <!-- Navbar -->
   <div id="navbar-container"></div>
 
+  <!-- Filters -->
   <main class="dashboard" id="main-content">
     <section class="filters">
       <select id="from-year">
@@ -38,9 +39,11 @@
       <button id="apply-filters">Apply Filters</button>
     </section>
     
+    <!-- Search bar -->
     <input type="text" id="player-search-bar" placeholder="Search for a player..." class="search-bar" />
-    <div id="players-list"></div> <!-- Container for the player list -->
-        <!-- Pagination -->
+    <div id="players-list"></div>
+    
+    <!-- Pagination -->
     <div class="pagination">
       <button id="prevPage">&laquo; Prev</button>
       <span id="pageInfo"></span>
@@ -51,7 +54,7 @@
   <!-- Footer -->
   <div id="footer-container"></div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/papaparse/5.3.0/papaparse.min.js"></script> <!-- PapaParse library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/papaparse/5.3.0/papaparse.min.js"></script>
   <script src="/Home/static/scripts/playerList.js"></script>
 
   <script src="/Home/static/components/navbarSearch.js"></script>
