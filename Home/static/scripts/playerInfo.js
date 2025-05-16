@@ -1,7 +1,6 @@
 import * as d3Soccer from 'd3-soccer';
 var selectedRange = null; // Will be necessary for the carousel interactivity
 
-
 // Function to format big numbers (e.g. 3.000.000 gives 3M)
 function formatValue(num) {
   if (num >= 1_000_000) {

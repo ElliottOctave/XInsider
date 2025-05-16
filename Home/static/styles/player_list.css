@@ -1,4 +1,4 @@
-/* Centering the grid container */
+/* Layout */
 .dashboard {
     display: flex;
     flex-direction: column;
