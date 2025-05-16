@@ -7,12 +7,12 @@
 
 .player-profile-content {
   flex: 1;
-  padding-left: 100px;
+  padding-left: 40px;
 }
 
 #trophies-section {
   flex: 1;
-  padding-right: 100px;
+  padding-right: 40px;
 }
 
 /* Player details */
@@ -188,6 +188,27 @@
   margin: 0 auto;
 }
 
+.info-icon {
+  width: 20px;
+  height: 20px;
+  margin-left: 8px;
+  vertical-align: middle;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  position: relative;
+}
+
+.info-tooltip {
+  display: none;
+  position: absolute;
+  background-color: #333;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  top: 94%;
+  left: 16%;
+}
 
 /* Foot icons */
 .foot-icons {
@@ -271,3 +292,13 @@
   margin-top: 2px;
 }
 
+/* Transfer history */
+.bar {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bar:hover {
+  stroke: #666;
+  stroke-width: 1.5px;
+}
