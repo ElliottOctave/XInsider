@@ -108,6 +108,7 @@ function renderPlayers(container, players, page, perPage, pageInfoEl, prevBtn, n
 }
 
 async function showPlayers(dataUrl) {
+  // Debugging
   try {
     const csvText = await fetchCsv(dataUrl);
     const players = parseCsv(csvText);
@@ -206,7 +207,6 @@ async function showPlayers(dataUrl) {
       });
     });
 
-    // Close the sort menu if clicking outside
     document.addEventListener('click', (event) => {
       if (!sortButton.contains(event.target) && !sortMenu.contains(event.target)) {
         sortMenu.setAttribute('hidden', '');
