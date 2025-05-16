@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Show comparison section
     const compareResult = document.getElementById('compare-result');
     compareResult.style.display = 'block';
-    document.getElementById('compare-title').textContent = `Comparison: ${val1} vs ${val2}`;
+    document.getElementById('compare-title').textContent = `${val1} vs ${val2}`;
 
     // 🔽 Smooth scroll into view
     compareResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
