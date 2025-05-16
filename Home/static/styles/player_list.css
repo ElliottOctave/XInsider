@@ -181,6 +181,53 @@
   .filters button:hover {
     background-color: #2980b9;
   }
+
+#sort-button {
+  position: relative;
+  z-index: 1000;
+  cursor: pointer;
+}
+
+#sort-menu {
+  position: absolute;
+  top: 17.5%;      /* place below the button */
+  left: 58%;
+  background-color: white;
+  border-radius: 25px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  padding: 5px 0;
+  margin-top: 2px;
+  min-width: 150px;
+  color: black;   /* text color black */
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  /* Use hidden attribute to toggle display, so start hidden */
+}
+
+#sort-menu[hidden] {
+  display: none;
+}
+
+#sort-menu:not([hidden]) {
+  display: flex;
+}
+
+#sort-menu button.sort-option {
+  background: none;
+  border: none;
+  text-align: left;
+  width: 100%;
+  color: black;
+  cursor: pointer;
+  font-size: 1em;
+}
+
+#sort-menu button.sort-option:hover {
+  background-color: #f0f0f0;
+}
+
+
   
   
   

@@ -54,7 +54,7 @@ function createPlayerCard(player) {
         </div>
         <div class="info-box">
           <h4>Competition</h4>
-          <img src="${player.competition_logo_url}" alt="Competition Logo" class="club-logo" />
+          <img src="${player.competition_logo_url}" alt="Competition Logo" class="competition-logo" />
         </div>
         <div class="info-box">
           <h4>Position</h4>

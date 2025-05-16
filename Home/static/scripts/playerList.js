@@ -49,6 +49,28 @@ function createPlayerElement(player) {
   return playerItem;
 }
 
+function sortPlayers(players, sortField, sortOrder) {
+  if (!sortField) return players;
+
+  return players.sort((a, b) => {
+    let valA = 0
+    let valB = 0
+    if (sortField == "cards") {
+      valA = Number(a['yellow_cards']) + Number(a['red_cards'])
+      valB = Number(b['yellow_cards']) + Number(b['red_cards'])
+    } else {
+      valA = a[sortField];
+      valB = b[sortField];
+    }
+    valA = Number(valA);
+    valB = Number(valB);
+    if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+    if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+    return 0;
+  });
+}
+
+
 function filterPlayers(players, filters) {
   const query = filters.query;
   const fromYear = filters.fromYear;
@@ -96,6 +118,8 @@ async function showPlayers(dataUrl) {
     const applyFiltersBtn = document.getElementById('apply-filters');
     const minYear = 2013;
     const maxYear = 2025;
+    const sortButton = document.getElementById('sort-button');
+    const sortMenu = document.getElementById('sort-menu');
 
     populateYearSelect(fromYearSelect, minYear, maxYear);
     populateYearSelect(toYearSelect, minYear, maxYear);
@@ -120,9 +144,14 @@ async function showPlayers(dataUrl) {
     });
 
     function updatePlayers() {
+      const sortField = document.getElementById('sort-field').value;
+      const sortOrder = document.getElementById('sort-order').value;
+      console.log(sortField);
+      console.log(sortOrder);
       filteredPlayers = filterPlayers(players, getFilters());
+      sortedPlayers = sortPlayers(filteredPlayers, sortField, sortOrder);
       currentPage = 1;
-      renderPlayers(playersListContainer, filteredPlayers, currentPage, playersPerPage, pageInfo, prevBtn, nextBtn);
+      renderPlayers(playersListContainer, sortedPlayers, currentPage, playersPerPage, pageInfo, prevBtn, nextBtn);
     }
 
     searchBar.addEventListener('input', updatePlayers);
@@ -143,6 +172,44 @@ async function showPlayers(dataUrl) {
         renderPlayers(playersListContainer, filteredPlayers, currentPage, playersPerPage, pageInfo, prevBtn, nextBtn);
       }
     });
+
+    sortButton.addEventListener('click', () => {
+      const isHidden = sortMenu.hasAttribute('hidden');
+      if (isHidden) {
+        sortMenu.removeAttribute('hidden');
+        sortButton.setAttribute('aria-expanded', 'true');
+      } else {
+        sortMenu.setAttribute('hidden', '');
+        sortButton.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    // Handle clicks on sort options inside the menu
+    sortMenu.querySelectorAll('.sort-option').forEach(button => {
+      button.addEventListener('click', () => {
+        sortField = button.getAttribute('data-field');
+        sortOrder = button.getAttribute('data-order');
+
+        // Update sort button label to reflect current choice
+        sortButton.textContent = `${button.textContent} ▼`;
+
+        // Hide menu and update aria-expanded
+        sortMenu.setAttribute('hidden', '');
+        sortButton.setAttribute('aria-expanded', 'false');
+
+        sortedPlayers = sortPlayers(players, sortField, sortOrder)
+        renderPlayers(playersListContainer, sortedPlayers, currentPage, playersPerPage, pageInfo, prevBtn, nextBtn);
+      });
+    });
+
+    // Close the sort menu if clicking outside
+    document.addEventListener('click', (event) => {
+      if (!sortButton.contains(event.target) && !sortMenu.contains(event.target)) {
+        sortMenu.setAttribute('hidden', '');
+        sortButton.setAttribute('aria-expanded', 'false');
+      }
+    });
+    
 
     // Initial render
     renderPlayers(playersListContainer, filteredPlayers, currentPage, playersPerPage, pageInfo, prevBtn, nextBtn);
