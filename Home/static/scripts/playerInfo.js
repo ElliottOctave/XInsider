@@ -1,7 +1,8 @@
 import * as d3Soccer from 'd3-soccer';
+var selectedRange = null; // Will be necessary for the carousel interactivity
 
 // Function to format big numbers (e.g. 3.000.000 gives 3M)
-function formatValue(num) {
+export function formatValue(num) {
   if (num >= 1_000_000) {
     return (num / 1_000_000).toFixed(1).replace(/\.0$/, '') + "M";
   } else if (num >= 1_000) {
@@ -32,6 +33,7 @@ function createPlayerCard(player) {
   });
   const age = calculateAge(player.date_of_birth);
 
+  // HTML of the player card
   return `
     <div class="player-card">
       <div class="player-card-left">
@@ -50,11 +52,11 @@ function createPlayerCard(player) {
       <div class="player-card-right">
         <div class="info-box">
           <h4>Club</h4>
-          <img src="${player.club_logo_url}" alt="Club Logo" class="club-logo" />
+          <img src="${player.club_logo_url}" alt="Club Logo" class="club-logo" title="${player.club_name}"/>
         </div>
         <div class="info-box">
           <h4>Competition</h4>
-          <img src="${player.competition_logo_url}" alt="Competition Logo" class="club-logo" />
+          <img src="${player.competition_logo_url}" alt="Competition Logo" class="competition-logo" />
         </div>
         <div class="info-box">
           <h4>Position</h4>
@@ -72,6 +74,7 @@ function createPlayerCard(player) {
   `;
 }
 
+// Shows dominant foot of player
 function showFoot(foot) {
   const leftFoot = document.querySelector('.left-foot');
   const rightFoot = document.querySelector('.right-foot');
@@ -111,7 +114,6 @@ async function showPlayerValuations(player) {
     const csvText = await response.text();
     const [headerLine, ...rows] = csvText.trim().split('\n');
     const headers = headerLine.split(',').map(h => h.trim());
-
     const valuations = rows.map(row => {
       const cols = row.split(',');
       return headers.reduce((obj, header, idx) => {
@@ -128,7 +130,7 @@ async function showPlayerValuations(player) {
   }
 }
 
-// Show cards pie
+// Show cards pie (with hole to show exact number)
 function drawCardsChart(player) {
   const svg = d3.select("#cardsChart");
 
@@ -143,7 +145,6 @@ function drawCardsChart(player) {
   const margin = 60;
   const radius = Math.min(width, height) / 2 - margin;
 
-  // Append the svg object to the div called 'cardsChart' and set the group element for pie chart positioning
   svg.selectAll("*").remove(); 
   const g = svg.append("g")
     .attr("transform", `translate(${width / 2}, ${height / 2})`);
@@ -153,7 +154,6 @@ function drawCardsChart(player) {
     .domain(data.map(d => d.category))
     .range(["#f1c40f", "#e74c3c"]);
 
-  // Compute the position of each group on the pie
   const pie = d3.pie().value(d => d.value);
   const data_ready = pie(data);
 
@@ -171,6 +171,7 @@ function drawCardsChart(player) {
     .style("stroke-width", "2px")
     .style("opacity", 0.7);
 
+  // Tooltip to give more information
   const tooltip = d3.select("body").append("div")
     .attr("class", "tooltip")
     .style("position", "absolute")
@@ -202,7 +203,7 @@ function drawCardsChart(player) {
   .attr("text-anchor", "middle")
   .attr("dominant-baseline", "central")
   .attr("font-size", "12px")
-  .attr("fill", "#003366")      
+  .attr("fill", "#555")      
   .attr("dy", "-20px")   
   .text("Total Number of Cards");
 
@@ -255,7 +256,6 @@ function drawGoalsAndAssistsChart(player) {
     .style("stroke-width", "2px")
     .style("opacity", 0.7);
 
-  // Create a tooltip
   const tooltip = d3.select("body").append("div")
     .attr("class", "tooltip")
     .style("position", "absolute")
@@ -415,12 +415,11 @@ function renderFieldPositions(player) {
     const tooltip = d3.select("body").append("div")
       .attr("class", "tooltip")
       .style("position", "absolute")
-      .style("background-color", "black")
+      .style("background-color", "rgba(0, 0, 0, 0.7)")
       .style("color", "#fff")
       .style("padding", "6px 10px")
       .style("border-radius", "4px")
       .style("font-size", "12px")
-      .style("pointer-events", "none")
 
     const playerData = data.filter(p => p.player_id == player.player_id);
 
@@ -478,6 +477,7 @@ function renderFieldPositions(player) {
             .style("opacity", 0.6);
 
           // For these ones put the label below the circle
+          // Otherwise won't be able to see them
           const leftSidePositions = ["Left-Back", "Left Midfield", "Left Winger"];
 
           svg.append("text")
@@ -561,17 +561,29 @@ function renderMarketValueChart(playerValuations) {
         .attr("stroke", "#ddd")
         .attr("stroke-dasharray", "5,5");
 
-    const line = d3.line()
-        .x(d => x(d.date))
-        .y(d => y(d.value));  
+    // Create array of line segments between consecutive points
+    // Will be necessary to be able to adapt opacity when selection period in timeline
+    const lineSegments = [];
+    for (let i = 0; i < marketValues.length - 1; i++) {
+        lineSegments.push({
+            start: marketValues[i],
+            end: marketValues[i + 1]
+        });
+    }
 
-    svg.append("path")
-        .data([marketValues])
-        .attr("class", "line")
-        .attr("d", line)  
-        .style("fill", "none")
-        .style("stroke", "#003366")
-        .style("stroke-width", 2); 
+    svg.selectAll(".line-segment")
+        .data(lineSegments)
+        .enter()
+        .append("line")
+        .attr("class", "line-segment")
+        .attr("x1", d => x(d.start.date))
+        .attr("y1", d => y(d.start.value))
+        .attr("x2", d => x(d.end.date))
+        .attr("y2", d => y(d.end.value))
+        .attr("stroke", "#003366")
+        .attr("stroke-width", 2)
+        .attr("data-date1", d => d.start.date.toISOString())
+        .attr("data-date2", d => d.end.date.toISOString());
 
     svg.selectAll(".dot")
         .data(marketValues)
@@ -580,7 +592,8 @@ function renderMarketValueChart(playerValuations) {
         .attr("cx", d => x(d.date))  
         .attr("cy", d => y(d.value)) 
         .attr("r", 5) 
-        .style("fill", "#003366");
+        .style("fill", "#003366")
+        .attr("data-date", d => d.date.toISOString());
 
     const tooltip = d3.select("body").append("div")
         .attr("class", "tooltip")
@@ -605,6 +618,7 @@ function renderMarketValueChart(playerValuations) {
 }
 
 function renderTimeline(player) {
+  // For timeline look for the player transfers
   fetch('../../processed_data/transfers_preprocessed.csv')
     .then(response => response.text())
     .then(csvText => {
@@ -627,12 +641,12 @@ function renderTimeline(player) {
       });
       playerTransfers.sort((a, b) => a.transfer_date - b.transfer_date);
 
-      let tenures = [];
+      let transfersInfo = [];
       for (let i = 0; i < playerTransfers.length; i++) {
         const current = playerTransfers[i];
         const next = playerTransfers[i + 1];
         if (current.to_club_name) {
-          tenures.push({
+          transfersInfo.push({
             club: current.to_club_name,
             start: current.transfer_date,
             end: next ? next.transfer_date : new Date(), 
@@ -650,17 +664,17 @@ function renderTimeline(player) {
 
       const xScale = d3.scaleTime()
         .domain([
-          d3.min(tenures, d => d.start),
-          d3.max(tenures, d => d.end)
+          d3.min(transfersInfo, d => d.start),
+          d3.max(transfersInfo, d => d.end)
         ])
         .range([margin.left, width - margin.right]);
 
       const yScale = d3.scaleBand()
-        .domain(tenures.map(d => d.club))
+        .domain(transfersInfo.map(d => d.club))
         .range([margin.top, height - margin.bottom])
         .padding(0.3);
 
-      const maxFee = Math.max(...tenures.map(d => d.fee));
+      const maxFee = Math.max(...transfersInfo.map(d => d.fee));
       const colorScale = d3.scaleLinear()
         .domain([0, maxFee])
         .range(["#a2d0fc", "#01264a"]);      
@@ -675,7 +689,7 @@ function renderTimeline(player) {
         .attr("font-size", 14);
 
       svg.selectAll(".bar")
-        .data(tenures)
+        .data(transfersInfo)
         .enter()
         .append("rect")
         .attr("class", "bar")
@@ -708,15 +722,49 @@ function renderTimeline(player) {
           .style("top", (event.pageY - 28) + "px");
         })
         .on("mouseout", () => {
-          tooltip.transition().duration(200).style("opacity", 0);
+          tooltip.transition().duration(100).style("opacity", 0);
+        })
+        .on("click", function(event, d) {
+          const wasSelected = d3.select(this).classed("selected");
+          const start = d.start.getFullYear();
+          const end = d.end.getFullYear();
+
+          // When a bar is selected reduce the opacity of the others
+          // And if users clicks a second time reset the opacity
+          if (wasSelected) {
+            selectedRange = null;
+            svg.selectAll(".bar")
+              .classed("selected", false)
+              .transition()
+              .duration(100)
+              .style("opacity", 1);
+          } else {
+            selectedRange = { start, end };
+            
+            svg.selectAll(".bar")
+              .classed("selected", false)
+              .transition()
+              .duration(100)
+              .style("opacity", 0.2);
+            
+            d3.select(this)
+              .classed("selected", true)
+              .transition()
+              .duration(100)
+              .style("opacity", 1);
+          }
+
+          // Update the other visualizations
+          updateVisualisation(start, end, wasSelected);
         });
 
         const legendWidth = 200, legendHeight = 10;
         const legendMargin = { top: 25, right: 30 };
-        const legendX = width - margin.right - legendWidth;
+        const legendX = width - margin.right - legendWidth - 20;
         const legendY = margin.top - legendMargin.top;
         const defs = svg.append("defs");
 
+        // Legend for the transfer fees
         const linearGradient = defs.append("linearGradient")
           .attr("id", "legend-gradient");
 
@@ -731,6 +779,7 @@ function renderTimeline(player) {
           .attr("stop-color", d => d.color);
 
         svg.append("rect")
+          .attr("class", ".rect")
           .attr("x", legendX)
           .attr("y", legendY)
           .attr("width", legendWidth)
@@ -744,9 +793,9 @@ function renderTimeline(player) {
         svg.append("g")
           .attr("transform", `translate(0, ${legendY + legendHeight})`)
           .call(d3.axisBottom(legendScale)
-            .tickValues([0, maxFee / 3, (2 * maxFee) / 3, maxFee]) // Ensures maxFee is included
+            .tickValues([0, maxFee / 3, (2 * maxFee) / 3, maxFee])
             .tickFormat(d => d === 0 ? "Free" : formatValue(d)))
-          .attr("font-size", "10px");
+          .attr("font-size", "12px");
         
         svg.append("text")
           .attr("x", legendX + legendWidth / 2)
@@ -756,6 +805,7 @@ function renderTimeline(player) {
           .text("Transfer Fee");
     })
     .catch(error => {
+      // Debugging
       console.error("Error fetching or parsing transfers_preprocessed.csv:", error);
     });
 }
@@ -763,11 +813,12 @@ function renderTimeline(player) {
 function displayPlayerTrophies(player) {
   const container = d3.select("#trophies");
 
+  // Need both dataset to continue so we wait for both of them to load
   Promise.all([
     d3.csv("../../processed_data/transfers_preprocessed.csv"),
     d3.csv("../../processed_data/club_competitions.csv")
   ]).then(([transfers, competitions]) => {
-    // Filter transfers for this player
+    // Filter transfers for current player
     const playerTransfers = transfers
       .filter(d => d.player_id === player.player_id)
       .sort((a, b) => new Date(a.transfer_date) - new Date(b.transfer_date));
@@ -794,6 +845,7 @@ function displayPlayerTrophies(player) {
         .replace(/\b\w/g, char => char.toUpperCase());
     }
 
+    // Construct the players trophies 'shelf'
     wonTrophies.forEach(trophy => {
       const trophyContainer = container.append("div")
         .attr("class", "trophy-item");
@@ -812,14 +864,10 @@ function displayPlayerTrophies(player) {
   });
 }
 
+// Carousel for player goals/assists and cards over time
 function renderPlayerStatsCarousel(player) {
   d3.csv("../../data/player_stats.csv").then(data => {
     const playerStats = data.filter(d => d.player_id === player.player_id);
-
-    if (playerStats.length === 0) {
-      console.warn("No stats found for this player.");
-      return;
-    }
 
     playerStats.forEach(d => {
       d.year = +d.year;
@@ -829,7 +877,8 @@ function renderPlayerStatsCarousel(player) {
       d.red_cards = +d.red_cards;
     });
 
-    playerStats.sort((a, b) => a.year - b.year); // sort years ascending
+    // Sort years in ascending order
+    playerStats.sort((a, b) => a.year - b.year); 
     const container = d3.select("#carouselChart");
     const width = 980;
     const height = 400;
@@ -838,6 +887,7 @@ function renderPlayerStatsCarousel(player) {
     container.selectAll("*").remove();
 
     const svg = container.append("svg")
+      .attr("id", "carouselSvg")
       .attr("width", width)
       .attr("height", height);
 
@@ -857,7 +907,7 @@ function renderPlayerStatsCarousel(player) {
       .attr("class", "tooltip")
       .style("position", "absolute")
       .style("opacity", 0)
-      .style("background", "#333")
+      .style("background", "rgba(0, 0, 0, 0.7)")
       .style("color", "#fff")
       .style("padding", "6px 10px")
       .style("border-radius", "4px")
@@ -886,6 +936,7 @@ function renderPlayerStatsCarousel(player) {
         keys = ["yellow_cards", "red_cards"];
       }
 
+      // We will use stacked bar charts
       const stack = d3.stack().keys(keys);
       const stackedData = stack(playerStats);
 
@@ -911,22 +962,30 @@ function renderPlayerStatsCarousel(player) {
 
       bars.join(
         enter => enter.append("rect")
+          .attr("data-year", d => d.data.year)
           .attr("x", d => x(d.data.year))
           .attr("width", x.bandwidth())
           .attr("y", y(0))
           .attr("height", 0)
+              .style("opacity", d => {
+            if (!selectedRange) return 1;
+            const year = d.data.year;
+            return (year >= selectedRange.start && year <= selectedRange.end) ? 1 : 0.2;
+          })
           .on("mouseover", function(event, d) {
             const metric = this.parentNode.__data__.key;
-            tooltip.transition().duration(200).style("opacity", 1);
-            tooltip.html(`${metric.replace(/_/g, ' ')}: ${d.data[metric]}`)
+            tooltip.transition().duration(100).style("opacity", 1);
+            tooltip.html(`${metric.replace(/_/g, " ")}: ${d.data[metric]}`)
               .style("left", (event.pageX + 10) + "px")
               .style("top", (event.pageY - 20) + "px");
           })
           .on("mousemove", event => {
             tooltip.style("left", (event.pageX + 10) + "px")
-                   .style("top", (event.pageY - 20) + "px");
+                  .style("top", (event.pageY - 20) + "px");
           })
-          .on("mouseout", () => tooltip.transition().duration(200).style("opacity", 0))
+          .on("mouseout", () => {
+            tooltip.transition().duration(200).style("opacity", 0);
+          })
           .call(enter => enter.transition().duration(800)
             .attr("y", d => y(d[1]))
             .attr("height", d => y(d[0]) - y(d[1]))
@@ -939,28 +998,20 @@ function renderPlayerStatsCarousel(player) {
         exit => exit.remove()
       );
 
-      svg.append("text")
-        .attr("class", "chart-title")
-        .attr("x", width / 2)
-        .attr("y", margin.top - 25)
-        .attr("text-anchor", "middle")
-        .attr("font-size", "18px")
-        .text(title);
-
       // Legend
       keys.forEach((key, i) => {
         legend.append("rect")
-          .attr("x", 0)
+          .attr("x", -15)
           .attr("y", i * 20)
           .attr("width", 12)
           .attr("height", 12)
           .attr("fill", color(key));
 
         legend.append("text")
-          .attr("x", 18)
-          .attr("y", i * 20 + 10)
+          .attr("x", 4)
+          .attr("y", i * 20 + 6)
           .text(key.replace(/_/g, ' '))
-          .style("font-size", "12px")
+          .style("font-size", "14px")
           .attr("alignment-baseline", "middle");
       });
     }
@@ -969,20 +1020,19 @@ function renderPlayerStatsCarousel(player) {
     const chartModes = ["goals_assists", "cards"];
     let carouselRunning = true;
     let interval;
-    const button = document.getElementById("pauseButton");
     const icon = document.getElementById("pauseIcon");
 
+    // Enable the user to pause the carousel and look at the data
     function toggleCarousel() {
       carouselRunning = !carouselRunning;
       if (carouselRunning) {
-        icon.src = "https://www.svgrepo.com/show/532514/pause.svg"; // Pause icon
+        icon.src = "https://www.svgrepo.com/show/532514/pause.svg";
       } else {
-        icon.src = "https://www.svgrepo.com/show/514197/play.svg"; // Play icon
+        icon.src = "https://www.svgrepo.com/show/514197/play.svg"; 
         clearInterval(interval);
       }
     }
 
-    button.addEventListener("click", toggleCarousel);
     document.getElementById("pauseButton").addEventListener("click", toggleCarousel);
 
     drawStackedChart(chartModes[currentChart]);
@@ -995,6 +1045,58 @@ function renderPlayerStatsCarousel(player) {
   });
 }
 
+function updateVisualisation(startYear, endYear, isSelected) {
+    const svgValuations = d3.select("#marketValueChart");
+    const svgCarousel = d3.select("#carouselSvg");
+
+    if (isSelected) {
+        // Show everything full opacity
+        svgValuations.selectAll(".dot")
+            .transition()
+            .duration(200)
+            .style("opacity", 1);
+
+        svgValuations.selectAll(".line-segment")
+            .transition()
+            .duration(200)
+            .style("opacity", 1);
+
+        svgCarousel.selectAll(".bar-group").selectAll("rect")
+          .transition()
+          .duration(200)
+          .style("opacity", 1);
+    } else {
+        // Apply fade based on date range
+        svgValuations.selectAll(".dot")
+            .transition()
+            .duration(200)
+            .style("opacity", function() {
+                const dotDate = new Date(this.getAttribute("data-date"));
+                const year = dotDate.getFullYear();
+                return (year >= startYear && year <= endYear) ? 1 : 0.2;
+            });
+
+        svgValuations.selectAll(".line-segment")
+            .transition()
+            .duration(200)
+            .style("opacity", function() {
+                const date1 = new Date(this.getAttribute("data-date1"));
+                const date2 = new Date(this.getAttribute("data-date2"));
+                const year1 = date1.getFullYear();
+                const year2 = date2.getFullYear();
+                return (year1 >= startYear && year1 <= endYear && year2 >= startYear && year2 <= endYear) ? 1 : 0.2;
+            });
+
+        svgCarousel.selectAll(".bar-group").selectAll("rect")
+          .transition()
+          .duration(200)
+          .style("opacity", d => {
+            if (!selectedRange) return 1;
+            const year = d.data.year;
+            return (year >= selectedRange.start && year <= selectedRange.end) ? 1 : 0.2;
+          });
+    }
+}
 
 async function renderPlayerVisuals(playerId) {
   try {
@@ -1002,6 +1104,8 @@ async function renderPlayerVisuals(playerId) {
     const player = players.find(p => p.player_id === playerId);
     const container = document.getElementById('player-details');
     container.innerHTML = createPlayerCard(player);
+
+    // Show all visualizations
 
     showFoot(player.foot);
 

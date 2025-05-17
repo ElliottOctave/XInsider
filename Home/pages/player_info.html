@@ -40,9 +40,14 @@
 
       <!-- Transfer history -->
       <section id="timeline" class="chart-section">
-        <h2>Transfer History</h2>
+        <h2>
+          Transfer History
+          <img src="https://img.icons8.com/ios7/512/info.png" alt="info" class="info-icon" id="infoIcon"/>
+          <div id="infoTooltip" class="info-tooltip">Click on a bar to update the other visualizations.</div>
+        </h2>
         <svg id="timeChart" width="800" height="400"></svg>
       </section>
+
 
       <!-- Trophies -->
       <section id="trophies-container" class="chart-section">
@@ -81,6 +86,18 @@
   <div id="footer-container"></div>
 
   <!-- Scripts -->
+  <script>
+    const icon = document.getElementById("infoIcon");
+    const tooltip = document.getElementById("infoTooltip");
+
+    icon.addEventListener("mouseenter", () => {
+      tooltip.style.display = "block";
+    });
+
+    icon.addEventListener("mouseleave", () => {
+      tooltip.style.display = "none";
+    });
+  </script>
   <script src="/node_modules/d3/dist/d3.min.js"></script>
   <script src="/Home/static/scripts/playerInfo.js" type="module"></script>
   <script src="/Home/static/components/navbarSearch.js"></script>

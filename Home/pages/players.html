@@ -22,12 +22,15 @@
   <!-- Filters -->
   <main class="dashboard" id="main-content">
     <section class="filters">
+
       <select id="from-year">
         <option value="">From Year</option>
       </select>
+
       <select id="to-year">
         <option value="">To Year</option>
       </select>      
+
       <select id="position-filter">
         <option value="">All Positions</option>
         <option value="Attack">Attacker</option>
@@ -35,7 +38,22 @@
         <option value="Midfield">Midfielder</option>
         <option value="Defender">Defender</option>
       </select>
+
       <input type="text" id="nationality-filter" placeholder="Nationality (e.g. France)">
+
+      <button id="sort-button" aria-haspopup="true" aria-expanded="false">Sort ▼</button>
+
+      <div id="sort-menu" role="menu" hidden>
+        <button class="sort-option" data-field="market_value_in_eur" data-order="asc">Market Value ↑</button>
+        <button class="sort-option" data-field="market_value_in_eur" data-order="desc">Market Value ↓</button>
+        <button class="sort-option" data-field="goals" data-order="asc">Goals ↑</button>
+        <button class="sort-option" data-field="goals" data-order="desc">Goals ↓</button>
+        <button class="sort-option" data-field="assists" data-order="asc">Assists ↑</button>
+        <button class="sort-option" data-field="assists" data-order="desc">Assists ↓</button>
+        <button class="sort-option" data-field="cards" data-order="asc">Cards ↑</button>
+        <button class="sort-option" data-field="cards" data-order="desc">Cards ↓</button>
+      </div>
+
       <button id="apply-filters">Apply Filters</button>
     </section>
     
@@ -56,6 +74,7 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/papaparse/5.3.0/papaparse.min.js"></script>
   <script src="/Home/static/scripts/playerList.js"></script>
+
 
   <script src="/Home/static/components/navbarSearch.js"></script>
   <script src="/Home/static/components/navbar.js"></script>
