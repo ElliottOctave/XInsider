@@ -46,9 +46,12 @@ function createPlayerElement(player) {
   playerLink.textContent = player.name;
 
   const playerDetails = document.createElement('p');
-  playerDetails.textContent = player.current_club_name;
+  playerDetails.textContent = `${player.position} | € ${formatValue(player.market_value_in_eur)}`;
 
-  playerItem.append(playerImage, playerLink, playerDetails);
+  const playerClub = document.createElement('p');
+  playerClub.textContent = player.current_club_name;
+
+  playerItem.append(playerImage, playerLink, playerDetails, playerClub);
 
   return playerItem;
 }
@@ -221,3 +224,15 @@ async function showPlayers(dataUrl) {
 }
 
 showPlayers(playersCsvUrl);
+
+
+function formatValue(num) {
+  if (num >= 1_000_000) {
+    return (num / 1_000_000).toFixed(1).replace(/\.0$/, '') + "M";
+  } else if (num >= 1_000) {
+    return (num / 1_000).toFixed(0) + "k";
+  } else {
+    return num.toString();
+  }
+}
+
