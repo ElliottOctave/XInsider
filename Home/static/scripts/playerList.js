@@ -90,7 +90,8 @@ function filterPlayers(players, filters) {
     const clubMatch = player.current_club_name.toLowerCase().includes(query);
     const playerFirstYear = parseInt(player.first_match_year);
     const playerLastYear = parseInt(player.last_match_year);
-    const yearMatch = (playerFirstYear >= fromYear && playerFirstYear <= toYear) || (playerLastYear >= fromYear && playerLastYear <= toYear);
+    const yearMatch = fromYear == toYear ? true : (playerFirstYear >= fromYear && playerFirstYear <= toYear) || 
+    (playerLastYear >= fromYear && playerLastYear <= toYear);
     const positionMatch = !position || player.position.toLowerCase() == position;
     const nationalityMatch = !nationality || player.country_of_citizenship.toLowerCase().includes(nationality);
     return (nameMatch || clubMatch) && yearMatch && positionMatch && nationalityMatch;
@@ -153,14 +154,10 @@ async function showPlayers(dataUrl) {
     });
 
     function updatePlayers() {
-      const sortField = document.getElementById('sort-field').value;
-      const sortOrder = document.getElementById('sort-order').value;
-      console.log(sortField);
-      console.log(sortOrder);
+      console.log(getFilters());
       filteredPlayers = filterPlayers(players, getFilters());
-      sortedPlayers = sortPlayers(filteredPlayers, sortField, sortOrder);
       currentPage = 1;
-      renderPlayers(playersListContainer, sortedPlayers, currentPage, playersPerPage, pageInfo, prevBtn, nextBtn);
+      renderPlayers(playersListContainer, filteredPlayers, currentPage, playersPerPage, pageInfo, prevBtn, nextBtn);
     }
 
     searchBar.addEventListener('input', updatePlayers);
