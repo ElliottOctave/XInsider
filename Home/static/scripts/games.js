@@ -31,15 +31,6 @@ Promise.all([
     const clubs = parseCsv(clubsCsv);
     const logos = parseCsv(logosCsv);
 
-    console.log("✅ Games loaded:", games.length);
-    console.log("🧾 Sample game:", games[0]);
-    
-    console.log("✅ Clubs loaded:", clubs.length);
-    console.log("🧾 Sample club:", clubs[0]);
-
-    console.log("✅ Logos loaded:", logos.length);
-    console.log("🧾 Sample logo:", logos[0]);
-
     clubs.forEach(club => {
       clubMap[club.club_id] = club.name;
     });
@@ -77,8 +68,6 @@ function renderCards() {
     game.home_club_goals !== undefined && game.away_club_goals !== undefined &&
     game.stadium && game.date
   );
-
-  console.log("🎯 Valid games for rendering:", validGames.length);
 
   const start = (currentPage - 1) * rowsPerPage;
   const end = start + rowsPerPage;
@@ -161,7 +150,6 @@ function applyFilters(allGames) {
     return matchesYear && matchesTeam;
   });
 
-  console.log(`🔎 Filtered down to ${filteredGames.length} games`);
   renderCards();
 }
 

@@ -132,10 +132,10 @@ Promise.all([
   rightFormationEl.textContent = thisGame.away_club_formation;
   renderRecentMatches(leftClub, gameId, "left");
   renderRecentMatches(rightClub, gameId, "right");  
-  currentEventIndex = -1;  // ✅ initialize BEFORE the first event
-  renderLineup(0);         // show minute 0 on page load
+  currentEventIndex = -1;
+  renderLineup(0);
   document.getElementById("event-minute").textContent = "0'";
-  setupTimeline();         // now it works cleanly
+  setupTimeline();
 
 })
 .catch(err => console.error("Failed to load data:", err));
@@ -306,7 +306,7 @@ function renderLineup(minute) {
 
 function setupTimeline() {
   const timelineBar = document.getElementById("timeline-bar");
-  timelineBar.innerHTML = ""; // Clear old icons
+  timelineBar.innerHTML = "";
 
   const relevantEvents = allEvents
     .filter(e => e.game_id === gameId)
@@ -323,7 +323,6 @@ function setupTimeline() {
     const leftPercent = (parseInt(e.minute) / 90) * 100;
     const verticalOffset = isHomeTeam ? "-25px" : "25px";
   
-    // 🟨🟥⚽ as emoji
     if (icon) {
       const div = document.createElement("div");
       div.className = "timeline-event-marker";
@@ -336,7 +335,6 @@ function setupTimeline() {
       timelineBar.appendChild(div);
     }
   
-    // 🔁 Substitution as image
     if (e.type === "Substitutions") {
       const img = document.createElement("img");
       img.src = "/ressources/Substitution.png";
@@ -357,16 +355,13 @@ function setupTimeline() {
   document.getElementById('loading-overlay').style.opacity = "0";
       setTimeout(() => {
         document.getElementById('loading-overlay').style.display = 'none';
-      }, 500); // makes a smooth transition
+      }, 500);
   
 }
 
 function renderRecentMatches(clubId, excludeGameId, side) {
   const title = document.getElementById(`recent-matches-title-${side}`);
   const container = document.getElementById(`recent-matches-list-${side}`);
-
-  console.log("📌 Rendering recent matches for clubId:", clubId, "excluding game:", excludeGameId);
-
   const clubName = allClubs.find(c => String(c.club_id) === String(clubId))?.name || "Unknown Club";
   title.textContent = `Five last games of ${clubName}`;
   container.innerHTML = "";
@@ -375,9 +370,6 @@ function renderRecentMatches(clubId, excludeGameId, side) {
     .filter(g => (String(g.home_club_id) === String(clubId) || String(g.away_club_id) === String(clubId)) && g.game_id !== excludeGameId)
     .sort((a, b) => new Date(b.date) - new Date(a.date))
     .slice(0, 5);
-
-  console.log("🔍 Found recent games:", recentGames.map(g => g.game_id));
-
   recentGames.forEach(game => {
     const home = allClubs.find(c => String(c.club_id) === String(game.home_club_id));
     const away = allClubs.find(c => String(c.club_id) === String(game.away_club_id));
@@ -417,7 +409,6 @@ function updateTimeline() {
   const minute = eventMinutes[currentEventIndex] || 0;
   document.getElementById("event-minute").textContent = `${minute}'`;
 
-  // Highlight correct marker
   document.querySelectorAll(".timeline-event-marker").forEach(marker => {
     const markerMinute = parseInt(marker.title.replace("'", ""));
     marker.classList.toggle("active", markerMinute === minute);

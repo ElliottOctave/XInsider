@@ -85,7 +85,7 @@ a.match-card {
   font-weight: bold;
   font-size: 0.95rem;
   line-height: 1.2;
-  min-height: 2.6em; /* reserve space for 2 lines */
+  min-height: 2.6em;
   display: flex;
   align-items: center;
   justify-content: center;

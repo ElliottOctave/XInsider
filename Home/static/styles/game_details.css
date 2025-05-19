@@ -173,7 +173,7 @@ body {
   align-items: center;
   gap: 1.5rem;
   margin-top: 1.5rem;
-  margin-bottom: 4rem; /* ⬅️ Add more space BELOW green buttons */
+  margin-bottom: 4rem;
 }
 
 #timeline-controls button {
@@ -241,7 +241,7 @@ body {
 
 .back-button {
   position: absolute;
-  top: 150px; /* More space above the button */
+  top: 150px; 
   left: 40px;
   background-color: #f3f4f6;
   padding: 14px 24px;
@@ -259,14 +259,13 @@ body {
   transform: translateY(-2px);
 }
 
-/* 🔄 Recent Games Section */
 .recent-matches-container {
   display: flex;
   justify-content: center;
   flex-direction: column;
   align-items: center;
-  gap: 4rem; /* ⬅️ More space between team sections */
-  padding: 6rem 0 7rem 0; /* ⬆️ More top and bottom spacing overall */
+  gap: 4rem;
+  padding: 6rem 0 7rem 0;
   max-width: 100%;
 }
 
@@ -281,7 +280,7 @@ body {
 }
 
 .recent-matches-block + .recent-matches-block {
-  margin-top: 3rem; /* Increase to your liking */
+  margin-top: 3rem;
 }
 
 .recent-matches-title {
@@ -320,7 +319,7 @@ body {
   align-items: center;
 }
 .match-card .logos img {
-  width: 52px;    /* ⬆️ Increased size */
+  width: 52px;
   height: 52px;
   object-fit: contain;
 }
