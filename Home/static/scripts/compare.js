@@ -173,14 +173,30 @@ function renderRadar(entities, players, clubs, type) {
   document.getElementById("comparison-logo-team1").innerHTML = `
     <div class="side-by-side">
       <img src="${normalized[0].logo}" alt="${normalized[0].name}" class="compare-logo" />
-      <h3>${normalized[0].name}</h3>
+      <h3>
+        <a href="/Home/pages/${type === 'players' ? 'player_info.html?playerId=' : 'club_info.html?club_id='}${type === 'players' 
+          ? players.find(p => p.name === normalized[0].name)?.player_id 
+          : clubs.find(c => c.name === normalized[0].name)?.club_id}" 
+          class="compare-link"
+          target="_blank">
+          ${normalized[0].name}
+        </a>
+      </h3>
       <p>Score: ${Math.round(normalized[0].score)} / 100</p>
     </div>`;
 
   document.getElementById("comparison-logo-team2").innerHTML = `
     <div class="side-by-side">
       <img src="${normalized[1].logo}" alt="${normalized[1].name}" class="compare-logo" />
-      <h3>${normalized[1].name}</h3>
+      <h3>
+        <a href="/Home/pages/${type === 'players' ? 'player_info.html?playerId=' : 'club_info.html?club_id='}${type === 'players' 
+          ? players.find(p => p.name === normalized[1].name)?.player_id 
+          : clubs.find(c => c.name === normalized[1].name)?.club_id}" 
+          class="compare-link"
+          target="_blank">
+          ${normalized[1].name}
+        </a>
+      </h3>
       <p>Score: ${Math.round(normalized[1].score)} / 100</p>
     </div>`;
 

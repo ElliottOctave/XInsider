@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Fetch players/clubs and init Selectize
   Promise.all([
     d3.csv(playersCsv),
-    d3.csv(clubsCsv)
+    d3.csv(clubsCsv),
   ]).then(([players, clubs]) => {
     playersList = players;
     clubsList = clubs;
@@ -90,7 +90,6 @@ document.addEventListener("DOMContentLoaded", () => {
     compareResult.style.display = 'block';
     document.getElementById('compare-title').textContent = `${val1} vs ${val2}`;
 
-    // 🔽 Smooth scroll into view
     compareResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 };

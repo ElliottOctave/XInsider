@@ -350,5 +350,11 @@ body {
   box-sizing: border-box;
 }
 
-
-
+.compare-link {
+  text-decoration: none;
+  color: inherit;
+}
+.compare-link:hover {
+  color: #007bff;
+  text-decoration: underline;
+}
